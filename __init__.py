@@ -28,6 +28,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from delinblocks import *				#creates grid of blocks, finds flow paths, patches and block neighbours (GUI)
 from delinbasins import *				#identifies all upstream blocks for each block in the grid
 
+### GUI Files that go with these modules include:
+###		- delinblocks.py - spatial details for block delineation, etc.
+
 
 ### --- Modules for planning urban form and reconstructing cityscape based on planning
 ###     rules for residential, non-residential, facilities, open spaces and roads
@@ -38,9 +41,17 @@ from ubp_facilities import *			#identifies municipal and transport FACILITIES
 from ubp_spaces import *				#plans out open spaces, reserves, etc.
 from urbplansummary import *			#summarizes four output grids for each land use into one
 
+### GUI Files that go with these modules include:
+###		- urbplanbb.py - urban planning parameters interface
+
+
 ### --- Modules for calculating relevant urban water parameters for planning of water infrastructure
 ###     water demands, climate data
 from urbwatersettings import *			#contains all the relevant inputs for the integrated water system
+
+### GUI Files that go with these modules include:
+###		- urbwatersettings.py - parameters for urban water infrastructure relating to hydrology, pollution, supply, waste, economics, climate, etc.
+
 
 ### --- Modules for technology assessment, opportunities, design and placement
 from techplacement import *				#organises the data and inputs (GUI)
@@ -50,14 +61,17 @@ from techopp_neigh import *				#finds opportunities for neighbourhood techs in e
 from techopp_precinct import *			#finds opportunities for precinct tech in groups of blocks
 from techstrategy_eval import *		#collates the three scales into strategies and evaluates these
 
+### GUI Files that go with these modules include:
+###		- techplacement.py - customize technologies
+
 
 ### --- Modules for performance assessment of urban water infrastructure, interfaces with
 ###     commercial packages and preparatory work for simulation
+from performance_config import *		#allows configuration of what performance aspects the model should assess
 from performance_assessment import *	#sets up CityDrain3 simulation file, calls program and runs simulation
-#from performance_lcc import *			#performs life cycle costing of infrastructure
-#from performance_music import *		#sets up and runs MUSIC model for stormwater management simulation
-#from performance_swmm import *			#sets up SWMM model and calls program to run simulation
-#from performance_epanet import *		#sets up EPANET model and calls program to run simulation
+
+### GUI Files that go with these modules include:
+###		- performance_config.py - set what software packages to use and what performance to simulate
 
 
 ### --- Modules for reporting results from simulation
@@ -66,5 +80,4 @@ from ubeatsreport import *				#contains the configuration for output report
 
 ### --- Additional Modules
 from checkattributes import *		#Dummy file that allows checking if an attribute in a vector data can traverse modules
-
 
