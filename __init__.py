@@ -22,6 +22,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
+### --- Modules for importing existing shapefile data of systems and blocks and preparing these for later 
+###     processes.
+from getsystems import *
+from getpreviousblocks import *
+
+
 
 ### --- Modules for delineating data into grid of blocks and associating these with
 ###     properties e.g. basins, patches, flow paths
@@ -30,6 +36,8 @@ from delinbasins import *				#identifies all upstream blocks for each block in t
 
 ### GUI Files that go with these modules include:
 ###		- delinblocks.py - spatial details for block delineation, etc.
+
+
 
 
 ### --- Modules for planning urban form and reconstructing cityscape based on planning
@@ -42,7 +50,9 @@ from ubp_spaces import *				#plans out open spaces, reserves, etc.
 from urbplansummary import *			#summarizes four output grids for each land use into one
 
 ### GUI Files that go with these modules include:
-###		- urbplanbb.py - urban planning parameters interface
+###		- urbplanbbgui.py - urban planning parameters interface
+
+
 
 
 ### --- Modules for calculating relevant urban water parameters for planning of water infrastructure
@@ -51,6 +61,8 @@ from urbwatersettings import *			#contains all the relevant inputs for the integ
 
 ### GUI Files that go with these modules include:
 ###		- urbwatersettings.py - parameters for urban water infrastructure relating to hydrology, pollution, supply, waste, economics, climate, etc.
+
+
 
 
 ### --- Modules for technology assessment, opportunities, design and placement
@@ -65,6 +77,8 @@ from techstrategy_eval import *		#collates the three scales into strategies and 
 ###		- techplacement.py - customize technologies
 
 
+
+
 ### --- Modules for performance assessment of urban water infrastructure, interfaces with
 ###     commercial packages and preparatory work for simulation
 from performance_config import *		#allows configuration of what performance aspects the model should assess
@@ -74,10 +88,16 @@ from performance_assessment import *	#sets up CityDrain3 simulation file, calls 
 ###		- performance_config.py - set what software packages to use and what performance to simulate
 
 
+
+
 ### --- Modules for reporting results from simulation
 from ubeatsprojectinfo import *			#contains general info about the project for starting out the report
 from ubeatsreport import *				#contains the configuration for output report
 
-### --- Additional Modules
-from checkattributes import *		#Dummy file that allows checking if an attribute in a vector data can traverse modules
 
+
+
+### --- Additional Modules
+from checkattributes import *			#Dummy file that allows checking if an attribute in a vector data can traverse modules
+from ExportGISShapeFile import *		#Shapefile Exporter that exports blocks in UTM projection
+from VecDataAttributePrinter import *	#Printer of all vector data attributes
