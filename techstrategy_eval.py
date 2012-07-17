@@ -27,6 +27,7 @@ import techdesign as td
 import ubeats_music_interface as umusic
 import random as rand
 import numpy as np
+import math as math
 from pyvibe import *
 
 class techstrategy_eval(Module):
@@ -501,6 +502,7 @@ class techstrategy_eval(Module):
                     else:
                         prec_index += 1
             print strategy_as
+            
             #--STEP 5b-- GET TOP RANKS ----#
             if eval_mode == "W":                #SINGLE WEIGHTED RESULT
                 for a in range(len(strategy_bins)):
@@ -812,6 +814,7 @@ class techstrategy_eval(Module):
             #Create the freq distribution and get CDF for both precinct and blocks
             #Define the distribution
             dist_prec = "Linear"
+            eV = 1                      #lambda for the poisson distribution
             dist_block = "Linear"
             #-----------------------
             
@@ -821,7 +824,10 @@ class techstrategy_eval(Module):
                 prec_cdf = self.getSamplingCDFLinear(prec_N, 0, -1)
                 print prec_cdf
             elif dist_prec == "Exponential":
-                prec_cdf = self.getSamplingCDFExponential(prec_N, 2, -1)
+                prec_cdf = self.getSamplingCDFExponential(prec_N, 2, 1)
+                print prec_cdf
+            elif dist_prec == "Poisson":
+                prec_cdf = self.getSamplingCDFPoisson(prec_N, eV)
                 print prec_cdf
                 
             blocks_N = len(basinblockIDs)+1
@@ -830,7 +836,7 @@ class techstrategy_eval(Module):
                 blocks_cdf = self.getSamplingCDFLinear(blocks_N, 0, -1)
                 print blocks_cdf
             elif dist_block == "Exponential":
-                blocks_cdf = self.getSamplingCDFExponential(blocks_N, 1, -1)
+                blocks_cdf = self.getSamplingCDFExponential(blocks_N, 2, 1)
                 print blocks_cdf
             
             
@@ -847,7 +853,7 @@ class techstrategy_eval(Module):
                 
             
                 #PART 1b - INITIALIZE TRACKING VARIABLES
-                treat_remainAimp = cumu_Aimp      #remaining impervious area to be treated
+                treat_remainAimp = cumu_Aimp      #remaining impervious area to be treated (will need to adjust this for overdesign)
                 subbasin_ID_treatedAimp = []
                 
                 #-Variable: partakeIDs_copy-#
@@ -887,20 +893,27 @@ class techstrategy_eval(Module):
                 #---------------------------------------------------------------
                 #RANDOM SAMPLE PART B - DRAW A NUMBER OF IDs FROM BASIN_BLOCKIDS FOR PLACEMENT OF IN-BLOCK SYSTEMS
                 #(1) draw the random number that represents the number of locations to implement
+                #maxinblock_samples = len(basinblockIDs) #if want to allow precinct and block systems in the same block
                 maxinblock_samples = len(basinblockIDs) - len(prec_blocks_chosenIDs)    #cannot draw more blocks than what would be allowed
                 inblocks_sample_size = 9999999                                          #set to some unrealistically high number
                 while inblocks_sample_size > maxinblock_samples:                        #usually only needs to loop once, but could have issues if a lot of precinct blocks
                     blocks_prob = rand.random()
                     inblocks_sample_size = self.getSamplingCDFIndex(blocks_cdf, blocks_prob)
-                
+                print "inblock_sample_size: ", inblocks_sample_size
                 #inblocks_sample_size = rand.randint(0, len(basinblockIDs)-len(prec_blocks_chosenIDs))          #Old Code: Uniform distribution
                 
                 #(2) draw the x chosen samples from the pool
                 inblocks_chosenIDs = []
                 j = 0
                 while j < inblocks_sample_size:
+                    print len(basinblockIDs_samplecopy) - 1
                     inblocks_sample_index = rand.randint(0, len(basinblockIDs_samplecopy)-1)
+                    
                     if basinblockIDs_samplecopy[inblocks_sample_index] in prec_blocks_chosenIDs:
+                        #CODE START - REMOVAL OF PRECINCT CONSTRAINT
+                        #inblocks_chosenIDs.append(basinblockIDs_samplecopy[inblocks_sample_index])
+                        #j += 1
+                        #CODE END - REMOVAL OF PRECINCT CONSTRAINT
                         pass                #if the chosen blockID for a strategy already has been chosen for a precinct tech, skip
                     else:
                         inblocks_chosenIDs.append(basinblockIDs_samplecopy[inblocks_sample_index])
@@ -969,7 +982,10 @@ class techstrategy_eval(Module):
                         index_num = prec_blocks_partakeIDs.index(sbID)      #gets the row_number
                         upstream_treatedAimp += subbasin_ID_treatedAimp[index_num]  #fetches the imp_treated and adds it to upstream_treatedAimp
                     subbasin_remainAimp = totalAimp_subbasin - upstream_treatedAimp     #Area to treat is total unless there is upstream treated
-                    max_degree = subbasin_remainAimp/totalAimp_subbasin
+                    
+                    max_degree = subbasin_remainAimp/totalAimp_subbasin         #use this line if you want to limit design and not allow overdesign
+                    #max_degree = 1     #use this line if you want to not limit design and allow overdesign
+                    
                     print "upstream area treated: ", upstream_treatedAimp
                     print "max degree: ", max_degree
                     print "Remaining Impervious Area to deal with (before): ", subbasin_remainAimp
@@ -1049,8 +1065,9 @@ class techstrategy_eval(Module):
                         if subbasin_remainAimp > block_Aimp:
                             max_degree = 1.0
                         else:
-                            max_degree = subbasin_remainAimp / block_Aimp
-                        
+                            max_degree = subbasin_remainAimp / block_Aimp      #if you want to limit overdesign
+                            #max_degree = 1.0                                    #if you don't want to limit overdesign
+                            
                         # ---------------------------------------------------- #
                         # NOW CHOOSE A RANDOM BLOCK TECH IF ID IS IN LIST      #
                         # ---------------------------------------------------- # -------------------
@@ -1068,13 +1085,14 @@ class techstrategy_eval(Module):
                             #if rand.randint(0,1) == 1 and rand.random() <= basin_target_min:
                             #if True:
                             if rbID in inblocks_chosenIDs:
+                                #choice = 0
                                 choice = rand.randint(0, len(indices)-1)        #a random integer between indices
                                 block_alt_chosen = indices[choice]
                                 print "Chosen increment: ", block_alt_chosen
                             else:
-                                choice = 0
-                                block_alt_chosen = choice
-                                print "Choice is zero, skipping!"
+                                choice = len(indices)-1                         #It's 1-deg above hence 0 is the end of the list
+                                block_alt_chosen = indices[choice]
+                                print "Choice is zero, skipping! ", block_alt_chosen
                             if block_alt_chosen == 0:
                                 continue
                             
@@ -1489,13 +1507,32 @@ class techstrategy_eval(Module):
                 counter += 1
         
         #Case 3: r is exactly or the highest probability)
-        if r >= cdf(len(cdf)-1):
+        if r >= cdf[len(cdf)-1]:
             index = len(cdf)-1
             return index
         else:
             print "cannot find"
             index = counter
             return index
+    
+    def getSamplingCDFPoisson(self, N, eV):
+        #N = number of elements in the sample (including zeros), this defines k
+        #eV = lambda of the Poisson distribution
         
+        pdf = []
+        cdf = []
+        
+        for i in range(N):              #PDist = (lambda^k*e^-lambda)/k!
+            p_value = (eV**(i+1)*np.exp(-1*eV))/math.factorial(i+1)
+            pdf.append(p_value)
+            print p_value
+        if sum(pdf) != 1:
+            for i in range(N):
+                pdf[i] = pdf[i]/sum(pdf)
+            print pdf
+        cdf.append(pdf[0])
+        for i in range(N-1):
+            cdf.append(cdf[i]+pdf[i+1])
+        return cdf
         
         
