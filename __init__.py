@@ -60,7 +60,7 @@ from urbplansummary import *			#summarizes four output grids for each land use i
 from urbwatersettings import *			#contains all the relevant inputs for the integrated water system
 
 ### GUI Files that go with these modules include:
-###		- urbwatersettings.py - parameters for urban water infrastructure relating to hydrology, pollution, supply, waste, economics, climate, etc.
+###		- urbwatersettingsgui.py - parameters for urban water infrastructure relating to hydrology, pollution, supply, waste, economics, climate, etc.
 
 
 
@@ -73,9 +73,11 @@ from techopp_neigh import *				#finds opportunities for neighbourhood techs in e
 from techopp_precinct import *			#finds opportunities for precinct tech in groups of blocks
 from techstrategy_eval import *		#collates the three scales into strategies and evaluates these
 
-### GUI Files that go with these modules include:
-###		- techplacement.py - customize technologies
+from techimplement import *             #implements technology configurations into existing urban environments depending on chosen design
 
+### GUI Files that go with these modules include:
+###		- techplacementgui.py - customize technologies
+###             - techimplementgui.py - set rules for implementation
 
 
 

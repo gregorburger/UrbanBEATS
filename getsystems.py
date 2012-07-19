@@ -44,7 +44,7 @@ class GetSystems(Module):
         - Future work: To make sure the projection is adjusted if the file was not created by UrbanBEATS
         
     
-	@ingroup DAnCE4Water
+	@ingroup UrbanBEATS
 	@author Peter M Bach
 	"""
 
