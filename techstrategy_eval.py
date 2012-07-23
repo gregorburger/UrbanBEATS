@@ -28,7 +28,10 @@ import ubeats_music_interface as umusic
 import random as rand
 import numpy as np
 import math as math
+import gc as garbage
 from pyvibe import *
+import pyvibe
+
 
 class techstrategy_eval(Module):
     """description of this module
@@ -44,7 +47,7 @@ class techstrategy_eval(Module):
             - 
             - 
     
-	@ingroup DAnCE4Water
+	@ingroup UrbanBEATS
 	@author Peter M Bach
 	"""
 
@@ -59,7 +62,7 @@ class techstrategy_eval(Module):
         self.designdetails = VectorDataIn
         self.blockcityout = VectorDataIn
         self.patchcityout = VectorDataIn
-        self.strategies = VectorDataIn
+        self.systemsout = VectorDataIn
         self.addParameter(self, "lot_opps", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "street_opps", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "neigh_opps", VIBe2.VECTORDATA_IN)
@@ -69,7 +72,7 @@ class techstrategy_eval(Module):
         self.addParameter(self, "designdetails", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "blockcityout", VIBe2.VECTORDATA_OUT)
         self.addParameter(self, "patchcityout", VIBe2.VECTORDATA_OUT)
-        self.addParameter(self, "strategies", VIBe2.VECTORDATA_OUT)
+        self.addParameter(self, "systemsout", VIBe2.VECTORDATA_OUT)
         
         self.reportin = VectorDataIn
         self.reportout = VectorDataIn
@@ -88,7 +91,7 @@ class techstrategy_eval(Module):
         patchcityout = self.patchcityout.getItem()
         designdetails = self.designdetails.getItem()
         blockcityout = self.blockcityout.getItem()
-        strategies = self.strategies.getItem()
+        systemsout = self.systemsout.getItem()
         
         map_attr = blockcityin.getAttributes("MapAttributes")
         des_attr = designdetails.getAttributes("DesignAttributes")
@@ -180,7 +183,7 @@ class techstrategy_eval(Module):
         mca_method = des_attr.getStringAttribute("score_method")
         mca_t2s = des_attr.getStringAttribute("tech2strat_method")
         
-        mca_topranklimit = des_attr.getAttribute("topranklimit")
+        mca_topranklimit = des_attr.getAttribute("topranklimit")                #limit ranking to the top x where x is the topranklimit
         mca_confint = des_attr.getAttribute("conf_int")/100                     #confidence interval converted to proportion
         mca_ingroupscore = des_attr.getStringAttribute("ingroup_sorting")
         
@@ -196,7 +199,7 @@ class techstrategy_eval(Module):
         mca_fname = des_attr.getStringAttribute("scoringmatrix_path")
         
         eval_mode = des_attr.getStringAttribute("eval_mode")
-        ranktype = des_attr.getStringAttribute("ranktype")
+        ranktype = des_attr.getStringAttribute("ranktype")                      #CI = confidence interval, RK = top ranking
         print "MCA Evaluation Mode: "+str(eval_mode)+" and Rank Type: "+str(ranktype)
         
         #open file and get information from it
@@ -666,7 +669,7 @@ class techstrategy_eval(Module):
         output_file.write("List of All Basin Strategies\n\n")
         output_file.write("Basin ID, Strategy No., Service [%], TotalMCAScore, # Precinct, # Blocks Local\n")
         
-        basin_strategy_groups = []
+        basin_strategy_groups = []              #will contain the final chosen strategy for each basin
         for i in range(int(basins)):
             currentID = i+1     #current Basin ID
             stratID = 0         #counter for strategies in the basin
@@ -842,7 +845,7 @@ class techstrategy_eval(Module):
             
             #BEGIN MONTE CARLO LOOP
             basin_strategies_matrix = []
-            for iterations in range(1000):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
+            for iterations in range(10):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
                 print "Iteration No. ", iterations+1," -----------------------"
                 
                 #PART 1a - SETTING UP THE STORAGE CONTAINER OF INFORMATION
@@ -1147,19 +1150,130 @@ class techstrategy_eval(Module):
                     #current_bstrategy.calcStratScorePareto(mca_method, mca_techP, mca_envP, mca_ecnP, mca_socP)
                     pass
                 
-                basin_strategies_matrix.append([current_bstrategy.getMCAtotscore(), current_bstrategy])
+                basin_strategies_matrix.append([current_bstrategy.getPropImpServed(), current_bstrategy.getMCAtotscore(), current_bstrategy])
                 output_file.write(str(currentID)+","+str(iterations+1)+","+str(current_bstrategy.getPropImpServed())+","+str(current_bstrategy.getMCAtotscore())+","+str(len(prec_blocks_chosenIDs))+","+str(len(inblocks_chosenIDs))+"\n")
             
-            #Sort basin_strategies_matrix into ranks
-            basin_strategies_matrix.sort(reverse=True)
-            for i in range(min(len(basin_strategies_matrix),10)):
-                basin_strategies_matrix[i][1].writeReportFile()
-            top_wsud_strategy = basin_strategies_matrix[0][1]
+            del current_bstrategy       #delete the reference in current_bstrategy
+            
+            
+            #Grab all options within the desired minimum basin target
+            #check if they are above the top-ten/number
+            final_basin_strategies = []
+            for ind_strat in basin_strategies_matrix:
+                if ind_strat[0]/100 > basin_target_min:
+                    final_basin_strategies.append(ind_strat)
+            del ind_strat
+            
+            
+            #Determine the threshold
+            if ranktype == "CI":
+                topthreshold = int((1-mca_confint)*len(final_basin_strategies) + 0.5 + 1.0)     #using truncation to assist rounding (faster) e.g. round up 2.44 to 3 involves + 1 = 3.44, cut off to integer = 3
+            elif ranktype == "RK":
+                topthreshold = mca_topranklimit
+            
+            #Sort the final_basin_strategies from lowest to highest
+            final_basin_strategies.sort()
+            print final_basin_strategies
+            
+            #Grab the top values
+            ranking_cdf = []    #holds the scores of the MCA for later choosing
+            for i in range(min(len(final_basin_strategies), topthreshold)):
+                final_basin_strategies[i][2].writeReportFile()
+                ranking_cdf.append(final_basin_strategies[i][1])
+            
+            print ranking_cdf
+            
+            ranking_cdf_tot = sum(ranking_cdf)                                  #Normalize ranking_cdf
+            cumulative_p = 0
+            for i in range(len(ranking_cdf)):
+                cumulative_p += ranking_cdf[i]/ranking_cdf_tot
+                ranking_cdf[i] = cumulative_p
+            
+            print ranking_cdf
+            
+            chosen_strategy_p = rand.random()
+            for i in range(len(ranking_cdf)):
+                if chosen_strategy_p < ranking_cdf[i]:
+                    index = i
+                else:
+                    pass
+            
+            top_wsud_strategy = final_basin_strategies[index][2]        #select the final strategy
             basin_strategy_groups.append(top_wsud_strategy)
+            
+            #Now we have the top_wsud_strategy variable, which holds the chosen basin management strategy, we will now write this info into the output shapefile as a map of points
+            #Loop across all blocks
+            system_type_matrix = ['BF', 'SW', 'WSUR', 'PB', 'IF']               
+            system_type_numeric = [2463, 7925, 9787, 7663, 4635]                #Think Telephone Buttons :) ('Biof', 'Swal', 'WSUR', 'Pond', 'Infl')
+            
+            for i in range(len(basinblockIDs)):
+                currentID = basinblockIDs[i]
+                currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))        #attribute list of current block structure
+                centreX = currentAttList.getAttribute("Centre_x")
+                centreY = currentAttList.getAttribute("Centre_y")
+                
+                #Grab the strategy objects
+                inblock_strat = top_wsud_strategy.getInBlockStrategy(currentID)
+                if inblock_strat == None:
+                    inblock_systems = [0,0,0]
+                    inblock_degs = [0,0,0]
+                else:
+                    inblock_systems = inblock_strat.getSystemList()
+                    inblock_degs = inblock_strat.getSystemDegs()
+                
+                #define an offsets_matrix, holds the (x,y) coordinates based on current block's centre position. these are where the points will go for different scales, an aesthetic thing
+                offsets_matrix = [[centreX+blocks_size/8, centreY+blocks_size/4],[centreX+blocks_size/4, centreY-blocks_size/8],[centreX-blocks_size/8, centreY-blocks_size/4],[centreX-blocks_size/4, centreY+blocks_size/8]]
+                blockscale_names = ['lot', 'street', 'neigh']
+                for j in range(len(blockscale_names)):
+                    if inblock_strat == None or inblock_systems[j] == 0:
+                        continue
+                    else:
+                        current_wsud = inblock_systems[j]
+                        print current_wsud
+                    
+                    scale = blockscale_names[j]
+                    coordinates = offsets_matrix[j]
+                    
+                    plist = pyvibe.PointList()
+                    plist.append(Point(coordinates[0],coordinates[1],0))
+                    
+                    #Transfer existing systems across if any
+                    #....
+                    
+                    wsud_attr = Attribute()
+                    wsud_attr.setAttribute("Scale", j)                          #0 = LOT, 1 = STREET, 2 = NEIGHBOURHOOD, 3 = PRECINCT
+                    wsud_attr.setAttribute("TotSystems", 1)
+                    
+                    wsud_attr.setAttribute("Sys"+str(1)+"Type", system_type_numeric[system_type_matrix.index(current_wsud.getType())])
+                    wsud_attr.setAttribute("Sys"+str(1)+"Degree", inblock_degs[j])
+                    wsud_attr.setAttribute("Sys"+str(1)+"Area", current_wsud.getSize())
+                    
+                    systemsout.setPoints("BlockID"+str(currentID)+str(scale), plist)
+                    systemsout.setAttributes("BlockID"+str(currentID)+str(scale), wsud_attr)
+                
+                #PRECINCT
+                outblock_strat = top_wsud_strategy.getOutBlockStrategy(currentID)
+                if outblock_strat == None:
+                    pass
+                else:
+                    scale = 'prec'
+                    coordinates = offsets_matrix[3]
+                    
+                    plist = pyvibe.PointList()
+                    plist.append(Point(coordinates[0],coordinates[1],0))
+                    
+                    wsud_attr = Attribute()
+                    wsud_attr.setAttribute("Scale", 3)                          #0 = LOT, 1 = STREET, 2 = NEIGHBOURHOOD, 3 = PRECINCT
+                    wsud_attr.setAttribute("SysCount", 1)
+                    wsud_attr.setAttribute("Sys"+str(1)+"Type", outblock_strat.getType())
+                    wsud_attr.setAttribute("Sys"+str(1)+"Degree", 0)
+                    wsud_attr.setAttribute("Sys"+str(1)+"Type", outblock_strat.getSize())
+                    
+                    systemsout.setPoints("BlockID"+str(currentID)+str(scale), plist)
+                    systemsout.setAttributes("BlockID"+str(currentID)+str(scale), wsud_attr)
+
             #Write the overarching strategy output to Basin ID
             blockcityout.setAttributes("BasinID"+str(currentID), basin_attr)
-            
-            #Write the individual tech infos to each Block Vector
             
             
         #Output vector update
@@ -1169,275 +1283,286 @@ class techstrategy_eval(Module):
         output_file.close()
         print "log file saved"
 
-#        #########################################################################################################################
-#        #MUSIC SIMULATION FILE OUTPUT
-#        #########################################################################################################################
+        #########################################################################################################################
+        #MUSIC SIMULATION FILE OUTPUT
+        #########################################################################################################################
         
-#        #CODE TO WRITE THE MUSIC SIMULATION FILE FOR TOP TEN OPTIONS
-#        ufile = umusic.createMUSICmsf("C://","urbanbeatsMUSIC")
-#        umusic.writeMUSICheader(ufile, "melbourne")      #write the header line
-#        scalar = 10
-#        ncount = 1
-#        for basins in range(len(basin_strategy_groups)):
-#            current_top_strat = basin_strategy_groups[basins]
-#            basinblockIDs = current_top_strat.getBasinBlockIDs()
-#            print basinblockIDs
-#            musicnodedb = [[],[]]
-#            currentBasinAttList = blockcityin.getAttributes("BasinID"+str(basins+1))
-#            downstreamMostBlock = currentBasinAttList.getAttribute("DownBlockID")
-#            for i in range(int(blocks_num)):
-#                currentID = i+1
-#                currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))        #attribute list of current block structure
+        #CODE TO WRITE THE MUSIC SIMULATION FILE FOR TOP TEN OPTIONS
+        ufile = umusic.createMUSICmsf("C://","urbanbeatsMUSIC")
+        umusic.writeMUSICheader(ufile, "melbourne")      #write the header line
+        scalar = 10
+        ncount = 1
+        for basins in range(len(basin_strategy_groups)):
+            current_top_strat = basin_strategy_groups[basins]
+            basinblockIDs = current_top_strat.getBasinBlockIDs()
+            print basinblockIDs
+            musicnodedb = [[],[]]
+            currentBasinAttList = blockcityin.getAttributes("BasinID"+str(basins+1))
+            downstreamMostBlock = currentBasinAttList.getAttribute("DownBlockID")
+            for i in range(int(blocks_num)):
+                currentID = i+1
+                currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))        #attribute list of current block structure
                 
-#                block_status = currentAttList.getAttribute("Status")
-#                if block_status == 0 or currentAttList.getAttribute("ResTIArea") == 0:
-#                    #skips the for loop iteration to the next block, not more needs to be done
-#                    continue
+                block_status = currentAttList.getAttribute("Status")
+                if block_status == 0 or currentAttList.getAttribute("ResTIArea") == 0:
+                    #skips the for loop iteration to the next block, not more needs to be done
+                    continue
                 
-#                if currentID not in basinblockIDs:
-#                    continue
+                if currentID not in basinblockIDs:
+                    continue
                 
-#                musicnodedb[0].append(currentID)        #add the nodeID list for current block to a central matrix
+                musicnodedb[0].append(currentID)        #add the nodeID list for current block to a central matrix
                 
-#                blockX = currentAttList.getAttribute("Centre_x")
-#                blockY = currentAttList.getAttribute("Centre_y")
-#                #lot scale node = x - size/2, y + size/2
-#                #lot scale untreated = x - size/2, y
-#                #street scale = x - size/2, y - size/2
-#                #lot system = x, y + size/2
-#                #street system = x, y
-#                #neigh system = x, y-size/2
-#                #prec system = x + size/2, y
+                blockX = currentAttList.getAttribute("Centre_x")
+                blockY = currentAttList.getAttribute("Centre_y")
+                #lot scale node = x - size/2, y + size/2
+                #lot scale untreated = x - size/2, y
+                #street scale = x - size/2, y - size/2
+                #lot system = x, y + size/2
+                #street system = x, y
+                #neigh system = x, y-size/2
+                #prec system = x + size/2, y
                 
-#                #get scales of strategies from the object
-#                inblock_strat = current_top_strat.getInBlockStrategy(currentID)
-#                if inblock_strat == None:
-#                    inblock_sys = [0,0,0]
-#                else:
-#                    inblock_sys = inblock_strat.getSystemList()
-#                    inblock_deg = inblock_strat.getSystemDegs()
-#                prec_strat = current_top_strat.getOutBlockStrategy(currentID)
-#                catchment_paramter_list = [1,120,30,80,200,1,10,25,5,0]
-#                ncount_list = []
-#                #write catchment nodes - maximum possibility of two nodes
-#                if inblock_sys[0] == 0:
-#                    #No strategies - GET AREAS AND PARAMETERS FOR A SINGLE CATCHMENT NODE
-#                    ncount_list.append(0)
-#                    umusic.writeMUSICcatchmentnode(ufile, currentID, "", ncount, (blockX-blocks_size/4)*scalar, (blockY)*scalar, 100,0.5, catchment_paramter_list)
-#                    ncount_list.append(ncount)
-#                    ncount += 1
+                #get scales of strategies from the object
+                inblock_strat = current_top_strat.getInBlockStrategy(currentID)
+                if inblock_strat == None:
+                    inblock_sys = [0,0,0]
+                else:
+                    inblock_sys = inblock_strat.getSystemList()
+                    inblock_deg = inblock_strat.getSystemDegs()
+                prec_strat = current_top_strat.getOutBlockStrategy(currentID)
+                catchment_paramter_list = [1,120,30,80,200,1,10,25,5,0]
+                ncount_list = []
+                #write catchment nodes - maximum possibility of two nodes
+                if inblock_sys[0] == 0:
+                    #No strategies - GET AREAS AND PARAMETERS FOR A SINGLE CATCHMENT NODE
+                    ncount_list.append(0)
+                    umusic.writeMUSICcatchmentnode(ufile, currentID, "", ncount, (blockX-blocks_size/4)*scalar, (blockY)*scalar, 100,0.5, catchment_paramter_list)
+                    ncount_list.append(ncount)
+                    ncount += 1
                     
-#                elif inblock_sys[0] != 0:
-#                    #There are lot systems so get the lot sub-catchment node and merge the other untreated lots into the other node
-#                    #get lot areas
-#                    ncount_list.append(ncount)
-#                    umusic.writeMUSICcatchmentnode(ufile, currentID, "LT", ncount, (blockX-blocks_size/4)*scalar, (blockY+blocks_size/4)*scalar, 100,0.5, catchment_paramter_list)
-#                    ncount += 1
-#                    #get other areas
-#                    ncount_list.append(ncount)
-#                    umusic.writeMUSICcatchmentnode(ufile, currentID, "R", ncount, (blockX-blocks_size/4)*scalar, (blockY)*scalar, 100,0.5, catchment_paramter_list)
-#                    ncount += 1
+                elif inblock_sys[0] != 0:
+                    #There are lot systems so get the lot sub-catchment node and merge the other untreated lots into the other node
+                    #get lot areas
+                    ncount_list.append(ncount)
+                    umusic.writeMUSICcatchmentnode(ufile, currentID, "LT", ncount, (blockX-blocks_size/4)*scalar, (blockY+blocks_size/4)*scalar, 100,0.5, catchment_paramter_list)
+                    ncount += 1
+                    #get other areas
+                    ncount_list.append(ncount)
+                    umusic.writeMUSICcatchmentnode(ufile, currentID, "R", ncount, (blockX-blocks_size/4)*scalar, (blockY)*scalar, 100,0.5, catchment_paramter_list)
+                    ncount += 1
                     
-#                #write treatment nodes
-#                    #Find lot-scale system, write the node
-#                if inblock_sys[0] != 0:
-#                    lottype = inblock_sys[0].getType()
-#                    parameter_list = [1,1]
-#                    ncount_list.append(ncount)
-#                    if lottype == "BF":
-#                        #setup parameter list: 
-#                        parameter_list = [0.2, 10, 10, 14, 100, 0.5, 0]             #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
-#                        umusic.writeMUSICnodeBF(ufile, currentID, "L", ncount, blockX*scalar, (blockY+blocks_size/4)*scalar, parameter_list)
-#                        pass
-#                    elif lottype == "IS":
-#                        #setup parameter list
-#                        parameter_list = [10, 0.2, 10, 14, 1, 100]                  #[pond_area, EDD, filter area, unlined filter perimeter, depth, exfil rate]
-#                        umusic.writeMUSICnodeIS(ufile, currentID, "L", ncount, blockX*scalar, (blockY+blocks_size/4)*scalar, parameter_list)
-#                        pass
-#                    #writedetail = eval('umusic.writeMUSICnode'+str(lottype)+'('+str(ufile)+','+str(currentID)+',L,'+str(ncount)+','+str(blockX*scalar)+","+str((blockY+blocks_size/4)*scalar)+','+str(parameter_list)+')')
-#                    ncount += 1
-#                else:
-#                    ncount_list.append(0)
-#                    #Find the street-scale system, write the node
-#                if inblock_sys[1] != 0:
-#                    streettype = inblock_sys[1].getType()
-#                    parameter_list = [1,1]
-#                    ncount_list.append(ncount)
-#                    if streettype == "BF":
-#                        #setup parameter list:
-#                        parameter_list = [0.2, 10, 10, 14, 100, 0.5, 0]             #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
-#                        umusic.writeMUSICnodeBF(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
-#                        pass
-#                    elif streettype == "IS":
-#                        #setup parameter list:
-#                        parameter_list = [10, 0.2, 10, 14, 1, 100]                  #[pond_area, EDD, filter area, unlined filter perimeter, depth, exfil rate]
-#                        umusic.writeMUSICnodeIS(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
-#                        pass
-#                    elif streettype == "SW":
-#                        #setup parameter list
-#                        parameter_list = [100,3,1,5,0.5,0.25,0]                     #[length, bedslope, Wbase, Wtop, depth, veg.height, exfilrate]
-#                        umusic.writeMUSICnodeSW(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
-#                        pass
-#                    #writedetail = eval('umusic.writeMUSICnode'+str(streettype)+'('+str(ufile)+','+str(currentID)+',S,'+str(ncount)+','+str(blockX*scalar)+","+str(blockY*scalar)+','+str(parameter_list)+')')
-#                    ncount += 1
-#                else:
-#                    ncount_list.append(0)
-#                    #Find the neigh-scale system, write the node
-#                if inblock_sys[2] != 0:
-#                    neightype = inblock_sys[2].getType()
-#                    parameter_list = [1,1]
-#                    ncount_list.append(ncount)
-#                    if neightype == "BF":
-#                        #setup parameter list:
-#                        parameter_list = [0.2, 10, 10, 14, 100, 0.5, 0]             #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
-#                        umusic.writeMUSICnodeBF(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
-#                        pass
-#                    elif neightype == "IS":
-#                        #setup parameter list:
-#                        parameter_list = [10, 0.2, 10, 14, 1, 100]                  #[pond_area, EDD, filter area, unlined filter perimeter, depth, exfil rate]
-#                        umusic.writeMUSICnodeIS(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
-#                        pass
-#                    elif neightype == "WSUR":
-#                        #setup parameter list:
-#                        parameter_list = [50, 1, 50, 0, 200]                        #[Asurface, EDD, Perm. Pool Vol, Exfil Rate, Pipe Diameter]
-#                        umusic.writeMUSICnodeWSUR(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
-#                        pass
-#                    elif neightype == "PB":
-#                        #setup parameter list:
-#                        parameter_list = [50, 2, 50, 0, 300]                        #[Asurface, EDD, Perm. Pool Vol, Exfil Rate, Pipe Diameter]
-#                        umusic.writeMUSICnodePB(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
-#                        pass
-#                    #writedetail = eval('umusic.writeMUSICnode'+str(neightype)+'('+str(ufile)+','+str(currentID)+',N,'+str(ncount)+','+str(blockX*scalar)+","+str((blockY-blocks_size/4)*scalar)+','+str(parameter_list)+')')
-#                    ncount += 1
-#                else:
-#                    ncount_list.append(0)
+                #write treatment nodes
+                    #Find lot-scale system, write the node
+                if inblock_sys[0] != 0:
+                    lottype = inblock_sys[0].getType()
+                    parameter_list = [1,1]
+                    ncount_list.append(ncount)
+                    if lottype == "BF":
+                        #setup parameter list: 
+                        parameter_list = [0.2, 10, 10, 14, 100, 0.5, 0]             #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
+                        umusic.writeMUSICnodeBF(ufile, currentID, "L", ncount, blockX*scalar, (blockY+blocks_size/4)*scalar, parameter_list)
+                        pass
+                    elif lottype == "IS":
+                        #setup parameter list
+                        parameter_list = [10, 0.2, 10, 14, 1, 100]                  #[pond_area, EDD, filter area, unlined filter perimeter, depth, exfil rate]
+                        umusic.writeMUSICnodeIS(ufile, currentID, "L", ncount, blockX*scalar, (blockY+blocks_size/4)*scalar, parameter_list)
+                        pass
+                    #writedetail = eval('umusic.writeMUSICnode'+str(lottype)+'('+str(ufile)+','+str(currentID)+',L,'+str(ncount)+','+str(blockX*scalar)+","+str((blockY+blocks_size/4)*scalar)+','+str(parameter_list)+')')
+                    ncount += 1
+                else:
+                    ncount_list.append(0)
+                    #Find the street-scale system, write the node
+                if inblock_sys[1] != 0:
+                    streettype = inblock_sys[1].getType()
+                    parameter_list = [1,1]
+                    ncount_list.append(ncount)
+                    if streettype == "BF":
+                        #setup parameter list:
+                        parameter_list = [0.2, 10, 10, 14, 100, 0.5, 0]             #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
+                        umusic.writeMUSICnodeBF(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
+                        pass
+                    elif streettype == "IS":
+                        #setup parameter list:
+                        parameter_list = [10, 0.2, 10, 14, 1, 100]                  #[pond_area, EDD, filter area, unlined filter perimeter, depth, exfil rate]
+                        umusic.writeMUSICnodeIS(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
+                        pass
+                    elif streettype == "SW":
+                        #setup parameter list
+                        parameter_list = [100,3,1,5,0.5,0.25,0]                     #[length, bedslope, Wbase, Wtop, depth, veg.height, exfilrate]
+                        umusic.writeMUSICnodeSW(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
+                        pass
+                    #writedetail = eval('umusic.writeMUSICnode'+str(streettype)+'('+str(ufile)+','+str(currentID)+',S,'+str(ncount)+','+str(blockX*scalar)+","+str(blockY*scalar)+','+str(parameter_list)+')')
+                    ncount += 1
+                else:
+                    ncount_list.append(0)
+                    #Find the neigh-scale system, write the node
+                if inblock_sys[2] != 0:
+                    neightype = inblock_sys[2].getType()
+                    parameter_list = [1,1]
+                    ncount_list.append(ncount)
+                    if neightype == "BF":
+                        #setup parameter list:
+                        parameter_list = [0.2, 10, 10, 14, 100, 0.5, 0]             #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
+                        umusic.writeMUSICnodeBF(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+                        pass
+                    elif neightype == "IS":
+                        #setup parameter list:
+                        parameter_list = [10, 0.2, 10, 14, 1, 100]                  #[pond_area, EDD, filter area, unlined filter perimeter, depth, exfil rate]
+                        umusic.writeMUSICnodeIS(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+                        pass
+                    elif neightype == "WSUR":
+                        #setup parameter list:
+                        parameter_list = [50, 1, 50, 0, 200]                        #[Asurface, EDD, Perm. Pool Vol, Exfil Rate, Pipe Diameter]
+                        umusic.writeMUSICnodeWSUR(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+                        pass
+                    elif neightype == "PB":
+                        #setup parameter list:
+                        parameter_list = [50, 2, 50, 0, 300]                        #[Asurface, EDD, Perm. Pool Vol, Exfil Rate, Pipe Diameter]
+                        umusic.writeMUSICnodePB(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+                        pass
+                    #writedetail = eval('umusic.writeMUSICnode'+str(neightype)+'('+str(ufile)+','+str(currentID)+',N,'+str(ncount)+','+str(blockX*scalar)+","+str((blockY-blocks_size/4)*scalar)+','+str(parameter_list)+')')
+                    ncount += 1
+                else:
+                    ncount_list.append(0)
                 
-#                #write the Block's Junction
-#                ncount_list.append(ncount)
-#                umusic.writeMUSICjunction(ufile, currentID, ncount, (blockX+blocks_size/4)*scalar, (blockY)*scalar)
-#                ncount += 1
+                #write the Block's Junction
+                ncount_list.append(ncount)
+                umusic.writeMUSICjunction(ufile, currentID, ncount, (blockX+blocks_size/4)*scalar, (blockY)*scalar)
+                ncount += 1
                 
-#                #write links
-#                #Link 1: Lot catch to Lot System
-#                if ncount_list[0] == 0:
-#                    pass
-#                else:
-#                    umusic.writeMUSIClink(ufile, ncount_list[0], ncount_list[2])
+                #write links
+                #Link 1: Lot catch to Lot System
+                if ncount_list[0] == 0:
+                    pass
+                else:
+                    umusic.writeMUSIClink(ufile, ncount_list[0], ncount_list[2])
                 
-#                #Link 2: Other Catch to smallest scale treat system
-#                blocksystemIDs = ncount_list[3:]
-#                while 0 in blocksystemIDs:
-#                    blocksystemIDs.remove(0)
-#                umusic.writeMUSIClink(ufile, ncount_list[1],min(blocksystemIDs))
+                #Link 2: Other Catch to smallest scale treat system
+                blocksystemIDs = ncount_list[3:]
+                while 0 in blocksystemIDs:
+                    blocksystemIDs.remove(0)
+                umusic.writeMUSIClink(ufile, ncount_list[1],min(blocksystemIDs))
                 
-#                #Link 3: Lot scale system 
-#                if ncount_list[2] == 0:
-#                    pass
-#                else:
-#                    umusic.writeMUSIClink(ufile,ncount_list[2], min(blocksystemIDs))
+                #Link 3: Lot scale system 
+                if ncount_list[2] == 0:
+                    pass
+                else:
+                    umusic.writeMUSIClink(ufile,ncount_list[2], min(blocksystemIDs))
                 
-#                #Link 4: Street system
-#                if ncount_list[3] == 0:
-#                    pass
-#                else:
-#                    blocksystemIDs = ncount_list[4:]
-#                    while 0 in blocksystemIDs:
-#                        blocksystemIDs.remove(0)
-#                    umusic.writeMUSIClink(ufile, ncount_list[3], min(blocksystemIDs))
+                #Link 4: Street system
+                if ncount_list[3] == 0:
+                    pass
+                else:
+                    blocksystemIDs = ncount_list[4:]
+                    while 0 in blocksystemIDs:
+                        blocksystemIDs.remove(0)
+                    umusic.writeMUSIClink(ufile, ncount_list[3], min(blocksystemIDs))
                 
-#                #Link 5: Neigh system
-#                if ncount_list[4] == 0:
-#                    pass
-#                else:
-#                    umusic.writeMUSIClink(ufile, ncount_list[4], ncount_list[5])
+                #Link 5: Neigh system
+                if ncount_list[4] == 0:
+                    pass
+                else:
+                    umusic.writeMUSIClink(ufile, ncount_list[4], ncount_list[5])
                 
-#                #write the Precinct-scale system
-#                if prec_strat == None:
-#                    ncount_list.append(0)
-#                    pass
-#                else:
-#                    prectype = prec_strat.getType()
-#                    parameter_list = [1,1]
-#                    ncount_list.append(ncount)
-#                    if prectype == "BF":
-#                        #setup parameter list:
-#                        parameter_list = [0.2, 10, 10, 14, 100, 0.5, 0]             #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
-#                        umusic.writeMUSICnodeBF(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
-#                        pass
-#                    elif prectype == "IS":
-#                        #setup parameter list:
-#                        parameter_list = [10, 0.2, 10, 14, 1, 100]                  #[pond_area, EDD, filter area, unlined filter perimeter, depth, exfil rate]
-#                        umusic.writeMUSICnodeIS(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
-#                        pass
-#                    elif prectype == "WSUR":
-#                        #setup parameter list
-#                        parameter_list = [50, 1, 50, 0, 200]                        #[Asurface, EDD, Perm. Pool Vol, Exfil Rate, Pipe Diameter]
-#                        umusic.writeMUSICnodeWSUR(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
-#                        pass
-#                    elif prectype == "PB":
-#                        #setup parameter list:
-#                        parameter_list = [50, 2, 50, 0, 300]                        #[Asurface, EDD, Perm. Pool Vol, Exfil Rate, Pipe Diameter]
-#                        umusic.writeMUSICnodePB(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
-#                        pass
-#                    #writedetail = eval('umusic.writeMUSICnode'+str(neightype)+'('+str(ufile)+','+str(currentID)+',N,'+str(ncount)+','+str(blockX*scalar)+","+str((blockY-blocks_size/4)*scalar)+','+str(parameter_list)+')')
-#                    ncount += 1
+                #write the Precinct-scale system
+                if prec_strat == None:
+                    ncount_list.append(0)
+                    pass
+                else:
+                    prectype = prec_strat.getType()
+                    parameter_list = [1,1]
+                    ncount_list.append(ncount)
+                    if prectype == "BF":
+                        #setup parameter list:
+                        parameter_list = [0.2, 10, 10, 14, 100, 0.5, 0]             #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
+                        umusic.writeMUSICnodeBF(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+                        pass
+                    elif prectype == "IS":
+                        #setup parameter list:
+                        parameter_list = [10, 0.2, 10, 14, 1, 100]                  #[pond_area, EDD, filter area, unlined filter perimeter, depth, exfil rate]
+                        umusic.writeMUSICnodeIS(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+                        pass
+                    elif prectype == "WSUR":
+                        #setup parameter list
+                        parameter_list = [50, 1, 50, 0, 200]                        #[Asurface, EDD, Perm. Pool Vol, Exfil Rate, Pipe Diameter]
+                        umusic.writeMUSICnodeWSUR(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+                        pass
+                    elif prectype == "PB":
+                        #setup parameter list:
+                        parameter_list = [50, 2, 50, 0, 300]                        #[Asurface, EDD, Perm. Pool Vol, Exfil Rate, Pipe Diameter]
+                        umusic.writeMUSICnodePB(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+                        pass
+                    #writedetail = eval('umusic.writeMUSICnode'+str(neightype)+'('+str(ufile)+','+str(currentID)+',N,'+str(ncount)+','+str(blockX*scalar)+","+str((blockY-blocks_size/4)*scalar)+','+str(parameter_list)+')')
+                    ncount += 1
                 
-#                #Link 6: Junction to prec tech
-#                if prec_strat != None:
-#                    umusic.writeMUSIClink(ufile, ncount_list[5], ncount_list[6])
+                #Link 6: Junction to prec tech
+                if prec_strat != None:
+                    umusic.writeMUSIClink(ufile, ncount_list[5], ncount_list[6])
                 
-#                #write receiving node for the basin
-#                #Check if that Block is the downstream-most in the basin
-#                if currentID == int(downstreamMostBlock):
-#                    print currentID
-#                    ncount_list.append(ncount)
-#                    umusic.writeMUSICreceiving(ufile, currentID, ncount, (blockX)*scalar, (blockY-blocks_size/2)*scalar)
-#                    ncount += 1
-#                    #Link 7: Junction/Prec-Tech to receiving Node
-#                    if prec_strat != None:
-#                        umusic.writeMUSIClink(ufile, ncount_list[6], ncount_list[7])
-#                    else:
-#                        umusic.writeMUSIClink(ufile, ncount_list[5], ncount_list[7])
+                #write receiving node for the basin
+                #Check if that Block is the downstream-most in the basin
+                if currentID == int(downstreamMostBlock):
+                    print currentID
+                    ncount_list.append(ncount)
+                    umusic.writeMUSICreceiving(ufile, currentID, ncount, (blockX)*scalar, (blockY-blocks_size/2)*scalar)
+                    ncount += 1
+                    #Link 7: Junction/Prec-Tech to receiving Node
+                    if prec_strat != None:
+                        umusic.writeMUSIClink(ufile, ncount_list[6], ncount_list[7])
+                    else:
+                        umusic.writeMUSIClink(ufile, ncount_list[5], ncount_list[7])
                     
-#                musicnodedb[1].append(ncount_list)
+                musicnodedb[1].append(ncount_list)
                 
-#                print "NCOUNT-LIST"
-#                print ncount_list
+                print "NCOUNT-LIST"
+                print ncount_list
                 
-#            print musicnodedb
+            print musicnodedb
             
-#            #CONNECT ALL BLOCK JUNCTIONS/TOGETHER TO STRING THE CATCHMENT TOGETHER
-#            for i in range(int(blocks_num)):
-#                currentID = i+1
-#                currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))        #attribute list of current block structure
+            #CONNECT ALL BLOCK JUNCTIONS/TOGETHER TO STRING THE CATCHMENT TOGETHER
+            for i in range(int(blocks_num)):
+                currentID = i+1
+                currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))        #attribute list of current block structure
                 
-#                block_status = currentAttList.getAttribute("Status")
-#                if block_status == 0 or currentAttList.getAttribute("ResTIArea") == 0:
-#                    #skips the for loop iteration to the next block, not more needs to be done
-#                    continue
+                block_status = currentAttList.getAttribute("Status")
+                if block_status == 0 or currentAttList.getAttribute("ResTIArea") == 0:
+                    #skips the for loop iteration to the next block, not more needs to be done
+                    continue
                 
-#                if currentID not in basinblockIDs:
-#                    continue
+                if currentID not in basinblockIDs:
+                    continue
                 
-#                print currentID
-#                upindex = musicnodedb[0].index(currentID)
-#                ncount_list_up = musicnodedb[1][upindex]
+                print currentID
+                upindex = musicnodedb[0].index(currentID)
+                ncount_list_up = musicnodedb[1][upindex]
                 
-#                downID = currentAttList.getAttribute("downstrID")
-#                print downID
-#                if downID == -1:
-#                    downID = currentAttList.getAttribute("drainto_ID")
-#                else:
-#                    downID == 0
-#                if downID == 0:
-#                    pass
-#                else:
-#                    downindex = musicnodedb[0].index(downID)
-#                    ncount_list_down = musicnodedb[1][downindex]
-#                    umusic.writeMUSIClink(ufile, max(ncount_list_up[5:]), ncount_list_down[5])
+                downID = currentAttList.getAttribute("downstrID")
+                print downID
+                if downID == -1:
+                    downID = currentAttList.getAttribute("drainto_ID")
+                else:
+                    downID == 0
+                if downID == 0:
+                    pass
+                else:
+                    downindex = musicnodedb[0].index(downID)
+                    ncount_list_down = musicnodedb[1][downindex]
+                    umusic.writeMUSIClink(ufile, max(ncount_list_up[5:]), ncount_list_down[5])
                 
-#        umusic.writeMUSICfooter(ufile)
-
+        umusic.writeMUSICfooter(ufile)
+        
+        #Run the garbage collector
+        del basin_strategies_matrix             #delete the basin_strategies_matrix for gc
+        del final_basin_strategies              #delete the final_basin_strategies for gc
+        if garbage.isenabled() == True:
+            pass
+        else:
+            garbage.enable()
+        
+        print "Performing garbage collection..."    
+        garbage.collect()
+        print "Done ..."
 
         #END OF MODULE
 

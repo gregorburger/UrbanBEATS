@@ -663,8 +663,8 @@ class BasinManagementStrategy(object):
             self.__subbasinarray.append([])
         
         self.__basinAimp = cumu_Aimp
-        self.__propImpserved = 0
-        self.__total_imp_served = 0
+        self.__propImpserved = 0                #
+        self.__total_imp_served = 0             #
         
         #MCA SCORES
         self.__mcaenv_score = 0
@@ -712,10 +712,10 @@ class BasinManagementStrategy(object):
         return [self.__total_imp_served, self.__propImpserved]
     
     def getPropImpServed(self):
-        return self.__propImpserved
+        return self.__propImpserved             #returns imperviousness serviced
     
     def getTotalImpServed(self):
-        return self.__total_imp_served
+        return self.__total_imp_served          #returns impervious area served
     
     def getBasinBlockIDs(self):
         return self.__basinblockIDs
