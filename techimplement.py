@@ -67,30 +67,46 @@ class techimplement(Module):
         self.addParameter(self, "blockcityout", VIBe2.VECTORDATA_OUT)
         self.addParameter(self, "techinplace", VIBe2.VECTORDATA_OUT)
         
+        
+        #IMPLEMENTATION RULES TAB
+        self.dynamic_rule = "B"         #B = Block-based, P = Parcel-based
+        self.addParameter(self, "dynamic_rule", VIBe2.STRING)
+        
+        #Block-based Rules
+        self.block_based_thresh = 30    #Threshold for implementation, % exceeded
+        self.bb_lot_rule = "AMAP"       #AMAP = as many as possible, STRICT = strictly abide by %
+        self.bb_street_zone = 1         #implement even if area hasn't been zoned yet
+        self.bb_neigh_zone = 1          #implement even if neigh area hasn't been zoned yet
+        self.addParameter(self, "block_based_thresh", VIBe2.DOUBLE)
+        self.addParameter(self, "bb_lot_rule", VIBe2.STRING)
+        self.addParameter(self, "bb_street_zone", VIBe2.BOOL)
+        self.addParameter(self, "bb_neigh_zone", VIBe2.BOOL)
+        
+        self.pb_lot_rule = "G"             #G = gradual, I = immediate, D = delayed
+        self.pb_street_rule = "G"
+        self.pb_neigh_rule = "G"
+        self.pb_neigh_zone_ignore = 0
+        self.addParameter(self, "pb_lot_rule", VIBe2.STRING)
+        self.addParameter(self, "pb_street_rule", VIBe2.STRING)
+        self.addParameter(self, "pb_neigh_rule", VIBe2.STRING)
+        self.addParameter(self, "pb_neigh_zone_ignore", VIBe2.BOOL)
+        
+        self.prec_rule = "G"
+        self.prec_zone_ignore = 0
+        self.prec_dev_threshold = 0
+        self.prec_dev_percent = 50
+        self.addParameter(self, "prec_rule", VIBe2.STRING)
+        self.addParameter(self, "prec_zone_ignore", VIBe2.BOOL)
+        self.addParameter(self, "prec_dev_threshold", VIBe2.BOOL)
+        self.addParameter(self, "prec_dev_percent", VIBe2.DOUBLE)
+        
+        #DRIVERS TAB - NOT ACTIVE YET, BUT PARAMETER LIST IS DEFINED FOR NOW
         self.driver_people = 0
         self.driver_legal = 0
         self.driver_establish = 0
         self.addParameter(self, "driver_people", VIBe2.BOOL)
         self.addParameter(self, "driver_legal", VIBe2.BOOL)
         self.addParameter(self, "driver_establish", VIBe2.BOOL)
-        
-        self.lot_rule = "G"             #G = gradual, I = immediate, D = delayed
-        self.street_rule = "G"
-        self.neigh_rule = "G"
-        self.prec_rule = "G"
-        self.neigh_zone_ignore = 0
-        self.prec_zone_ignore = 0
-        self.prec_dev_threshold = 0
-        self.prec_dev_percent = 50
-        self.addParameter(self, "lot_rule", VIBe2.STRING)
-        self.addParameter(self, "street_rule", VIBe2.STRING)
-        self.addParameter(self, "neigh_rule", VIBe2.STRING)
-        self.addParameter(self, "prec_rule", VIBe2.STRING)
-        self.addParameter(self, "neigh_zone_ignore", VIBe2.BOOL)
-        self.addParameter(self, "prec_zone_ignore", VIBe2.BOOL)
-        self.addParameter(self, "prec_dev_threshold", VIBe2.BOOL)
-        self.addParameter(self, "prec_dev_percent", VIBe2.DOUBLE)
-        
     
     def run(self):
         #Get vector data
@@ -152,14 +168,21 @@ class techimplement(Module):
                 blockcityout.setEdges("NetworkID"+str(currentID), enetlist)
                 blockcityout.setAttributes("NetworkID"+str(currentID), network_attr)
                 
-                patchcityout.setPoints("PatchDataID"+str(currentID), plist)
-                patchcityout.setFaces("PatchDataID"+str(currentID),flist)
-                patchcityout.setAttributes("PatchDataID"+str(currentID), currentPatchList)
-            
                 #skips the for loop iteration to the next block, not more needs to be done
                 continue
             
             print currentID
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             
         
             #-----------------------------------------------------------------#
@@ -173,9 +196,6 @@ class techimplement(Module):
             blockcityout.setEdges("NetworkID"+str(currentID), enetlist)
             blockcityout.setAttributes("NetworkID"+str(currentID), network_attr)
             
-            patchcityout.setPoints("PatchDataID"+str(currentID), plist)
-            patchcityout.setFaces("PatchDataID"+str(currentID),flist)
-            patchcityout.setAttributes("PatchDataID"+str(currentID), currentPatchList)
             
             #FOR LOOP END (Repeat for next BlockID)
             

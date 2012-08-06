@@ -147,6 +147,39 @@ class techplacement(Module):
         self.addParameter(self, "strategy_specific5", VIBe2.BOOL)
         self.addParameter(self, "strategy_specific6", VIBe2.BOOL)
         
+        #---RETROFIT CONDITIONS INPUTS------------------------------------------
+        self.retrofit_scenario = "N"    #N = Do Nothing, R = With Renewal, F = Forced
+        self.renewal_cycle_def = 1      #Defined renewal cycle?
+        self.renewal_years = 10         #number of years to apply renewal rate
+        self.renewal_perc = 5           #renewal percentage
+        self.force_street = 0              #forced renewal on lot?
+        self.force_neigh = 0           #forced renewal on street?
+        self.force_prec = 0            #forced renewal on neighbourhood and precinct?
+        self.addParameter(self, "retrofit_scenario", VIBe2.STRING)
+        self.addParameter(self, "renewal_cycle_def", VIBe2.BOOL)
+        self.addParameter(self, "renewal_years", VIBe2.DOUBLE)
+        self.addParameter(self, "renewal_perc", VIBe2.DOUBLE)
+        self.addParameter(self, "force_street", VIBe2.BOOL)
+        self.addParameter(self, "force_neigh", VIBe2.BOOL)
+        self.addParameter(self, "force_prec", VIBe2.BOOL)
+        
+        self.lot_renew = 0
+        self.lot_decom = 0
+        self.street_renew = 0
+        self.street_decom = 0
+        self.neigh_renew = 0
+        self.neigh_decom = 0
+        self.prec_renew = 0
+        self.prec_decom = 0
+        self.addParameter(self, "lot_renew", VIBe2.BOOL)
+        self.addParameter(self, "lot_decom", VIBe2.BOOL)
+        self.addParameter(self, "street_renew", VIBe2.BOOL)
+        self.addParameter(self, "street_decom", VIBe2.BOOL)
+        self.addParameter(self, "neigh_renew", VIBe2.BOOL)
+        self.addParameter(self, "neigh_decom", VIBe2.BOOL)
+        self.addParameter(self, "prec_renew", VIBe2.BOOL)
+        self.addParameter(self, "prec_decom", VIBe2.BOOL)
+        
         
         #---GENERAL DESIGN CRITERIA---------------------------------------------
         #followed by vibe inputs
@@ -207,8 +240,10 @@ class techplacement(Module):
         self.addParameter(self, "BFdescur_path", VIBe2.STRING)
         
         #Design Information
-        self.BFspec = 0
-        self.addParameter(self, "BFspec", VIBe2.DOUBLE)
+        self.BFspec_EDD = 0.3
+        self.BFspec_FD = 0.6
+        self.addParameter(self, "BFspec_EDD", VIBe2.DOUBLE)
+        self.addParameter(self, "BFspec_FD", VIBe2.DOUBLE)
         self.BFmaxsize = 5000           #maximum surface area of system in sqm
         self.addParameter(self, "BFmaxsize", VIBe2.DOUBLE)
         
@@ -253,8 +288,10 @@ class techplacement(Module):
         self.addParameter(self, "ISdescur_path", VIBe2.STRING)
         
         #Design Information
-        self.ISspec = 0
-        self.addParameter(self, "ISspec", VIBe2.DOUBLE)
+        self.ISspec_EDD = 0.2
+        self.ISspec_FD = 0.8
+        self.addParameter(self, "ISspec_EDD", VIBe2.DOUBLE)
+        self.addParameter(self, "ISspec_FD", VIBe2.DOUBLE)
         self.ISmaxsize = 5000          #maximum surface area of system in sqm
         self.addParameter(self, "ISmaxsize", VIBe2.DOUBLE)
 
@@ -319,8 +356,8 @@ class techplacement(Module):
         self.addParameter(self, "PBdescur_path", VIBe2.STRING)
         
         #Design Information
-        self.PBspec = 0
-        self.addParameter(self, "PBspec", VIBe2.DOUBLE)
+        self.PBspec_MD = 1.25
+        self.addParameter(self, "PBspec_MD", VIBe2.DOUBLE)
         self.PBmaxsize = 10000           #maximum surface area of system in sqm
         self.addParameter(self, "PBmaxsize", VIBe2.DOUBLE)
 
@@ -426,8 +463,8 @@ class techplacement(Module):
         self.addParameter(self, "WSURdescur_path", VIBe2.STRING)
         
         #Design Information
-        self.WSURspec = 0
-        self.addParameter(self, "WSURspec", VIBe2.DOUBLE)
+        self.WSURspec_EDD = 0.75
+        self.addParameter(self, "WSURspec_EDD", VIBe2.DOUBLE)
         self.WSURmaxsize = 10000           #maximum surface area of system in sqm
         self.addParameter(self, "WSURmaxsize", VIBe2.DOUBLE)
 
@@ -697,7 +734,8 @@ class techplacement(Module):
         des_attr.setAttribute("BFpollute", self.BFpollute)
         des_attr.setAttribute("BFdesignUB", self.BFdesignUB)
         des_attr.setAttribute("BFdescur_path", self.BFdescur_path)
-        des_attr.setAttribute("BFspec", self.BFspec)
+        des_attr.setAttribute("BFspec_EDD", self.BFspec_EDD)
+        des_attr.setAttribute("BFspec_FD", self.BFspec_FD)
         des_attr.setAttribute("BFmaxsize", self.BFmaxsize)
         des_attr.setAttribute("BFlined", self.BFlined)
         #====================---------------------------------------------------------------
@@ -725,7 +763,8 @@ class techplacement(Module):
         des_attr.setAttribute("ISpollute", self.ISpollute)
         des_attr.setAttribute("ISdesignUB", self.ISdesignUB)
         des_attr.setAttribute("ISdescur_path", self.ISdescur_path)
-        des_attr.setAttribute("ISspec", self.ISspec)
+        des_attr.setAttribute("ISspec_EDD", self.ISspec_EDD)
+        des_attr.setAttribute("ISspec_FD", self.ISspec_FD)
         des_attr.setAttribute("ISmaxsize", self.ISmaxsize)
         des_attr.setAttribute("IS_2Dmodel", self.IS_2Dmodel)
         #====================---------------------------------------------------------------
@@ -744,7 +783,7 @@ class techplacement(Module):
         des_attr.setAttribute("PBpollute", self.PBpollute)
         des_attr.setAttribute("PBdesignUB", self.PBdesignUB)
         des_attr.setAttribute("PBdescur_path", self.PBdescur_path)
-        des_attr.setAttribute("PBspec", self.PBspec)
+        des_attr.setAttribute("PBspec_MD", self.PBspec_MD)
         des_attr.setAttribute("PBmaxsize", self.PBmaxsize)
         #====================---------------------------------------------------------------
         
@@ -782,7 +821,7 @@ class techplacement(Module):
         des_attr.setAttribute("WSURpollute", self.WSURpollute)
         des_attr.setAttribute("WSURdesignUB", self.WSURdesignUB)
         des_attr.setAttribute("WSURdescur_path", self.WSURdescur_path)
-        des_attr.setAttribute("WSURspec", self.WSURspec)
+        des_attr.setAttribute("WSURspec_EDD", self.WSURspec_EDD)
         des_attr.setAttribute("WSURmaxsize", self.WSURmaxsize)
         #====================---------------------------------------------------------------
         des_attr.setAttribute("Status_SW", self.SWstatus)       #SWALES & BUFFER STRIPS

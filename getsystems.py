@@ -67,7 +67,7 @@ class GetSystems(Module):
         driver = ogr.GetDriverByName('ESRI Shapefile')
         
         #Use the following file for testing: C:/UBEATS/0_UrbanBEATS-SC-500m_points.shp
-        self.path_name = "C:/UBEATS/0_UrbanBEATS-SC-500m_points.shp"
+        self.path_name = "C:/UBEATS/0_UrbanBEATS-SCreek-500msys_points.shp"
         save_file = "ubeats_out.shp"
         if self.ongoing_sim == True:
             file_name = self.path_name + save_file
@@ -94,29 +94,40 @@ class GetSystems(Module):
         #Set global attributes
         sys_global.setAttribute("TotalSystems", total_systems)
         
+        system_type_matrix = ['BF', 'SW', 'WSUR', 'PB', 'IS']               
+        system_type_numeric = [2463, 7925, 9787, 7663, 4635]                #Think Telephone Buttons :) ('Biof', 'Swal', 'WSUR', 'Pond', 'Infl')
+        scale_matrix = ['L', 'S', 'N', 'P']
+        
         #Loop through each feature and grab all the relevant information
         for i in range(int(total_systems)):
             feature = layer.GetFeature(i)
-            #sys_attr = Attribute()
+            sys_attr = Attribute()
             
-            #System Type
-            #sys_attr.setAttribute("Type", type)
+            #Get total number of systems in the feature
+            syscount = feature.GetFieldAsInteger("TotSystems")
+            sys_attr.setAttribute("TotSystems", syscount)
             
-            #System Location (BlockID)
-            #sys_attr.setAttribute("Location", blockID)
-            #sys_attr.setAttribute("CoordX", x_coord)           #these coordinates must be offset later on to return to Global(0,0) coordinates for block analysis
-            #sys_attr.setAttribute("CoordY", y_coord)
+            #System Location and scale (BlockID)
+            sys_attr.setAttribute("Location", feature.GetFieldAsInteger("BlockID"))
+            scale_code = feature.GetFieldAsInteger("Scale")
+            scale = scale_matrix[scale_code]
+            sys_attr.setAttribute("Scale", str(scale))
             
-            #System Scale
-            #sys_attr.setAttribute("Scale", scale)
-            
-            #Design Details
-            #sys_attr.setAttribute("Design", design)
-            #sys_attr.setAttribute("Area", Asystem)
-            #sys_attr.setAttribute("Percentage", percentage)
+            #Loop through all systems and grab the attributes
+            for j in range(int(syscount)):
+                #System Type
+                type_code = feature.GetFieldAsInteger("Sys"+str(j+1)+"Type")
+                type = system_type_matrix[system_type_numeric.index(type_code)]
+                sys_attr.setAttribute("Type"+str(j+1), type)
+                
+                #Design Details
+                Asystem = feature.GetField("Sys"+str(j+1)+"Area")
+                sys_attr.setAttribute("Area"+str(j+1), Asystem)
+                deg = feature.GetField("Sys"+str(j+1)+"Degree")
+                sys_attr.setAttribute("Service"+str(j+1), deg)
             
             #Save the Attributes List & Destroy the feature to free up memory
-            #system_list.setAttributes("System"+str(i), sys_attr)
+            system_list.setAttributes("System"+str(i), sys_attr)
             feature.Destroy()
         
         #Destroy the shapefile to free up memory

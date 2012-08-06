@@ -169,6 +169,13 @@ class ubp_spaces(Module):
             #--------------------------------------------------------------------------------#
             #            CONDITIONAL CHECK TO SEE IF CURRENT BLOCK IS RELEVANT               #
             #--------------------------------------------------------------------------------#
+            # THIS MODULE WILL RUN IF THE BLOCK HAS:
+            #   - Road area: ALUC_Rd > 0
+            #   - Parks & Gardens Area: ALUC_PG > 0
+            #   - Reserves & Floodways Area: ALUC_RFlood > 0
+            #   - Undeveloped Area: ALUC_Und > 0
+            #   - Unclassified Area: ALUC_NA > 0
+            #--------------------------------------------------------------------------------#
             
             block_status = currentAttList.getAttribute("Status")
             total_space_area = currentAttList.getAttribute("ALUC_NA") + currentAttList.getAttribute("ALUC_Rd") \
@@ -255,6 +262,8 @@ class ubp_spaces(Module):
             else:
                 pass
             
+            #get patch data
+            
             
             ### OPEN SPACES >> PARKS & GARDENS =======================================================#
             
@@ -269,6 +278,9 @@ class ubp_spaces(Module):
                     #tally up the total green area, total footpath area
                     #tally up the total imperviousness, effective imperviousness
                     #make sure if green space is linear to multiply the footpaths
+             
+            #Get patch data 
+             
              
             
             ### OPEN SPACES >> RESERVES & FLOODWAYS =======================================================#
@@ -291,6 +303,8 @@ class ubp_spaces(Module):
                     rfw_Adev = RFlood_area_tot * rfw_areausable/100
                 else:
                     rfw_Adev = 0
+            
+            #get patch data
                     
                 
             ### OPEN SPACES >> UNDEVELOPED AREAS =======================================================#

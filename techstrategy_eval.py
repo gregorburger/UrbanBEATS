@@ -1203,7 +1203,7 @@ class techstrategy_eval(Module):
             
             #Now we have the top_wsud_strategy variable, which holds the chosen basin management strategy, we will now write this info into the output shapefile as a map of points
             #Loop across all blocks
-            system_type_matrix = ['BF', 'SW', 'WSUR', 'PB', 'IF']               
+            system_type_matrix = ['BF', 'SW', 'WSUR', 'PB', 'IS']               
             system_type_numeric = [2463, 7925, 9787, 7663, 4635]                #Think Telephone Buttons :) ('Biof', 'Swal', 'WSUR', 'Pond', 'Infl')
             
             for i in range(len(basinblockIDs)):
@@ -1243,10 +1243,14 @@ class techstrategy_eval(Module):
                     wsud_attr = Attribute()
                     wsud_attr.setAttribute("Scale", j)                          #0 = LOT, 1 = STREET, 2 = NEIGHBOURHOOD, 3 = PRECINCT
                     wsud_attr.setAttribute("TotSystems", 1)
-                    
+                    wsud_attr.setAttribute("BlockID", currentID)
+                    print "CurrentWSUD Type"
+                    print current_wsud.getType()
                     wsud_attr.setAttribute("Sys"+str(1)+"Type", system_type_numeric[system_type_matrix.index(current_wsud.getType())])
                     wsud_attr.setAttribute("Sys"+str(1)+"Degree", inblock_degs[j])
                     wsud_attr.setAttribute("Sys"+str(1)+"Area", current_wsud.getSize())
+                    wsud_attr.setAttribute("Sys"+str(1)+"Status", 0)            #0 = Planned, 1 = constructed
+                    wsud_attr.setAttribute("Sys"+str(1)+"Year", 9999)           #Year constructed
                     
                     systemsout.setPoints("BlockID"+str(currentID)+str(scale), plist)
                     systemsout.setAttributes("BlockID"+str(currentID)+str(scale), wsud_attr)
@@ -1264,10 +1268,13 @@ class techstrategy_eval(Module):
                     
                     wsud_attr = Attribute()
                     wsud_attr.setAttribute("Scale", 3)                          #0 = LOT, 1 = STREET, 2 = NEIGHBOURHOOD, 3 = PRECINCT
-                    wsud_attr.setAttribute("SysCount", 1)
-                    wsud_attr.setAttribute("Sys"+str(1)+"Type", outblock_strat.getType())
+                    wsud_attr.setAttribute("TotSystems", 1)
+                    wsud_attr.setAttribute("BlockID", currentID)
+                    wsud_attr.setAttribute("Sys"+str(1)+"Type", system_type_numeric[system_type_matrix.index(outblock_strat.getType())])
                     wsud_attr.setAttribute("Sys"+str(1)+"Degree", 0)
-                    wsud_attr.setAttribute("Sys"+str(1)+"Type", outblock_strat.getSize())
+                    wsud_attr.setAttribute("Sys"+str(1)+"Area", outblock_strat.getSize())
+                    wsud_attr.setAttribute("Sys"+str(1)+"Status", 0)            #0 = Planned, 1 = constructed
+                    wsud_attr.setAttribute("Sys"+str(1)+"Year", 9999)           #Year constructed
                     
                     systemsout.setPoints("BlockID"+str(currentID)+str(scale), plist)
                     systemsout.setAttributes("BlockID"+str(currentID)+str(scale), wsud_attr)

@@ -53,6 +53,8 @@ class urbplansummary(Module):
         self.blockcityout = VectorDataIn
         self.patchcityin = VectorDataIn
         self.patchcityout = VectorDataIn
+        self.urbanwatersetup_in = VectorDataIn
+        self.performancesetup_in = VectorDataIn
         self.addParameter(self, "residential", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "nonres", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "facilities", VIBe2.VECTORDATA_IN)
@@ -61,6 +63,8 @@ class urbplansummary(Module):
         self.addParameter(self, "blockcityout", VIBe2.VECTORDATA_OUT)
         self.addParameter(self, "patchcityin", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "patchcityout", VIBe2.VECTORDATA_OUT)
+        self.addParameter(self, "urbanwatersetup_in", VIBe2.VECTORDATA_IN)
+        self.addParameter(self, "performancesetup_in", VIBe2.VECTORDATA_IN)
         
         self.reportin = VectorDataIn
         self.reportout = VectorDataIn

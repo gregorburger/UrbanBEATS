@@ -73,7 +73,7 @@ class activatetechplacementGUI(QtGui.QDialog):
         if self.module.getParameterAsString("TSS_auto") == "1":
             self.ui.targets_TSS_auto.setChecked(1)
         else:
-            self.ui.targets_TSS_auto .setChecked(0)
+            self.ui.targets_TSS_auto.setChecked(0)
 
         if self.module.getParameterAsString("TN_auto") == "1":
             self.ui.targets_TN_auto.setChecked(1)
@@ -149,6 +149,82 @@ class activatetechplacementGUI(QtGui.QDialog):
             self.ui.strategy_specific6_check.setChecked(1)
         else:
             self.ui.strategy_specific6_check.setChecked(0)
+        
+        
+        #######################################
+        #Retrofit Tab
+        #######################################
+        if self.module.getParameterAsString("retrofit_scenario") == "N":
+            self.ui.area_retrofit_combo.setCurrentIndex(0)
+        elif self.module.getParameterAsString("retrofit_scenario") == "R":
+            self.ui.area_retrofit_combo.setCurrentIndex(1)
+        elif self.module.getParameterAsString("retrofit_scenario") == "F":
+            self.ui.area_retrofit_combo.setCurrentIndex(2)
+        
+        if self.module.getParameterAsString("renewal_cycle_def") == "1":
+            self.ui.retrofit_renewal_check.setChecked(1)
+        else:
+            self.ui.retrofit_renewal_check.setChecked(0)
+        
+        self.ui.retrofit_renewal_years.setValue(float(self.module.getParameterAsString("renewal_years")))
+        self.ui.retrofit_renewal_percent.setValue(float(self.module.getParameterAsString("renewal_perc")))
+        
+        if self.module.getParameterAsString("force_street") == "1":
+            self.ui.retrofit_forced_street_check.setChecked(1)
+        else:
+            self.ui.retrofit_forced_street_check.setChecked(0)
+        
+        if self.module.getParameterAsString("force_neigh") == "1":
+            self.ui.retrofit_forced_neigh_check.setChecked(1)
+        else:
+            self.ui.retrofit_forced_neigh_check.setChecked(0)
+        
+        if self.module.getParameterAsString("force_prec") == "1":
+            self.ui.retrofit_forced_prec_check.setChecked(1)
+        else:
+            self.ui.retrofit_forced_prec_check.setChecked(0)
+        
+        
+        if self.module.getParameterAsString("lot_renew") == "1":
+            self.ui.lot_renew_check.setChecked(1)
+        else:
+            self.ui.lot_renew_check.setChecked(0)
+        
+        if self.module.getParameterAsString("lot_decom") == "1":
+            self.ui.lot_decom_check.setChecked(1)
+        else:
+            self.ui.lot_decom_check.setChecked(0)
+        
+        if self.module.getParameterAsString("street_renew") == "1":
+            self.ui.street_renew_check.setChecked(1)
+        else:
+            self.ui.street_renew_check.setChecked(0)
+        
+        if self.module.getParameterAsString("street_decom") == "1":
+            self.ui.street_decom_check.setChecked(1)
+        else:
+            self.ui.street_decom_check.setChecked(0)
+        
+        if self.module.getParameterAsString("neigh_renew") == "1":
+            self.ui.neigh_renew_check.setChecked(1)
+        else:
+            self.ui.neigh_renew_check.setChecked(0)
+        
+        if self.module.getParameterAsString("neigh_decom") == "1":
+            self.ui.neigh_decom_check.setChecked(1)
+        else:
+            self.ui.neigh_decom_check.setChecked(0)
+        
+        if self.module.getParameterAsString("prec_renew") == "1":
+            self.ui.prec_renew_check.setChecked(1)
+        else:
+            self.ui.prec_renew_check.setChecked(0)
+        
+        if self.module.getParameterAsString("prec_decom") == "1":
+            self.ui.prec_decom_check.setChecked(1)
+        else:
+            self.ui.prec_decom_check.setChecked(0)
+        
         
         #######################################
         #Choose & Customize Technologies Tab
@@ -245,7 +321,26 @@ class activatetechplacementGUI(QtGui.QDialog):
         
         #Design Information
         
-        #Combo box with specs
+        #COMBO BOXES CONTAINING EDD AND FD SPECS
+        if self.module.getParameterAsString("BFspec_EDD") == "0":
+            self.ui.BFspecs_EDD_combo.setCurrentIndex(0)
+        elif self.module.getParameterAsString("BFspec_EDD") == "0.1":
+            self.ui.BFspecs_EDD_combo.setCurrentIndex(1)
+        elif self.module.getParameterAsString("BFspec_EDD") == "0.2":
+            self.ui.BFspecs_EDD_combo.setCurrentIndex(2)
+        elif self.module.getParameterAsString("BFspec_EDD") == "0.3":
+            self.ui.BFspecs_EDD_combo.setCurrentIndex(3)
+        elif self.module.getParameterAsString("BFspec_EDD") == "0.4":
+            self.ui.BFspecs_EDD_combo.setCurrentIndex(4)
+        
+        if self.module.getParameterAsString("BFspec_FD") == "0.2":
+            self.ui.BFspecs_FD_combo.setCurrentIndex(0)
+        elif self.module.getParameterAsString("BFspec_FD") == "0.4":
+            self.ui.BFspecs_FD_combo.setCurrentIndex(1)
+        elif self.module.getParameterAsString("BFspec_FD") == "0.6":
+            self.ui.BFspecs_FD_combo.setCurrentIndex(2)
+        elif self.module.getParameterAsString("BFspec_FD") == "0.8":
+            self.ui.BFspecs_FD_combo.setCurrentIndex(3)
         
         self.ui.BFmaxsize_box.setText(self.module.getParameterAsString("BFmaxsize"))
         
@@ -342,7 +437,24 @@ class activatetechplacementGUI(QtGui.QDialog):
         
         #Design Information
         
-        #combo box with specs
+        #COMBO BOXES CONTAINING EDD AND FD SPECS
+        if self.module.getParameterAsString("ISspec_EDD") == "0.1":
+            self.ui.ISspecs_EDD_combo.setCurrentIndex(0)
+        elif self.module.getParameterAsString("ISspec_EDD") == "0.2":
+            self.ui.ISspecs_EDD_combo.setCurrentIndex(1)
+        elif self.module.getParameterAsString("ISspec_EDD") == "0.3":
+            self.ui.ISspecs_EDD_combo.setCurrentIndex(2)
+        elif self.module.getParameterAsString("ISspec_EDD") == "0.4":
+            self.ui.ISspecs_EDD_combo.setCurrentIndex(3)
+        
+        if self.module.getParameterAsString("ISspec_FD") == "0.2":
+            self.ui.ISspecs_FD_combo.setCurrentIndex(0)
+        elif self.module.getParameterAsString("ISspec_FD") == "0.4":
+            self.ui.ISspecs_FD_combo.setCurrentIndex(1)
+        elif self.module.getParameterAsString("ISspec_FD") == "0.6":
+            self.ui.ISspecs_FD_combo.setCurrentIndex(2)
+        elif self.module.getParameterAsString("ISspec_FD") == "0.8":
+            self.ui.ISspecs_FD_combo.setCurrentIndex(3)
         
         self.ui.ISmaxsize_box.setText(self.module.getParameterAsString("ISmaxsize"))
         
@@ -418,6 +530,16 @@ class activatetechplacementGUI(QtGui.QDialog):
         #Design Information
         
         #combo box with specs
+        if self.module.getParameterAsString("PBspec_MD") == "0.25":
+            self.ui.PBspecs_combo.setCurrentIndex(0)
+        elif self.module.getParameterAsString("PBspec_MD") == "0.50":
+            self.ui.PBspecs_combo.setCurrentIndex(1)
+        elif self.module.getParameterAsString("PBspec_MD") == "0.75":
+            self.ui.PBspecs_combo.setCurrentIndex(2)
+        elif self.module.getParameterAsString("PBspec_MD") == "1.00":
+            self.ui.PBspecs_combo.setCurrentIndex(3)
+        elif self.module.getParameterAsString("PBspec_MD") == "1.25":
+            self.ui.PBspecs_combo.setCurrentIndex(4)    
         
         self.ui.PBmaxsize_box.setText(self.module.getParameterAsString("PBmaxsize"))
         
@@ -594,6 +716,19 @@ class activatetechplacementGUI(QtGui.QDialog):
         #Design Information
         
         #combo box with specs
+        if self.module.getParameterAsString("WSURspec_EDD") == "0.25":
+            self.ui.WSURspecs_combo.setCurrentIndex(0)
+        elif self.module.getParameterAsString("WSURspec_EDD") == "0.50":
+            self.ui.WSURspecs_combo.setCurrentIndex(1)
+        elif self.module.getParameterAsString("WSURspec_EDD") == "0.75":
+            self.ui.WSURspecs_combo.setCurrentIndex(2)
+        elif self.module.getParameterAsString("WSURspec_EDD") == "0.25":
+            self.ui.WSURspecs_combo.setCurrentIndex(3)
+        elif self.module.getParameterAsString("WSURspec_EDD") == "0.50":
+            self.ui.WSURspecs_combo.setCurrentIndex(4)  
+        elif self.module.getParameterAsString("WSURspec_EDD") == "0.75":
+            self.ui.WSURspecs_combo.setCurrentIndex(5)
+        
         self.ui.WSURmaxsize_box.setText(self.module.getParameterAsString("WSURmaxsize"))
         
         #futher design info coming soon
@@ -1168,6 +1303,92 @@ class activatetechplacementGUI(QtGui.QDialog):
             strategy_specific6 = 0
         self.module.setParameterValue("strategy_specific6", str(strategy_specific6))
         
+        #######################################
+        #Retrofit Tab
+        #######################################
+        retrofit_scenario_matrix = ["N", "R", "F"]
+        retrofit_index = self.ui.area_retrofit_combo.currentIndex()
+        retrofit_scenario = retrofit_scenario_matrix[retrofit_index]
+        self.module.setParameterValue("retrofit_scenario", str(retrofit_scenario))
+        
+        if self.ui.retrofit_renewal_check.isChecked() == 1:
+            renewal_cycle_def = 1
+        else:
+            renewal_cycle_def = 0
+        self.module.setParameterValue("renewal_cycle_def", str(renewal_cycle_def))
+        
+        renewal_years = str(self.ui.retrofit_renewal_years.value())
+        self.module.setParameterValue("renewal_years", renewal_years)
+        
+        renewal_perc = str(self.ui.retrofit_renewal_percent.value())
+        self.module.setParameterValue("renewal_perc", renewal_perc)
+        
+        if self.ui.retrofit_forced_street_check.isChecked() == 1:
+            force_street = 1
+        else:
+            force_street = 0
+        self.module.setParameterValue("force_street", str(force_street))
+        
+        if self.ui.retrofit_forced_neigh_check.isChecked() == 1:
+            force_neigh = 1
+        else:
+            force_neigh = 0
+        self.module.setParameterValue("force_neigh", str(force_neigh))
+        
+        if self.ui.retrofit_forced_prec_check.isChecked() == 1:
+            force_prec = 1
+        else:
+            force_prec = 0
+        self.module.setParameterValue("force_prec", str(force_prec))
+        
+        if self.ui.lot_renew_check.isChecked() == 1:
+            lot_renew = 1
+        else:
+            lot_renew = 0
+        self.module.setParameterValue("lot_renew", str(lot_renew))
+        
+        if self.ui.lot_decom_check.isChecked() == 1:
+            lot_decom = 1
+        else:
+            lot_decom = 0
+        self.module.setParameterValue("lot_decom", str(lot_decom))
+        
+        if self.ui.street_renew_check.isChecked() == 1:
+            street_renew = 1
+        else:
+            street_renew = 0
+        self.module.setParameterValue("street_renew", str(street_renew))
+        
+        if self.ui.street_decom_check.isChecked() == 1:
+            street_decom = 1
+        else:
+            street_decom = 0
+        self.module.setParameterValue("street_decom", str(street_decom))
+        
+        if self.ui.neigh_renew_check.isChecked() == 1:
+            neigh_renew = 1
+        else:
+            neigh_renew = 0
+        self.module.setParameterValue("neigh_renew", str(neigh_renew))
+        
+        if self.ui.neigh_decom_check.isChecked() == 1:
+            neigh_decom = 1
+        else:
+            neigh_decom = 0
+        self.module.setParameterValue("neigh_decom", str(neigh_decom))
+        
+        if self.ui.prec_renew_check.isChecked() == 1:
+            prec_renew = 1
+        else:
+            prec_renew = 0
+        self.module.setParameterValue("prec_renew", str(prec_renew))
+        
+        if self.ui.prec_decom_check.isChecked() == 1:
+            prec_decom = 1
+        else:
+            prec_decom = 0
+        self.module.setParameterValue("prec_decom", str(prec_decom))
+        
         
         #######################################
         #Choose & Customize Technologies Tab
@@ -1278,6 +1499,18 @@ class activatetechplacementGUI(QtGui.QDialog):
         #Design Information
         
         #combo box
+        BFspec_matrix = [[0,0.1,0.2,0.3,0.4],[0.2,0.4,0.6,0.8]]
+        BFspec_EDDindex = self.ui.BFspecs_EDD_combo.currentIndex()
+        BFspec_FDindex = self.ui.BFspecs_FD_combo.currentIndex()
+        print BFspec_EDDindex
+        print BFspec_FDindex
+        BFspec_EDD = BFspec_matrix[0][BFspec_EDDindex]
+        BFspec_FD = BFspec_matrix[1][BFspec_FDindex]
+        print BFspec_EDD
+        print BFspec_FD
+        self.module.setParameterValue("BFspec_EDD", str(BFspec_EDD))
+        self.module.setParameterValue("BFspec_FD", str(BFspec_FD))
+        
         BFmaxsize = str(self.ui.BFmaxsize_box.text())
         self.module.setParameterValue("BFmaxsize", BFmaxsize)
         
@@ -1397,6 +1630,14 @@ class activatetechplacementGUI(QtGui.QDialog):
         
         #Design Information
         #combo box
+        ISspec_matrix = [[0.1,0.2,0.3,0.4,0.5],[0.2,0.4,0.6,0.8]]
+        ISspec_EDDindex = self.ui.ISspecs_EDD_combo.currentIndex()
+        ISspec_FDindex = self.ui.ISspecs_FD_combo.currentIndex()
+        ISspec_EDD = ISspec_matrix[0][ISspec_EDDindex]
+        ISspec_FD = ISspec_matrix[1][ISspec_FDindex]
+        self.module.setParameterValue("ISspec_EDD", str(ISspec_EDD))
+        self.module.setParameterValue("ISspec_FD", str(ISspec_FD))
+        
         ISmaxsize = str(self.ui.ISmaxsize_box.text())
         self.module.setParameterValue("ISmaxsize", ISmaxsize)
         
@@ -1478,6 +1719,11 @@ class activatetechplacementGUI(QtGui.QDialog):
         
         #Design Information
         #combo box
+        PBspec_matrix = [0.25, 0.5, 0.75, 1.00, 1.25]
+        PBspec_MDindex = self.ui.PBspecs_combo.currentIndex()
+        PBspec_MD = PBspec_matrix[PBspec_MDindex]
+        self.module.setParameterValue("PBspec_MD", str(PBspec_MD))
+        
         PBmaxsize = str(self.ui.PBmaxsize_box.text())
         self.module.setParameterValue("PBmaxsize", PBmaxsize)
         #further design parameters coming soon...
@@ -1690,6 +1936,11 @@ class activatetechplacementGUI(QtGui.QDialog):
         
         #Design Information
         #combo box
+        WSURspec_matrix = [0.25, 0.5, 0.75, 0.25, 0.5, 0.75]
+        WSURspec_EDDindex = self.ui.WSURspecs_combo.currentIndex()
+        WSURspec_EDD = WSURspec_matrix[WSURspec_EDDindex]
+        self.module.setParameterValue("WSURspec_EDD", str(WSURspec_EDD))
+        
         WSURmaxsize = str(self.ui.WSURmaxsize_box.text())
         self.module.setParameterValue("WSURmaxsize", WSURmaxsize)
         #further design parameters coming soon...

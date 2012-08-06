@@ -53,8 +53,8 @@ class GetPreviousBlocks(Module):
         Module.__init__(self)
         self.ongoing_sim = 0            #Is this module part of an ongoing simulation?
         self.path_name = "C:/UBEATS/"          #specify C-drive as default value
-        self.block_path_name = "C:/UBEATS/0_UrbanBEATS-SC-500m_faces.shp"
-        self.patch_path_name = "C:/UBEATS/0_UrbanBEATS-SC-500mp_faces.shp"    
+        self.block_path_name = "C:/UBEATS/0_UrbanBEATS-SCreek-500m_faces.shp"
+        self.patch_path_name = "C:/UBEATS/0_UrbanBEATS-SCreek-500mp_faces.shp"    
         self.previousblocksout = VectorDataIn
         self.previouspatchout = VectorDataIn
         self.addParameter(self, "ongoing_sim", VIBe2.BOOL)
@@ -88,7 +88,10 @@ class GetPreviousBlocks(Module):
         blockdataSource = driver.Open(blockfile_name, 0)
         patchdataSource = driver.Open(patchfile_name, 0)
         if blockdataSource is None:
-            print "Error, could not open "+file_name
+            print "Error, could not open Blocks "+blockfile_name
+            sys.exit(1)
+        if patchdataSource is None:
+            print "Error, could not open Patches "+patchfile_name
             sys.exit(1)
         
         blocklayer = blockdataSource.GetLayer()
