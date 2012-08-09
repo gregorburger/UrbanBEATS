@@ -27,6 +27,7 @@ from techimplementguic import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from pyvibe import *
+import pyvibe
 import math
 import numpy as np
 
@@ -66,7 +67,6 @@ class techimplement(Module):
         self.addParameter(self, "previouspatchin", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "blockcityout", VIBe2.VECTORDATA_OUT)
         self.addParameter(self, "techinplace", VIBe2.VECTORDATA_OUT)
-        
         
         #IMPLEMENTATION RULES TAB
         self.dynamic_rule = "B"         #B = Block-based, P = Parcel-based
@@ -109,6 +109,7 @@ class techimplement(Module):
         self.addParameter(self, "driver_establish", VIBe2.BOOL)
     
     def run(self):
+        currentyear = 1960
         #Get vector data
         blockcityin = self.blockcityin.getItem()
         patchdatain = self.patchdatain.getItem()
@@ -120,6 +121,8 @@ class techimplement(Module):
         
         #Get global map attributes
         map_attr = blockcityin.getAttributes("MapAttributes")
+        totsystems = techconfigin.getAttributes("GlobalSystemAttributes").getAttribute("TotalSystems")
+        print "Total Systems in map: "+str(totsystems)
         
         #Get block number, etc.
         blocks_num = map_attr.getAttribute("NumBlocks")     #number of blocks to loop through
@@ -129,17 +132,33 @@ class techimplement(Module):
         input_res = map_attr.getAttribute("InputReso")      #resolution of input data
         urbansimdata = map_attr.getStringAttribute("UrbanSimData")
         
-        basins = map_attr.getAttribute("TotalBasins")
-        for i in range(int(basins)):
-            currentID = i+1
-            basin_attr = blockcityin.getAttributes("BasinID"+str(currentID))
-            blockcityout.setAttributes("BasinID"+str(currentID), basin_attr)
-        
         #CONVERSIONS
         #convert percentages to proportions and proportions to percentages and adjust other necessary
         #parameters
         prec_dev_percent = float(self.prec_dev_percent/100)
         
+        
+        basins = map_attr.getAttribute("TotalBasins")
+        for i in range(int(basins)):
+            #Purpose of this loop is to transfer the basin attributes across to the outport of this module
+            currentID = i+1
+            basin_attr = blockcityin.getAttributes("BasinID"+str(currentID))
+            blockcount = basin_attr.getAttribute("Blocks")
+            downstreammostblock = basin_attr.getAttribute("DownBlockID")
+            basinblockIDs = basin_attr.getStringAttribute("UpStr")
+            
+            blockcityout.setAttributes("BasinID"+str(currentID), basin_attr)
+        
+        #Get all systems for current block
+        system_indices = []
+        for i in range(int(blocks_num)):
+            system_indices.append([])
+        
+        for j in range(int(totsystems)):
+            locate = techconfigin.getAttributes("System"+str(j)).getAttribute("Location")
+            system_indices[int(locate-1)].append(j)             #matrix contains all systemIDs (attribute list name) across all blocks
+        
+        print system_indices
         
         #Begin looping across blocks
         for i in range(int(blocks_num)):
@@ -157,6 +176,7 @@ class techimplement(Module):
             #        DETERMINE WHETHER TO UPDATE CURRENT BLOCK AT ALL         #
             #-----------------------------------------------------------------#
             
+            ### QUIT CONDITION #1 - BLOCK STATUS = 0 ###
             block_status = currentAttList.getAttribute("Status")
             if block_status == 0:
                 print "BlockID"+str(currentID)+" is not active in simulation"
@@ -171,15 +191,209 @@ class techimplement(Module):
                 #skips the for loop iteration to the next block, not more needs to be done
                 continue
             
-            print currentID
+            ### QUIT CONDITION #2 - NO SYSTEMS PLANNED FOR BLOCK AT ALL ###
+            sys_implement = system_indices[i]
+            print sys_implement
+            if len(sys_implement) == 0:
+                print "No Systems planned for Block "+str(currentID)+", skipping..."
+                #even if block isn't active at all, attributes from previous module are passed on
+                blockcityout.setPoints("BlockID"+str(currentID),plist)
+                blockcityout.setFaces("BlockID"+str(currentID),flist)
+                blockcityout.setAttributes("BlockID"+str(currentID),currentAttList)
+                blockcityout.setPoints("NetworkID"+str(currentID), pnetlist)
+                blockcityout.setEdges("NetworkID"+str(currentID), enetlist)
+                blockcityout.setAttributes("NetworkID"+str(currentID), network_attr)
+                #skip the block
+                continue
             
+            #GRAB ALL DETAILS FROM MASTERPLAN FOR USE WHEREVER
+            mastplanallots = previousblocksin.getAttributes("BlockID"+str(currentID)).getAttribute("ResAllots")         #total allotments planned for block
+            mastplanresTIarea = previousblocksin.getAttributes("BlockID"+str(currentID)).getAttribute("ResTIArea")      #total impervious area of district
+            mastplanLotImpArea = previousblocksin.getAttributes("BlockID"+str(currentID)).getAttribute("ResLotImpA")    #impervious area of one lot
+            mastplanAvlStreet = previousblocksin.getAttributes("BlockID"+str(currentID)).getAttribute("AvlStreet")      #Available street area
+            mastplanAvlNeigh = previousblocksin.getAttributes("BlockID"+str(currentID)).getAttribute("ALUC_PG")         #Available neighbourhood area
             
+            ### QUIT CONDITION #3 - DYNAMIC-MODE = Block-based and DEVELOPMENT < Threshold ###
+            #Get Block Data
+            block_skip = False
+            if self.dynamic_rule == "B" and (1-currentAttList.getAttribute("pLUC_Und")) < float(self.block_based_thresh/100):
+                print "BlockID"+str(currentID)+" is not developed enough yet, skipping..."
+                #even if block isn't active at all, attributes from previous module are passed on
+                blockcityout.setPoints("BlockID"+str(currentID),plist)
+                blockcityout.setFaces("BlockID"+str(currentID),flist)
+                blockcityout.setAttributes("BlockID"+str(currentID),currentAttList)
+                blockcityout.setPoints("NetworkID"+str(currentID), pnetlist)
+                blockcityout.setEdges("NetworkID"+str(currentID), enetlist)
+                blockcityout.setAttributes("NetworkID"+str(currentID), network_attr)
+                #skip the block
+                block_skip = True
             
+            #DECLARE ATTRIBUTE LIST FOR SAVING IMPLEMENTED TECHNOLOGIES LIST
+            techimpl_attr = Attribute()
+            centreX = currentAttList.getAttribute("Centre_x")
+            centreY = currentAttList.getAttribute("Centre_y")
+            offsets_matrix = [[centreX+blocks_size/8, centreY+blocks_size/4],[centreX+blocks_size/4, centreY-blocks_size/8],[centreX-blocks_size/8, centreY-blocks_size/4],[centreX-blocks_size/4, centreY+blocks_size/8]]
             
-            
-            
-            
-            
+            ### LOT IMPLEMENTATION ###
+            ### Condition 1: block_skip=False, Condtion 2: there are systems at that scale, Condition 3: there are allotments in the block
+            #Get Lot Systems Details
+            tot_lot_treated = 0
+            lotdeg = 0
+            if block_skip == False:
+                systemfound = 0
+                for j in sys_implement:
+                    if str(techconfigin.getAttributes("System"+str(j)).getStringAttribute("Scale")) == "L":
+                        sys_implement_lot = techconfigin.getAttributes("System"+str(j))
+                        systemfound = 1
+                if systemfound == 0:                #IF THERE ARE NO LOT SYSTEMS, CONTINUE ON TO STREET
+                    print "No Lot Systems planned for Block "+str(currentID)
+                else:
+                    lotcount = sys_implement_lot.getAttribute("TotSystems")
+                    if currentAttList.getAttribute("ResAllots") == 0:
+                        print "Current Block "+str(currentID)+" has no residential allotments"
+                        pass
+                    else:
+                        #Get Residential Details
+                        allotments = currentAttList.getAttribute("ResAllots")
+                        lotimparea = currentAttList.getAttribute("ResLotImpA")
+                        roofarea = currentAttList.getAttribute("ResLotRoofA")
+                        openspace = currentAttList.getAttribute("rfw_Adev")
+                        
+                        lottype = sys_implement_lot.getStringAttribute("Type1")
+                        lotdeg = sys_implement_lot.getAttribute("Service1")
+                        lotsysarea = sys_implement_lot.getAttribute("Area1")
+                        lotsysstatus = sys_implement_lot.getAttribute("Status1")
+                        lotsysbuildyr = sys_implement_lot.getAttribute("YearConst1")
+                        
+                        print lottype, lotdeg, lotsysarea, lotsysstatus, lotsysbuildyr
+                        
+                        goallots = int(lotdeg*mastplanallots)
+                        
+                        #lot implementation rule - as many as possible or strictly follow planning
+                        if self.bb_lot_rule == "AMAP":
+                            num_systems_impl = min(goallots, allotments)            #if as many as possible: either the desired number of allotments (goallots) or however many have been built (allotments)
+                        elif self.bb_lot_rule == "STRICT":
+                            num_systems_impl = int(allotments * lotdeg)             #if strictly follow planning %, then current number of allotments * %
+                        print num_systems_impl
+                        
+                        tot_system_area = num_systems_impl * lotsysarea
+                        tot_lot_treated = num_systems_impl * lotimparea
+                        
+                        print tot_system_area
+                        print tot_lot_treated
+                        
+                        #Write out lot systems information
+                        techimpl_attr.setAttribute("Location", currentID)
+                        techimpl_attr.setAttribute("Scale", "L")
+                        techimpl_attr.setAttribute("TotSystems", lotcount)
+                        for j in range(int(lotcount)):
+                            techimpl_attr.setAttribute("Sys"+str(j+1)+"Type", lottype)
+                            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", num_systems_impl)
+                            techimpl_attr.setAttribute("Sys"+str(j+1)+"TotA", tot_system_area)
+                            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", tot_lot_treated)
+                            techimpl_attr.setAttribute("Sys"+str(j+1)+"Area", lotsysarea)
+                            techimpl_attr.setAttribute("Sys"+str(j+1)+"Status", 1)
+                            techimpl_attr.setAttribute("Sys"+str(j+1)+"Buildyr", currentyear)
+                        
+                        coordinates = offsets_matrix[0]
+                        plist = pyvibe.PointList()
+                        plist.append(Point(coordinates[0],coordinates[1],0))
+                        techinplace.setPoints("BlockID"+str(currentID)+"L", plist)
+                        techinplace.setAttributes("BlockID"+str(currentID)+"L", techimpl_attr)
+                         
+            ### STREET IMPLEMENTATION ###
+            ### Condition 1: block_skip=False, Condition 2: there are street systems planned
+            streetdeg = 0
+            if block_skip == False:
+                systemfound = 0             #see if there are systems
+                for j in sys_implement:
+                    if str(techconfigin.getAttributes("System"+str(j)).getStringAttribute("Scale")) == "S":
+                        sys_implement_street = techconfigin.getAttributes("System"+str(j))
+                        systemfound = 1
+                        
+                if systemfound == 0:                #IF THERE ARE NO LOT SYSTEMS, CONTINUE ON TO NEIGHBOURHOOD
+                    print "No Street Systems planned for Block "+str(currentID)
+                else:
+                    #implement street system
+                    streettype = sys_implement_street.getStringAttribute("Type1")
+                    streetdeg = sys_implement_street.getAttribute("Service1")
+                    streetsysarea = sys_implement_street.getAttribute("Area1")
+                    streetsysstatus = sys_implement_street.getAttribute("Status1")
+                    streetsysbuildyr = sys_implement_street.getAttribute("YearConst1")
+                    
+                    print streettype, streetdeg, streetsysarea, streetsysstatus, streetsysbuildyr
+                    
+                    #Get curent impervious area, get impervious area to treat of the whole thing, if current is within reason of 'to be treated area', implement entire street system if available space is there
+                    
+                    #GET CURRENT DETAILS
+                    resimparea = currentAttList.getAttribute("ResTIArea")
+                    street_neigh_imp_area = resimparea - tot_lot_treated        #if there was no lot implementation, then tot_lot_treated = 0
+                    print "Street Areas:"
+                    print resimparea
+                    print street_neigh_imp_area
+                    street_avl_space = currentAttList.getAttribute("AvlStreet")
+                    print street_avl_space
+                    
+                    #Masterplan details
+                    street_neigh_masterplan = mastplanresTIarea - (mastplanLotImpArea*lotdeg*mastplanallots)
+                    print "Masterplan: "
+                    print mastplanresTIarea
+                    print street_neigh_masterplan
+                    print mastplanAvlStreet
+                    
+                
+            ### NEIGHBOURHOOD IMPLEMENTATION ###
+            neighdeg = 0
+            if block_skip == False:
+                systemfound = 0             #see if there are systems
+                for j in sys_implement:
+                    if str(techconfigin.getAttributes("System"+str(j)).getStringAttribute("Scale")) == "N":
+                        sys_implement_street = techconfigin.getAttributes("System"+str(j))
+                        systemfound = 1
+                        
+                if systemfound == 0:                #IF THERE ARE NO LOT SYSTEMS, CONTINUE ON TO PRECINCT
+                    print "No Neighbourhood Systems planned for Block "+str(currentID)
+                else:
+                    #implement neighbourhood system
+                    neightype = sys_implement_street.getStringAttribute("Type1")
+                    neighdeg = sys_implement_street.getAttribute("Service1")
+                    neighsysarea = sys_implement_street.getAttribute("Area1")
+                    neighsysstatus = sys_implement_street.getAttribute("Status1")
+                    neighsysbuildyr = sys_implement_street.getAttribute("YearConst1")
+                    
+                    print neightype, neighdeg, neighsysarea, neighsysstatus, neighsysbuildyr
+                    #Follow the same as street, but check the open space first
+                    
+                    #Current Year Details
+                    resimparea = currentAttList.getAttribute("ResTIArea")
+                    street_neigh_imp_area = resimparea - tot_lot_treated        #if there was no lot implementation, then tot_lot_treated = 0
+                    print "Neigh Areas:"
+                    print "District Imp", str(resimparea)
+                    print "Imp to treat at st and n:", str(street_neigh_imp_area)
+                    neigh_avail_sp = currentAttList.getAttribute("ALUC_PG")
+                    print "Available space: ", str(neigh_avail_sp)
+                    
+                    #Masterplan details
+                    street_neigh_masterplan = mastplanresTIarea - (mastplanLotImpArea*lotdeg*mastplanallots)
+                    print "Masterplan: "
+                    print "District imp: ", str(mastplanresTIarea)
+                    print "Imp to treat at st and n:", str(street_neigh_masterplan)
+                    print "Availble space: ", str(mastplanAvlNeigh)
+                    
+            ### PRECINCT IMPLEMENTATION ###
+            systemfound = 0             #see if there are systems
+            for j in sys_implement:
+                if str(techconfigin.getAttributes("System"+str(j)).getStringAttribute("Scale")) == "P":
+                    sys_implement_street = techconfigin.getAttributes("System"+str(j))
+                    systemfound = 1
+                    
+            if systemfound == 0:                #IF THERE ARE NO PRECINCT SYSTEMS, PASS
+                print "No Precinct Systems planned for Block "+str(currentID)
+            else:
+                
+                
+                pass
+                #BASIN CHECK DEVELOPMENT %
             
             
             
@@ -197,15 +411,20 @@ class techimplement(Module):
             blockcityout.setAttributes("NetworkID"+str(currentID), network_attr)
             
             
+            
             #FOR LOOP END (Repeat for next BlockID)
             
         #Output vector update
         blockcityout.setAttributes("MapAttributes", map_attr)
-    
+        
     
     ########################################################
     #LINK WITH GUI                                         #
     ########################################################        
+    def calculateUpstreamDeveloped(self, ID):
+        #determines the total upstream area % that has been developed
+        pass
+    
                         
     def createInputDialog(self):
         form = activatetechimplementGUI(self, QApplication.activeWindow())

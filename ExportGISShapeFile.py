@@ -152,7 +152,7 @@ class ExportGISShapeFile(Module):
                             #Append Attributes
                             if hasAttribute:        
                                     for k in range(len(alist)):
-                                            value = self.vecin.getItem().getAttributes(names[i]).getStringAttribute(alist[k])
+                                            value = self.vecin.getItem().getAttributes(names[i]).getAttribute(alist[k])
                                             feature.SetField(alist[k],value)
                             layer.CreateFeature(feature)    
             shapeData.Destroy()               
@@ -217,7 +217,7 @@ class ExportGISShapeFile(Module):
                             #Append Attributes
                             if hasAttribute:      
                                     for k in range(len(alist)):
-                                            value = self.vecin.getItem().getAttributes(names[i]).getStringAttribute(alist[k])                                   
+                                            value = self.vecin.getItem().getAttributes(names[i]).getAttribute(alist[k])                                   
                                             feature.SetField(alist[k],value)
                             layer.CreateFeature(feature)    
             shapeData.Destroy()
@@ -281,7 +281,7 @@ class ExportGISShapeFile(Module):
                             #Append Attributes
                             if hasAttribute:        
                                     for k in range(len(alist)):
-                                            value = self.vecin.getItem().getAttributes(names[i]).getStringAttribute(alist[k])
+                                            value = self.vecin.getItem().getAttributes(names[i]).getAttribute(alist[k])
                                             feature.SetField(alist[k],value)
                             layer.CreateFeature(feature)    
             shapeData.Destroy()               

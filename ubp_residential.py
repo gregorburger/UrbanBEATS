@@ -168,12 +168,12 @@ class ubp_residential(Module):
             res_pop_dens = currentAttList.getAttribute("POP_Res")
             
             ### RANDOM SAMPLING FOR FRONTAGE WIDTHS ###
-            footpath_w = random.randint(w_resfootpath_min, w_resfootpath_max)
-            naturestrip_w = random.randint(w_resnaturestrip_min, w_resnaturestrip_max)
-            collectlane_w = random.randint(w_collectlane_min, w_collectlane_max)
+            footpath_w = float(random.randint(w_resfootpath_min, w_resfootpath_max))
+            naturestrip_w = float(random.randint(w_resnaturestrip_min, w_resnaturestrip_max))
+            collectlane_w = float(random.randint(w_collectlane_min, w_collectlane_max))
             
-            res_frontage = footpath_w + naturestrip_w + collectlane_w
-            frontage_impness = (footpath_w + collectlane_w)/res_frontage
+            res_frontage = float(footpath_w + naturestrip_w + collectlane_w)
+            frontage_impness = (float(footpath_w) + float(collectlane_w))/float(res_frontage)
             
             
             #--------------------------------------------------------------------------------#
@@ -231,8 +231,8 @@ class ubp_residential(Module):
                 #--------------------------------------------------------------------------------#
                 
                 ###SURFACE INFO ON LOT###
-                setback_f = random.randint(setback_f_min, setback_f_max)
-                setback_s = random.randint(setback_s_min, setback_s_max)
+                setback_f = float(random.randint(setback_f_min, setback_f_max))
+                setback_s = float(random.randint(setback_s_min, setback_s_max))
                 if (setback_s * 2) > (res_lot_width/2):
                     print "going semi-detached!"
                 
@@ -290,6 +290,8 @@ class ubp_residential(Module):
                             imp_disconnected = res_surfimparea_tot*(imperv_prop_dced/100) + res_roofarea_tot
                 
                 #evaluate some broader details
+                print "RES FRONTAGE", str(frontage_impness)
+                print "RES_AREA_RESERVE", str(res_area_reserve)
                 res_district_imparea = (res_allotments * res_totimparea) + (res_area_reserve * frontage_impness)
                 res_district_pervarea = (res_allotments * res_totpervarea) + (res_area_reserve * (1-frontage_impness))
                 res_district_impareaconnected = (res_allotments * imp_connected) + (res_area_reserve * frontage_impness)

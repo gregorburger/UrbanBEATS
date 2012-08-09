@@ -123,9 +123,16 @@ class GetSystems(Module):
                 #Design Details
                 Asystem = feature.GetField("Sys"+str(j+1)+"Area")
                 sys_attr.setAttribute("Area"+str(j+1), Asystem)
+                
                 deg = feature.GetField("Sys"+str(j+1)+"Degree")
                 sys_attr.setAttribute("Service"+str(j+1), deg)
-            
+                
+                sysstatus = feature.GetField("Sys"+str(j+1)+"Status")
+                sys_attr.setAttribute("Status"+str(j+1), sysstatus)
+                
+                yearbuilt = feature.GetField("Sys"+str(j+1)+"Year")
+                sys_attr.setAttribute("YearConst"+str(j+1), yearbuilt)
+                
             #Save the Attributes List & Destroy the feature to free up memory
             system_list.setAttributes("System"+str(i), sys_attr)
             feature.Destroy()
