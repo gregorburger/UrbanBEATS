@@ -225,15 +225,29 @@ class delinblocks(Module):
         #------------------------------------------
         #END OF INPUT PARAMETER LIST
 
+	self.BLOCKIDtoUUID = {}
+
     def getBlockUUID(self, blockid,city):
-        blockuuids = city.getUUIDsOfComponentsInView(self.block)
+	try:
+		key = self.BLOCKIDtoUUID[blockid]
+	except KeyError:
+		key = ""	
+	return key
+
+        '''blockuuids = city.getUUIDsOfComponentsInView(self.block)
         for blockuuid in blockuuids:
             block = city.getFace(blockuuid)
             ID = int(round(block.getAttribute("BlockID").getDouble()))
             if ID == blockid:
                 return blockuuid
-        return ""
+        return ""'''
 
+    def initBLOCKIDtoUUID(self, city):
+	blockuuids = city.getUUIDsOfComponentsInView(self.block)
+        for blockuuid in blockuuids:
+            block = city.getFace(blockuuid)
+            ID = int(round(block.getAttribute("BlockID").getDouble()))
+	    self.BLOCKIDtoUUID[ID] = blockuuid
 
     def run(self):
         city = self.getData("City")
@@ -906,7 +920,7 @@ class delinblocks(Module):
             block = city.getFace(blockuuid)
             ID_N = block.getAttribute("Neighb_N").getDouble
         '''       
-
+	self.initBLOCKIDtoUUID(city)
         for i in range(numblocks):
 
             currentID = i + 1
