@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 #from pyvibe import *
 #import pyvibe
+from pydynamind import *
 import math
 
 class delinbasin(Module):
@@ -45,66 +46,69 @@ class delinbasin(Module):
 
     def __init__(self):
         Module.__init__(self)  
-	self.blockcityin = View("BlockCityIn",RASTERDATA,READ)
-	self.blockcityout = View("BlockCityOut",RASTERDATA,READ)
-        #self.blockcityin = VectorDataIn
-        #self.blockcityout = VectorDataIn
-        self.addParameter(self, "blockcityin", VIBe2.VECTORDATA_IN)
-        self.addParameter(self, "blockcityout", VIBe2.VECTORDATA_OUT)
-    
 
+	self.mapattributes = View("Mapattributes", COMPONENT, READ)
+
+  
+    
+	datastream = []
+	datastream.append(self.mapattributes)
+        self.addData("City", datastream)
+
+
+    def getBlockUUID(self, blockid,city):
+        blockuuids = city.getUUIDsOfComponentsInView(self.block)
+        for blockuuid in blockuuids:
+            block = city.getFace(blockuuid)
+            ID = int(round(block.getAttribute("BlockID").getDouble()))
+            if ID == blockid:
+                return city.getFace(blockuuid)
+        return ""
 
 	
     
     def run(self):
+	city = self.getData("City")
+
+	strvec = stringvector()
+	strvec = city.getUUIDsOfComponentsInView("Mapattributes")
 	
-	blockcityin = self.getRasterData("City", self.blockcityin)
-	blockcityout = self.getRasterData("City", self.blockcityout)
-        #blockcityin = self.blockcityin.getItem()
-        #blockcityout = self.blockcityout.getItem()
-        
-        map_attr = blockcityin.getAttributes("MapAttributes")   #Get map attributes
-        blocks_num = map_attr.getAttribute("NumBlocks")
-        block_size = map_attr.getAttribute("BlockSize")
-        map_w = map_attr.getAttribute("WidthBlocks")
-        map_h = map_attr.getAttribute("HeightBlocks")       #num of blocks tall
-        input_res = map_attr.getAttribute("InputReso")      #resolution of input data
-        
+        map_attr = strvec[0]		#blockcityin.getAttributes("MapAttributes")   #Get map attributes
+        blocks_num = map_attr.getAttribute("NumBlocks").getDouble()
+        block_size = map_attr.getAttribute("BlockSize").getDouble()
+        map_w = map_attr.getAttribute("WidthBlocks").getDouble()
+        map_h = map_attr.getAttribute("HeightBlocks").getDouble()       #num of blocks tall
+        input_res = map_attr.getAttribute("InputReso").getDouble()      #resolution of input data
+
         upstreamIDs = []
-        track_vectorID = []
-        blocks_uuids = city.getUUIDs("BLOCK")
-        for b_uuid in blocks_uuids:
-        #for i in range(int(blocks_num)):
-            block = city.getFace(b_uuid)
-            '''currentID = i+1
-            currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))'''
+	track_vectorID = []
+        for i in range(int(blocks_num)):
+	    currentID = i+1
+            
+	    currentAttList = self.getBlockUUID(currentID,city)
+            #currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))
             track_vectorID.append(0)
             #check activity
             upstreamIDs.append([])
-            
-            #if currentAttList.getAttribute("Status") == 0:
-            if block.getAttribute("Status") == 0:
+            if int(round(currentAttList.getAttribute("Status").getDouble())) == 0:
                 track_vectorID[i] = 1
                 continue
-            for b_uuid_2 in blocks_uuids:
-            #for j in range(int(blocks_num)):
-                block2 = city.getFace(b_uuid2)
-                if block2.getAttribute("Status") == 0:
-                    continue
-                    
-                if block2.getAttribute("Status") == 0:
-                    continue
-                if block2.getAttribute.getAttribute("downstrID") == currentID:
-                    upstreamIDs[block.getUUID].append(block2.getUUID())
-                if block2.getAttribute.getAttribute("downstrID") == -1:
-                    if block2.getAttribute.getAttribute("drainto_ID") == currentID:
-                        upstreamIDs[block.getUUID].append(block2.getUUID())
+            for j in range(int(blocks_num)):
 
-        for b_uuid in blocks_uuids:
-        #for i in range(int(blocks_num)):
-            block = city.getFace(b_uuid)       
-        #for i in range(int(blocks_num)):              #now loop over each block
-            if blockcityin.getAttributes("BlockID"+str(i+1)).getAttribute("Status") == 0:
+		block = self.getBlockUUID(j,city)
+                if int(round(block.getAttribute("Status").getDouble())) == 0:
+                    continue
+                if int(round(block.getAttribute.getAttribute("downstrID").getDouble())) == currentID:
+                    upstreamIDs[i].append(j+1)
+                if int(round(block.getAttribute.getAttribute("downstrID").getDouble())) == -1:
+                    if int(round(block.getAttribute.getAttribute("drainto_ID").getDouble())) == currentID:
+                        upstreamIDs[i].append(j+1)
+'''
+           
+        for i in range(int(blocks_num)):              #now loop over each block
+
+	    block = self.getBlockUUID(i,city)
+            if int(round(block.getAttribute("Status").getDouble())) == 0:
                 continue
             if len(upstreamIDs[i]) == 0:        #if the matrix for that block ID is zero, skip
                 continue
@@ -280,5 +284,5 @@ class delinbasin(Module):
         
         map_attr.setAttribute("TotalBasins", basin_count)    
         blockcityout.setAttributes("MapAttributes", map_attr)
-    
+    '''
     #NEED TO WRITE SOMETHING THAT CAN SPECIFY THE MAXIMUM BASIN SIZE OF THE SEARCH ALGORITHM!
