@@ -48,43 +48,79 @@ class delinbasin(Module):
         Module.__init__(self)  
 
 	self.mapattributes = View("Mapattributes", COMPONENT, READ)
+	self.mapattributes.getAttribute("NumBlocks")
+	self.mapattributes.getAttribute("BlockSize")
+	self.mapattributes.getAttribute("WidthBlocks")
+	self.mapattributes.getAttribute("HeightBlocks")
+	self.mapattributes.getAttribute("InputReso")
+	self.mapattributes.addAttribute("TotalBasins")
 
+	self.blocks = View("Block", FACE, READ)
+	self.blocks.addAttribute("BasinBlocks")
+	self.blocks.addAttribute("BasinDownBlocks")
+	self.blocks.addAttribute("BasinArea")
+	self.blocks.addAttribute("BasinCount")
+	self.blocks.addAttribute("BasinMaxDisp")
+	self.blocks.addAttribute("BasinID")
   
-    
+	self.basin = View("Basin", COMPONENT, WRITE)
+	self.basin.addAttribute("BasinID")
+	self.basin.addAttribute("Blocks")
+	self.basin.addAttribute("DownBlockID")
+	self.basin.addAttribute("UpStr")
+	    
+
 	datastream = []
 	datastream.append(self.mapattributes)
+	datastream.append(self.blocks)
+	datastream.append(self.basin)
         self.addData("City", datastream)
-
+	self.BLOCKIDtoUUID = {}
 
     def getBlockUUID(self, blockid,city):
-        blockuuids = city.getUUIDsOfComponentsInView(self.block)
+	try:
+		key = self.BLOCKIDtoUUID[blockid]
+	except KeyError:
+		key = ""
+	return city.getFace(key)
+
+        '''blockuuids = city.getUUIDsOfComponentsInView(self.block)
         for blockuuid in blockuuids:
             block = city.getFace(blockuuid)
             ID = int(round(block.getAttribute("BlockID").getDouble()))
             if ID == blockid:
-                return city.getFace(blockuuid)
-        return ""
+                return blockuuid
+        return ""'''
+
+    def initBLOCKIDtoUUID(self, city):
+	blockuuids = city.getUUIDsOfComponentsInView(self.blocks)
+        for blockuuid in blockuuids:
+            block = city.getFace(blockuuid)
+            ID = int(round(block.getAttribute("BlockID").getDouble()))
+	    self.BLOCKIDtoUUID[ID] = blockuuid
 
 	
     
     def run(self):
 	city = self.getData("City")
+	self.initBLOCKIDtoUUID(city)
 	strvec = city.getUUIDsOfComponentsInView(self.mapattributes)
-	print strvec[0]
-        map_attr = city.getComponent(strvec[0])		#blockcityin.getAttributes("MapAttributes")   #Get map attributes
-	'''
+	uuid = strvec[0]
+        map_attr = city.getComponent(uuid)		#blockcityin.getAttributes("MapAttributes")   #Get map attributes
+	
         blocks_num = map_attr.getAttribute("NumBlocks").getDouble()
         block_size = map_attr.getAttribute("BlockSize").getDouble()
-        map_w = map_attr.getAttribute("WidthBlocks").getDouble()
+ 	map_w = map_attr.getAttribute("WidthBlocks").getDouble()
         map_h = map_attr.getAttribute("HeightBlocks").getDouble()       #num of blocks tall
         input_res = map_attr.getAttribute("InputReso").getDouble()      #resolution of input data
- 
+ 	
         upstreamIDs = []
 	track_vectorID = []
         for i in range(int(blocks_num)):
 	    currentID = i+1
             
 	    currentAttList = self.getBlockUUID(currentID,city)
+
             #currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))
             track_vectorID.append(0)
             #check activity
@@ -95,15 +131,15 @@ class delinbasin(Module):
             for j in range(int(blocks_num)):
 
 		block = self.getBlockUUID(j+1,city)
-                if int(round(block.getAttribute("Status").getDouble())) == 0:
+                if int(round(currentAttList.getAttribute("Status").getDouble())) == 0:
                     continue
-                if int(round(block.getAttribute.getAttribute("downstrID").getDouble())) == currentID:
+                if int(round(block.getAttribute("downstrID").getDouble())) == currentID:
                     upstreamIDs[i].append(j+1)
-                if int(round(block.getAttribute.getAttribute("downstrID").getDouble())) == -1:
-                    if int(round(block.getAttribute.getAttribute("drainto_ID").getDouble())) == currentID:
+                if int(round(block.getAttribute("downstrID").getDouble())) == -1:
+                    if int(round(block.getAttribute("drainto_ID").getDouble())) == currentID:
                         upstreamIDs[i].append(j+1)
 
-           
+
         for i in range(int(blocks_num)):              #now loop over each block
 
 	    block = self.getBlockUUID(i+1,city)
@@ -162,44 +198,33 @@ class delinbasin(Module):
                 
         print "total basins = "+str(basin_count)
         
+#########################################################
         downstreamIDs = []
         #Write code to transfer information into vector
         for i in range(int(blocks_num)):
             currentID = i+1
-self.getBlockUUID(j+1,city)
-            currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))
-            plist = blockcityin.getPoints("BlockID"+str(currentID))
-            flist = blockcityin.getFaces("BlockID"+str(currentID))
-            pnetlist = blockcityin.getPoints("NetworkID"+str(currentID))
-            enetlist = blockcityin.getEdges("NetworkID"+str(currentID))
-            network_attr = blockcityin.getAttributes("NetworkID"+str(currentID))
+		#self.getBlockUUID(j+1,city)
+            currentAttList = self.getBlockUUID(currentID,city) #blockcityin.getAttributes("BlockID"+str(currentID))
+            #network_attr = blockcityin.getAttributes("NetworkID"+str(currentID))
             
             print "Block: "+str(currentID)
             downstreamIDs.append([])
             #Check if status is zero, if yes, then transfer info and continue
             if currentAttList.getAttribute("Status") == 0:
-                blockcityout.setPoints("BlockID"+str(currentID),plist)
-                blockcityout.setFaces("BlockID"+str(currentID),flist)
-                blockcityout.setAttributes("BlockID"+str(currentID), currentAttList)
-                blockcityout.setPoints("NetworkID"+str(currentID), pnetlist)
-                blockcityout.setEdges("NetworkID"+str(currentID), enetlist)
-                blockcityout.setAttributes("NetworkID"+str(currentID), network_attr)
                 continue
             
             #Get current upstream blocks vector
             upstreamBlocks = upstreamIDs[i]
             if len(upstreamBlocks) == 0:        #if there are no upstream blocks, write info and skip
-                blockcityout.setPoints("BlockID"+str(currentID),plist)
-                blockcityout.setFaces("BlockID"+str(currentID),flist)
-                blockcityout.setAttributes("BlockID"+str(currentID), currentAttList)
-                blockcityout.setPoints("NetworkID"+str(currentID), pnetlist)
-                blockcityout.setEdges("NetworkID"+str(currentID), enetlist)
-                blockcityout.setAttributes("NetworkID"+str(currentID), network_attr)
                 continue
+
             upstream_string = ""
             for j in upstreamBlocks:
                 upstream_string += str(j)+","
-            currentAttList.setAttribute("BasinBlocks", str(upstream_string))
+
+	    upstream_attr = Attribute("BasinBlocks")
+	    upstream_attr.setString(str(upstream_string))
+            currentAttList.addAttribute(upstream_attr)
             print "Upstream: "+upstream_string
             
             #Get current Basin Vector and determine downstream blocks
@@ -219,71 +244,66 @@ self.getBlockUUID(j+1,city)
             downstream_string = ""
             for j in downstreamBlocks:
                 downstream_string += str(j)+","
-            currentAttList.setAttribute("BasinDownBlocks", str(downstream_string))
+	    downstream_attr = Attribute("BasinDownBlocks")
+	    downstream_attr.setString(str(downstream_string))
+            currentAttList.addAttribute(downstream_attr)
             print "Downstream: "+downstream_string
             
             #Calculate total upstream basin area
             upstream_tot = len(upstreamBlocks)
             upstream_basin_area = block_size*block_size*upstream_tot/10000      #total upstream basin area [ha]
-            currentAttList.setAttribute("BasinArea", upstream_basin_area)
-            currentAttList.setAttribute("BasinBCount", upstream_tot)
+            currentAttList.addAttribute("BasinArea", upstream_basin_area)
+            currentAttList.addAttribute("BasinBCount", upstream_tot)
             print "UpstreamArea"
             print upstream_tot
             print upstream_basin_area
             
             #Calculate longest distance between blocks in a basin
-            current_x = currentAttList.getAttribute("Centre_x")
-            current_y = currentAttList.getAttribute("Centre_y")
+            current_x = currentAttList.getAttribute("Centre_x").getDouble()
+            current_y = currentAttList.getAttribute("Centre_y").getDouble()
             disp_matrix = []    #displacement matrix, holds the distance between blocks
             for j in upstreamBlocks:
-                compare_x = blockcityin.getAttributes("BlockID"+str(j)).getAttribute("Centre_x")
-                compare_y = blockcityin.getAttributes("BlockID"+str(j)).getAttribute("Centre_y")
+		block = self.getBlockUUID(j,city)
+                compare_x = block.getAttribute("Centre_x").getDouble()
+                compare_y = block.getAttribute("Centre_y").getDouble()
                 disp = math.sqrt(pow((current_x - compare_x),2)+pow((current_y - compare_y),2))
                 disp_matrix.append(disp)
             max_disp = max(disp_matrix)
             print "max displacement "+str(max_disp)
-            currentAttList.setAttribute("BasinMaxDisp", max_disp)
-            
-            #-----------------------------------------------------------------#
-            #        Write all updated Attribute Lists to the output          #
-            #-----------------------------------------------------------------#
-            
-            blockcityout.setPoints("BlockID"+str(currentID),plist)
-            blockcityout.setFaces("BlockID"+str(currentID),flist)
-            blockcityout.setAttributes("BlockID"+str(currentID), currentAttList)
-            blockcityout.setPoints("NetworkID"+str(currentID), pnetlist)
-            blockcityout.setEdges("NetworkID"+str(currentID), enetlist)
-            blockcityout.setAttributes("NetworkID"+str(currentID), network_attr)
+            currentAttList.addAttribute("BasinMaxDisp", max_disp)
             
         for i in range(int(basin_count)):
+	    block = self.getBlockUUID(i+1,city)
             currentID = i+1
-            basinAttList = Attribute()
-            basinAttList.setAttribute("BasinID", currentID)
-            basinAttList.setAttribute("Blocks", len(basins[i]))
+	    block.addAttribute("BasinID",currentID)
+            basinAttList = Component()
+	    city.addComponent(basinAttList, self.basin)
+            basinAttList.addAttribute("BasinID", currentID)
+            basinAttList.addAttribute("Blocks", len(basins[i]))
             
             catchment = 0
             currentBlock = 0
             for j in basins[i]:
-                if blockcityout.getAttributes("BlockID"+str(j)).getAttribute("BasinArea") > catchment:
+		block = self.getBlockUUID(j,city)
+                if block.getAttribute("BasinArea").getDouble() > catchment:
                     currentBlock = j
-                    catchment = blockcityout.getAttributes("BlockID"+str(j)).getAttribute("BasinArea")
+                    catchment = block.getAttribute("BasinArea").getDouble()
             downstream_mostBlock = currentBlock
             
-            basinAttList.setAttribute("DownBlockID", downstream_mostBlock)
+            basinAttList.addAttribute("DownBlockID", downstream_mostBlock)
             
             upstream_string = ""
             for j in basins[i]:
                 upstream_string += str(j)+","
-            basinAttList.setAttribute("UpStr", str(upstream_string))
+	    upstr_attr = Attribute("UpStr")
+	    upstr_attr.setString(str(upstream_string))
+            basinAttList.addAttribute(upstr_attr)
             
             print "Basin No. "+str(currentID)
             print "Blocks Total Number: "+str(len(basins[i]))
             print "Downstream Most Block: "+str(downstream_mostBlock)
             print "Upstream String of Blocks: "+upstream_string
         
-            blockcityout.setAttributes("BasinID"+str(currentID), basinAttList)          #BasinID+number is the basic Attributes Unit
         
-        map_attr.setAttribute("TotalBasins", basin_count)    
-        blockcityout.setAttributes("MapAttributes", map_attr)
-    '''
+        map_attr.addAttribute("TotalBasins", basin_count)
     #NEED TO WRITE SOMETHING THAT CAN SPECIFY THE MAXIMUM BASIN SIZE OF THE SEARCH ALGORITHM!
