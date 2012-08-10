@@ -108,15 +108,15 @@ class GetSystems(Module):
             sys_attr.setAttribute("TotSystems", syscount)
             
             #System Location and scale (BlockID)
-            sys_attr.setAttribute("Location", feature.GetFieldAsInteger("BlockID"))
+            sys_attr.setAttribute("Location", feature.GetFieldAsInteger("Location"))
             scale_code = feature.GetFieldAsInteger("Scale")
             scale = scale_matrix[scale_code]
             sys_attr.setAttribute("Scale", str(scale))
             
             #Loop through all systems and grab the attributes
             for j in range(int(syscount)):
-                #System Type
-                type_code = feature.GetFieldAsInteger("Sys"+str(j+1)+"Type")
+                #System TypeN (Type Numeric, translates the code into string)
+                type_code = feature.GetFieldAsInteger("Sys"+str(j+1)+"TypeN")
                 type = system_type_matrix[system_type_numeric.index(type_code)]
                 sys_attr.setAttribute("Type"+str(j+1), type)
                 

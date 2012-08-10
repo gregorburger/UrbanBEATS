@@ -132,11 +132,6 @@ class techimplement(Module):
         input_res = map_attr.getAttribute("InputReso")      #resolution of input data
         urbansimdata = map_attr.getStringAttribute("UrbanSimData")
         
-        #CONVERSIONS
-        #convert percentages to proportions and proportions to percentages and adjust other necessary
-        #parameters
-        prec_dev_percent = float(self.prec_dev_percent/100)
-        
         
         basins = map_attr.getAttribute("TotalBasins")
         for i in range(int(basins)):

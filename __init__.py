@@ -85,6 +85,7 @@ from techimplement import *             #implements technology configurations in
 ###     commercial packages and preparatory work for simulation
 from performance_config import *		#allows configuration of what performance aspects the model should assess
 from performance_assessment import *	#sets up CityDrain3 simulation file, calls program and runs simulation
+from writeresults2music import *
 
 ### GUI Files that go with these modules include:
 ###		- performance_config.py - set what software packages to use and what performance to simulate
