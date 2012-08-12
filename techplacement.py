@@ -748,10 +748,6 @@ class techplacement(Module):
         else:
             des_attr.setAttribute("BFdescur_path", self.BFdescur_path)
         
-        #Additional Parameter List for MUSIC                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        
-        
-        
         #====================---------------------------------------------------------------
         
         des_attr.setAttribute("Status_GR", self.GRstatus)       #GREEN ROOF
@@ -788,8 +784,6 @@ class techplacement(Module):
         else:
             des_attr.setAttribute("ISdescur_path", self.ISdescur_path)
         
-        #Additional Parameter List for MUSIC                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        
         #====================---------------------------------------------------------------
         
         des_attr.setAttribute("Status_PPL", self.PPLstatus)     #PACKAGED PLANT
@@ -814,8 +808,6 @@ class techplacement(Module):
             des_attr.setAttribute("PBdescur_path", PBdcvpath)
         else:
             des_attr.setAttribute("PBdescur_path", self.PBdescur_path)
-        
-        #Additional Parameter List for MUSIC                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         
         #====================---------------------------------------------------------------
         
@@ -862,8 +854,6 @@ class techplacement(Module):
         else:
             des_attr.setAttribute("WSURdescur_path", self.WSURdescur_path)
         
-        #Additional Parameter List for MUSIC                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        
         #====================---------------------------------------------------------------
         des_attr.setAttribute("Status_SW", self.SWstatus)       #SWALES & BUFFER STRIPS
         des_attr.setAttribute("SWlevel", self.SWlevel)
@@ -878,9 +868,6 @@ class techplacement(Module):
         
         #Design curves coming soon
         
-        
-        
-        #Additional Parameter List for MUSIC                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         
         #====================---------------------------------------------------------------
         des_attr.setAttribute("Status_TPS", self.TPSstatus)     #TREE PITS

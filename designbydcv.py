@@ -51,7 +51,7 @@ def readDCVFile(pathfname, systemtype):
     finaldcv = [[],[],[],[],[],[],[]]
     for i in range(len(designcurve)):
         if i == 0:
-            print designcurve[i]
+            #print designcurve[i]
             continue
         for j in range(len(designcurve[i])):
             finaldcv[j].append(float(designcurve[i][j]))

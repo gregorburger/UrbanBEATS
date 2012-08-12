@@ -845,7 +845,7 @@ class techstrategy_eval(Module):
             
             #BEGIN MONTE CARLO LOOP
             basin_strategies_matrix = []
-            for iterations in range(10):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
+            for iterations in range(1):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
                 print "Iteration No. ", iterations+1," -----------------------"
                 
                 #PART 1a - SETTING UP THE STORAGE CONTAINER OF INFORMATION
@@ -1153,17 +1153,12 @@ class techstrategy_eval(Module):
                 basin_strategies_matrix.append([current_bstrategy.getPropImpServed(), current_bstrategy.getMCAtotscore(), current_bstrategy])
                 output_file.write(str(currentID)+","+str(iterations+1)+","+str(current_bstrategy.getPropImpServed())+","+str(current_bstrategy.getMCAtotscore())+","+str(len(prec_blocks_chosenIDs))+","+str(len(inblocks_chosenIDs))+"\n")
             
-            del current_bstrategy       #delete the reference in current_bstrategy
-            
-            
             #Grab all options within the desired minimum basin target
             #check if they are above the top-ten/number
             final_basin_strategies = []
             for ind_strat in basin_strategies_matrix:
                 if ind_strat[0]/100 > basin_target_min:
                     final_basin_strategies.append(ind_strat)
-            del ind_strat
-            
             
             #Determine the threshold
             if ranktype == "CI":
@@ -1192,11 +1187,12 @@ class techstrategy_eval(Module):
             print ranking_cdf
             
             chosen_strategy_p = rand.random()
+            index = 0
             for i in range(len(ranking_cdf)):
-                if chosen_strategy_p < ranking_cdf[i]:
+                if chosen_strategy_p >= ranking_cdf[i]:
                     index = i
                 else:
-                    pass
+                    continue
             
             top_wsud_strategy = final_basin_strategies[index][2]        #select the final strategy
             basin_strategy_groups.append(top_wsud_strategy)
@@ -1207,13 +1203,13 @@ class techstrategy_eval(Module):
             system_type_numeric = [2463, 7925, 9787, 7663, 4635]                #Think Telephone Buttons :) ('Biof', 'Swal', 'WSUR', 'Pond', 'Infl')
             
             for i in range(len(basinblockIDs)):
-                currentID = basinblockIDs[i]
-                currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))        #attribute list of current block structure
+                currentBlockID = basinblockIDs[i]
+                currentAttList = blockcityin.getAttributes("BlockID"+str(currentBlockID))        #attribute list of current block structure
                 centreX = currentAttList.getAttribute("Centre_x")
                 centreY = currentAttList.getAttribute("Centre_y")
                 
                 #Grab the strategy objects
-                inblock_strat = top_wsud_strategy.getInBlockStrategy(currentID)
+                inblock_strat = top_wsud_strategy.getInBlockStrategy(currentBlockID)
                 if inblock_strat == None:
                     inblock_systems = [0,0,0]
                     inblock_degs = [0,0,0]
@@ -1243,7 +1239,7 @@ class techstrategy_eval(Module):
                     wsud_attr = Attribute()
                     wsud_attr.setAttribute("Scale", j)                          #0 = LOT, 1 = STREET, 2 = NEIGHBOURHOOD, 3 = PRECINCT
                     wsud_attr.setAttribute("TotSystems", 1)
-                    wsud_attr.setAttribute("Location", currentID)
+                    wsud_attr.setAttribute("Location", currentBlockID)
                     print "CurrentWSUD Type"
                     print current_wsud.getType()
                     wsud_attr.setAttribute("Sys"+str(1)+"Type", current_wsud.getType())
@@ -1253,11 +1249,11 @@ class techstrategy_eval(Module):
                     wsud_attr.setAttribute("Sys"+str(1)+"Status", 0)            #0 = Planned, 1 = constructed
                     wsud_attr.setAttribute("Sys"+str(1)+"Year", 9999)           #Year constructed
                     
-                    systemsout.setPoints("BlockID"+str(currentID)+str(scale), plist)
-                    systemsout.setAttributes("BlockID"+str(currentID)+str(scale), wsud_attr)
+                    systemsout.setPoints("BlockID"+str(currentBlockID)+str(scale), plist)
+                    systemsout.setAttributes("BlockID"+str(currentBlockID)+str(scale), wsud_attr)
                 
                 #PRECINCT
-                outblock_strat = top_wsud_strategy.getOutBlockStrategy(currentID)
+                outblock_strat = top_wsud_strategy.getOutBlockStrategy(currentBlockID)
                 if outblock_strat == None:
                     pass
                 else:
@@ -1270,7 +1266,7 @@ class techstrategy_eval(Module):
                     wsud_attr = Attribute()
                     wsud_attr.setAttribute("Scale", 3)                          #0 = LOT, 1 = STREET, 2 = NEIGHBOURHOOD, 3 = PRECINCT
                     wsud_attr.setAttribute("TotSystems", 1)
-                    wsud_attr.setAttribute("Location", currentID)
+                    wsud_attr.setAttribute("Location", currentBlockID)
                     wsud_attr.setAttribute("Sys"+str(1)+"Type", outblock_strat.getType())
                     wsud_attr.setAttribute("Sys"+str(1)+"TypeN", system_type_numeric[system_type_matrix.index(outblock_strat.getType())])
                     wsud_attr.setAttribute("Sys"+str(1)+"Degree", 0)
@@ -1278,8 +1274,8 @@ class techstrategy_eval(Module):
                     wsud_attr.setAttribute("Sys"+str(1)+"Status", 0)            #0 = Planned, 1 = constructed
                     wsud_attr.setAttribute("Sys"+str(1)+"Year", 9999)           #Year constructed
                     
-                    systemsout.setPoints("BlockID"+str(currentID)+str(scale), plist)
-                    systemsout.setAttributes("BlockID"+str(currentID)+str(scale), wsud_attr)
+                    systemsout.setPoints("BlockID"+str(currentBlockID)+str(scale), plist)
+                    systemsout.setAttributes("BlockID"+str(currentBlockID)+str(scale), wsud_attr)
 
             #Write the overarching strategy output to Basin ID
             blockcityout.setAttributes("BasinID"+str(currentID), basin_attr)
@@ -1295,6 +1291,8 @@ class techstrategy_eval(Module):
         #Run the garbage collector
         del basin_strategies_matrix             #delete the basin_strategies_matrix for gc
         del final_basin_strategies              #delete the final_basin_strategies for gc
+        del ind_strat
+        del current_bstrategy       #delete the reference in current_bstrategy
         if garbage.isenabled() == True:
             pass
         else:
