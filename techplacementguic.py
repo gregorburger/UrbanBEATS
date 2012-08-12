@@ -1719,10 +1719,11 @@ class activatetechplacementGUI(QtGui.QDialog):
         
         #Design Information
         #combo box
-        PBspec_matrix = [0.25, 0.5, 0.75, 1.00, 1.25]
+        PBspec_matrix = ["0.25", "0.50", "0.75", "1.00", "1.25"]
         PBspec_MDindex = self.ui.PBspecs_combo.currentIndex()
         PBspec_MD = PBspec_matrix[PBspec_MDindex]
         self.module.setParameterValue("PBspec_MD", str(PBspec_MD))
+        print PBspec_MD
         
         PBmaxsize = str(self.ui.PBmaxsize_box.text())
         self.module.setParameterValue("PBmaxsize", PBmaxsize)
@@ -1936,7 +1937,7 @@ class activatetechplacementGUI(QtGui.QDialog):
         
         #Design Information
         #combo box
-        WSURspec_matrix = [0.25, 0.5, 0.75, 0.25, 0.5, 0.75]
+        WSURspec_matrix = ["0.25", "0.50", "0.75", "0.25", "0.50", "0.75"]
         WSURspec_EDDindex = self.ui.WSURspecs_combo.currentIndex()
         WSURspec_EDD = WSURspec_matrix[WSURspec_EDDindex]
         self.module.setParameterValue("WSURspec_EDD", str(WSURspec_EDD))

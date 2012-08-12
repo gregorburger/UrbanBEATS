@@ -356,8 +356,8 @@ class techplacement(Module):
         self.addParameter(self, "PBdescur_path", VIBe2.STRING)
         
         #Design Information
-        self.PBspec_MD = 1.25
-        self.addParameter(self, "PBspec_MD", VIBe2.DOUBLE)
+        self.PBspec_MD = "1.25"         #need a string for the combo box
+        self.addParameter(self, "PBspec_MD", VIBe2.STRING)
         self.PBmaxsize = 10000           #maximum surface area of system in sqm
         self.addParameter(self, "PBmaxsize", VIBe2.DOUBLE)
 
@@ -463,8 +463,8 @@ class techplacement(Module):
         self.addParameter(self, "WSURdescur_path", VIBe2.STRING)
         
         #Design Information
-        self.WSURspec_EDD = 0.75
-        self.addParameter(self, "WSURspec_EDD", VIBe2.DOUBLE)
+        self.WSURspec_EDD = "0.75"
+        self.addParameter(self, "WSURspec_EDD", VIBe2.STRING)
         self.WSURmaxsize = 10000           #maximum surface area of system in sqm
         self.addParameter(self, "WSURmaxsize", VIBe2.DOUBLE)
 
@@ -651,6 +651,7 @@ class techplacement(Module):
         
         
     def run(self):
+        dcvdirectory = "C:\\Users\\Peter M Bach\\Documents\\UrbanBEATS Development\\__urbanBEATS\\wsuddcurves\\"    
         #Link input vectors with local variables
         blockcityin = self.blockcityin.getItem()
         blockcityout = self.blockcityout.getItem()
@@ -732,12 +733,25 @@ class techplacement(Module):
         des_attr.setAttribute("BFneigh", self.BFneigh)
         des_attr.setAttribute("BFprec", self.BFprec)
         des_attr.setAttribute("BFpollute", self.BFpollute)
-        des_attr.setAttribute("BFdesignUB", self.BFdesignUB)
-        des_attr.setAttribute("BFdescur_path", self.BFdescur_path)
         des_attr.setAttribute("BFspec_EDD", self.BFspec_EDD)
         des_attr.setAttribute("BFspec_FD", self.BFspec_FD)
         des_attr.setAttribute("BFmaxsize", self.BFmaxsize)
         des_attr.setAttribute("BFlined", self.BFlined)
+        
+        #Designcurve
+        #str(dcvdirectory)+BF-EDDx.xm-FDx.xm-DC.dcv
+        BFdcvpath = str(dcvdirectory)+"BF-EDD"+str(self.BFspec_EDD)+"m-FD"+str(self.BFspec_FD)+"m-DC.dcv"
+        print BFdcvpath
+        des_attr.setAttribute("BFdesignUB", self.BFdesignUB)
+        if self.BFdesignUB == True:
+            des_attr.setAttribute("BFdescur_path", BFdcvpath)
+        else:
+            des_attr.setAttribute("BFdescur_path", self.BFdescur_path)
+        
+        #Additional Parameter List for MUSIC                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        
+        
+        
         #====================---------------------------------------------------------------
         
         des_attr.setAttribute("Status_GR", self.GRstatus)       #GREEN ROOF
@@ -761,12 +775,21 @@ class techplacement(Module):
         des_attr.setAttribute("ISneigh", self.ISneigh)
         des_attr.setAttribute("ISflow", self.ISflow)
         des_attr.setAttribute("ISpollute", self.ISpollute)
-        des_attr.setAttribute("ISdesignUB", self.ISdesignUB)
-        des_attr.setAttribute("ISdescur_path", self.ISdescur_path)
         des_attr.setAttribute("ISspec_EDD", self.ISspec_EDD)
         des_attr.setAttribute("ISspec_FD", self.ISspec_FD)
         des_attr.setAttribute("ISmaxsize", self.ISmaxsize)
         des_attr.setAttribute("IS_2Dmodel", self.IS_2Dmodel)
+        
+        ISdcvpath = str(dcvdirectory)+"IS-EDD"+str(self.BFspec_EDD)+"m-FD"+str(self.BFspec_FD)+"m-DC.dcv"
+        print ISdcvpath
+        des_attr.setAttribute("ISdesignUB", self.ISdesignUB)
+        if self.ISdesignUB == True:
+            des_attr.setAttribute("ISdescur_path", ISdcvpath)
+        else:
+            des_attr.setAttribute("ISdescur_path", self.ISdescur_path)
+        
+        #Additional Parameter List for MUSIC                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        
         #====================---------------------------------------------------------------
         
         des_attr.setAttribute("Status_PPL", self.PPLstatus)     #PACKAGED PLANT
@@ -781,10 +804,19 @@ class techplacement(Module):
         des_attr.setAttribute("PBprec", self.PBprec)
         des_attr.setAttribute("PBflow", self.PBflow)
         des_attr.setAttribute("PBpollute", self.PBpollute)
-        des_attr.setAttribute("PBdesignUB", self.PBdesignUB)
-        des_attr.setAttribute("PBdescur_path", self.PBdescur_path)
         des_attr.setAttribute("PBspec_MD", self.PBspec_MD)
         des_attr.setAttribute("PBmaxsize", self.PBmaxsize)
+        
+        PBdcvpath = str(dcvdirectory)+"PB-MD"+str(self.PBspec_MD)+"m-DC.dcv"
+        print PBdcvpath
+        des_attr.setAttribute("PBdesignUB", self.PBdesignUB)
+        if self.PBdesignUB == True:
+            des_attr.setAttribute("PBdescur_path", PBdcvpath)
+        else:
+            des_attr.setAttribute("PBdescur_path", self.PBdescur_path)
+        
+        #Additional Parameter List for MUSIC                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        
         #====================---------------------------------------------------------------
         
         des_attr.setAttribute("Status_PP", self.PPstatus)       #POROUS PAVEMENTS
@@ -819,10 +851,19 @@ class techplacement(Module):
         des_attr.setAttribute("WSURprec", self.WSURprec)
         des_attr.setAttribute("WSURflow", self.WSURflow)
         des_attr.setAttribute("WSURpollute", self.WSURpollute)
-        des_attr.setAttribute("WSURdesignUB", self.WSURdesignUB)
-        des_attr.setAttribute("WSURdescur_path", self.WSURdescur_path)
         des_attr.setAttribute("WSURspec_EDD", self.WSURspec_EDD)
         des_attr.setAttribute("WSURmaxsize", self.WSURmaxsize)
+        
+        WSURdcvpath = str(dcvdirectory)+"WSUR-EDD"+str(self.WSURspec_EDD)+"m-DC.dcv"
+        print WSURdcvpath
+        des_attr.setAttribute("WSURdesignUB", self.WSURdesignUB)
+        if self.WSURdesignUB == True:
+            des_attr.setAttribute("WSURdescur_path", WSURdcvpath)
+        else:
+            des_attr.setAttribute("WSURdescur_path", self.WSURdescur_path)
+        
+        #Additional Parameter List for MUSIC                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        
         #====================---------------------------------------------------------------
         des_attr.setAttribute("Status_SW", self.SWstatus)       #SWALES & BUFFER STRIPS
         des_attr.setAttribute("SWlevel", self.SWlevel)
@@ -834,6 +875,13 @@ class techplacement(Module):
         des_attr.setAttribute("SWdescur_path", self.SWdescur_path)
         des_attr.setAttribute("SWspec", self.SWspec)
         des_attr.setAttribute("SWmaxsize", self.SWmaxsize)
+        
+        #Design curves coming soon
+        
+        
+        
+        #Additional Parameter List for MUSIC                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        
         #====================---------------------------------------------------------------
         des_attr.setAttribute("Status_TPS", self.TPSstatus)     #TREE PITS
         des_attr.setAttribute("TPSlevel", self.TPSlevel)

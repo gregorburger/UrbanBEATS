@@ -159,7 +159,15 @@ class techopp_neigh(Module):
                     neightechs = []
                     for j in techcheckedneigh:
                         maxsize = des_attr.getAttribute(str(j)+"maxsize")           #gets the specific system's maximum size
-                        Asystem = eval('td.design_'+str(j)+'('+str(Aimpneigh)+','+str(targets_runoff)+','+str(targets_TSS)+','+str(targets_TP)+','+str(targets_TN)+','+str(soilK)+','+str(maxsize)+')')
+                        dcvpath = des_attr.getStringAttribute(str(j)+"descur_path")
+                        system_tarQ = targets_runoff * float(des_attr.getAttribute(str(j)+"flow"))
+                        system_tarTSS = targets_TSS * float(des_attr.getAttribute(str(j)+"pollute"))
+                        system_tarTP = targets_TP * float(des_attr.getAttribute(str(j)+"pollute"))
+                        system_tarTN = targets_TN * float(des_attr.getAttribute(str(j)+"pollute"))
+                        print "Aimpneigh: "+str(Aimpneigh)+", System Targets: "+str(system_tarQ)+", "+str(system_tarTSS)+", "+str(system_tarTP)+", "+str(system_tarTN)+" Soil K: "+str(soilK)+", Max Size: "+str(maxsize)
+                        
+                        Asystem = eval('td.design_'+str(j)+'('+str(Aimpneigh)+',"'+str(dcvpath)+'",'+str(system_tarQ)+','+str(system_tarTSS)+','+str(system_tarTP)+','+str(system_tarTN)+','+str(soilK)+','+str(maxsize)+')')
+                        
                         neightechs.append([j, Asystem, Aimpneigh])
                     print "Neighbourhood-Scale Technology Areas Required (in sqm)"
                     print neightechs
