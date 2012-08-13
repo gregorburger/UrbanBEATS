@@ -198,7 +198,7 @@ class delinbasin(Module):
                 
         print "total basins = "+str(basin_count)
         
-#########################################################
+
         downstreamIDs = []
         #Write code to transfer information into vector
         for i in range(int(blocks_num)):
