@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 #from pyvibe import *
+from pydynamind import *
 import random
 import math
 
@@ -63,6 +64,11 @@ class urbplanbb(Module):
 	@ingroup DAnCE4Water
 	@author Peter M Bach
 	"""
+    def StringToAttribute(self,AttrName, Value):
+	attr = Attribute(AttrName)
+	attr.setString(str(Value))
+	return attr
+
 
     def __init__(self):
         Module.__init__(self)
@@ -74,20 +80,20 @@ class urbplanbb(Module):
         self.existingblock = VectorDataIn
         self.patchcityout = VectorDataIn
         self.planningrules = VectorDataIn
-	'''
+
         self.createParameter( "blockcityin", VIBe2.VECTORDATA_IN)
         self.createParameter( "existingblock", VIBe2.VECTORDATA_IN)
         self.createParameter( "blockcityout", VIBe2.VECTORDATA_OUT)
         self.createParameter( "patchcityin", VIBe2.VECTORDATA_IN)
         self.createParameter( "patchcityout", VIBe2.VECTORDATA_OUT)
         self.createParameter( "planningrules", VIBe2.VECTORDATA_OUT)
-        '''
+        
         self.reportin = VectorDataIn
         self.reportout = VectorDataIn
-	'''        
+	       
 	self.createParameter( "reportin", VIBe2.VECTORDATA_IN)
         self.createParameter( "reportout", VIBe2.VECTORDATA_OUT)
-        
+      	   '''
         #parameters for blocks analysis (these are contained in the GUI)
         
         ############################
@@ -117,7 +123,7 @@ class urbplanbb(Module):
         self.extra_comm_area = 10               #extra space for communal area
         self.createParameter("occup_avg", DOUBLE,"")
         self.createParameter("occup_max", DOUBLE,"")
-        self.createParameter("person_space", DOUBLE)
+        self.createParameter("person_space", DOUBLE,"")
         self.createParameter("extra_comm_area", DOUBLE,"")
         
         self.setback_f_min = 2                  #minimum front setback
@@ -203,9 +209,9 @@ class urbplanbb(Module):
         self.com_fsetback_min = 1               #minimum front setback [m]
         self.com_setback_auto = False           #determine setback automatically?
         self.com_floors_max = 3                 #maximum allowable floors
-        self.createParameter(self, "com_fsetback_min", DOUBLE,"")
-        self.createParameter(self, "com_setback_auto", BOOL,"")
-        self.createParameter(self, "com_floors_max", DOUBLE,"")
+        self.createParameter( "com_fsetback_min", DOUBLE,"")
+        self.createParameter( "com_setback_auto", BOOL,"")
+        self.createParameter( "com_floors_max", DOUBLE,"")
         
         #--> Commercial & Industrial Zones :: Car Parking and Service Area
         self.com_carpark_dmin = 17              #minimum depth of frontage parking area [m]
@@ -463,33 +469,224 @@ class urbplanbb(Module):
         
         #------------------------------------------
         #END OF INPUT PARAMETER LIST
+	
+	#VIEWS-------------------------------------
+	self.mapattributes = View("Mapattributes", COMPONENT,READ)
+	self.mapattributes.getAttribute("NumBlocks")
+	self.mapattributes.getAttribute("WidthBlocks")
+	self.mapattributes.getAttribute("HeightBlocks")
+	self.mapattributes.getAttribute("InputReso")
+	
+	self.basin = View("Basin", COMPONENT, READ)
+	self.basin.addAttribute("BasinID")
+	
+	self.planGen = View("PlanGen", COMPONENT, WRITE)
+        self.planGen.addAttribute("maximperv")
+        self.planGen.addAttribute("maxsitecover")
+        self.planGen.addAttribute("locality_mun_trans")
+
+	self.planRes = View("PlanRes", COMPONENT, WRITE)
+	self.planRes.addAttribute("occup_avg")
+        self.planRes.addAttribute("occup_max")
+        self.planRes.addAttribute("person_space")
+        self.planRes.addAttribute("extra_comm_area")
         
+        self.planRes.addAttribute("setback_f_min")
+        self.planRes.addAttribute("setback_f_max")
+        self.planRes.addAttribute("setback_s_min")
+        self.planRes.addAttribute("setback_s_max")
+        
+        self.planRes.addAttribute("carports_max")
+        self.planRes.addAttribute("garage_incl")
+        self.planRes.addAttribute("w_driveway_min")
+        self.planRes.addAttribute("patio_area_max")
+        self.planRes.addAttribute("patio_covered")
+        self.planRes.addAttribute("floor_num_max")
+        self.planRes.addAttribute("floor_autobuild")
+        
+        self.planRes.addAttribute("occup_flat_avg")
+        self.planRes.addAttribute("commspace_indoor")
+        self.planRes.addAttribute("commspace_outdoor")
+        self.planRes.addAttribute("flat_area_max")
+        self.planRes.addAttribute("setback_HDR_avg")
+        self.planRes.addAttribute("setback_HDR_auto")
+        self.planRes.addAttribute("roof_connected")
+        self.planRes.addAttribute("imperv_prop_dced")
+
+	self.planNonres = View("PlanNonres",COMPONENT,WRITE)
+	self.planNonres.addAttribute("employment_data")
+        self.planNonres.addAttribute("employment_rad")
+        self.planNonres.addAttribute("employment_rate")
+        self.planNonres.addAttribute("employment_adjust")
+        self.planNonres.addAttribute("com_spacevary_check")
+        
+        self.planNonres.addAttribute("Atrad_cc")
+        self.planNonres.addAttribute("Atrad_uf")
+        self.planNonres.addAttribute("Aoff_cc")
+        self.planNonres.addAttribute("Aoff_uf")
+        self.planNonres.addAttribute("Alind_cc")
+        self.planNonres.addAttribute("Alind_uf")
+        self.planNonres.addAttribute("Ahind_cc")
+        self.planNonres.addAttribute("Ahind_uf")
+        self.planNonres.addAttribute("ddecay_type")
+        
+        self.planNonres.addAttribute("com_fsetback_min")
+        self.planNonres.addAttribute("com_setback_auto")
+        self.planNonres.addAttribute("com_floors_max")
+        
+        self.planNonres.addAttribute("com_carpark_dmin")
+        self.planNonres.addAttribute("com_carparkW")
+        self.planNonres.addAttribute("com_carparkD")
+        self.planNonres.addAttribute("com_carpark_avgimp")
+        self.planNonres.addAttribute("com_carpark_share")
+        self.planNonres.addAttribute("com_service_dmin")
+        
+        self.planNonres.addAttribute("access_perp")
+        self.planNonres.addAttribute("access_parall")
+        self.planNonres.addAttribute("access_cds")
+        self.planNonres.addAttribute("access_parall_medwidth")
+        self.planNonres.addAttribute("access_cds_circlerad")
+        self.planNonres.addAttribute("access_ped_include")
+        
+        self.planNonres.addAttribute("lscape_hsbal")
+        self.planNonres.addAttribute("lscape_avgimp_dced")
+
+
+	self.planFacilities = View("PlanFacilities",COMPONENT,WRITE)
+
+	self.planFacilities.addAttribute("mun_explicit")
+        self.planFacilities.addAttribute("edu_school")
+        self.planFacilities.addAttribute("edu_uni")
+        self.planFacilities.addAttribute("edu_lib")
+        
+        self.planFacilities.addAttribute("civ_hospital")
+        self.planFacilities.addAttribute("civ_clinic")
+        self.planFacilities.addAttribute("civ_police")
+        self.planFacilities.addAttribute("civ_fire")
+        self.planFacilities.addAttribute("civ_jail")
+        self.planFacilities.addAttribute("civ_worship")
+        self.planFacilities.addAttribute("civ_leisure")
+        self.planFacilities.addAttribute("civ_museum")
+        self.planFacilities.addAttribute("civ_zoo")
+        self.planFacilities.addAttribute("civ_stadium")
+        self.planFacilities.addAttribute("civ_racing")
+        self.planFacilities.addAttribute("civ_cemetery")
+        
+        self.planFacilities.addAttribute("sut_waste")
+        self.planFacilities.addAttribute("sut_gas")
+        self.planFacilities.addAttribute("sut_electricity")
+        self.planFacilities.addAttribute("sut_water")
+        self.planFacilities.addAttribute("sut_lgoffice")
+        
+        self.planFacilities.addAttribute("trans_explicit")
+        self.planFacilities.addAttribute("trans_airport")
+        self.planFacilities.addAttribute("trans_comseaport")
+        self.planFacilities.addAttribute("trans_indseaport")
+        self.planFacilities.addAttribute("trans_busdepot")
+        self.planFacilities.addAttribute("trans_railterminal")
+
+	self.planSpaces = View("PlanSpaces",COMPONENT,WRITE)
+
+        self.planSpaces.addAttribute("pg_clustering_degree")
+        self.planSpaces.addAttribute("pg_greengrey_ratio")
+        self.planSpaces.addAttribute("pg_linear_threshold")
+        
+        self.planSpaces.addAttribute("pg_footpath_cross")
+        self.planSpaces.addAttribute("pg_footpath_circle")
+        self.planSpaces.addAttribute("pg_footpath_perimeter")
+        self.planSpaces.addAttribute("pg_circle_radius")
+        self.planSpaces.addAttribute("pg_circle_accesses")
+        self.planSpaces.addAttribute("pg_perimeter_setback")
+        self.planSpaces.addAttribute("pg_perimeter_accesses")
+        self.planSpaces.addAttribute("pg_footpath_avgW")
+        self.planSpaces.addAttribute("pg_footpath_impdced")
+        self.planSpaces.addAttribute("pg_footpath_varyW")
+        self.planSpaces.addAttribute("pg_footpath_multiply")
+        
+        self.planSpaces.addAttribute("rfw_partialimp_check")
+        self.planSpaces.addAttribute("rfw_partialimp")
+        self.planSpaces.addAttribute("rfw_areausable_check")
+        self.planSpaces.addAttribute("rfw_areausable")
+        
+        #UNCLASSIFIED GROUP
+        self.planSpaces.addAttribute("unc_merge")
+        self.planSpaces.addAttribute("unc_unc2square")
+        self.planSpaces.addAttribute("unc_unc2square_weight")
+        self.planSpaces.addAttribute("unc_unc2park")
+        self.planSpaces.addAttribute("unc_unc2park_weight")
+        self.planSpaces.addAttribute("unc_unc2road")
+        self.planSpaces.addAttribute("unc_unc2road_weight")
+        self.planSpaces.addAttribute("unc_landmark")
+        self.planSpaces.addAttribute("unc_landmark_threshold")
+        self.planSpaces.addAttribute("unc_landmark_avgimp")
+        self.planSpaces.addAttribute("unc_landmark_otherwater")
+        
+        #UNDEVELOPED GROUP
+        self.planSpaces.addAttribute("und_whattodo")
+        self.planSpaces.addAttribute("und_allowspace")
+        self.planSpaces.addAttribute("und_autodeterminetype")
+                
+        #ROADS & HIGHWAYS GROUP
+        self.planSpaces.addAttribute("w_resfootpath_min")
+        self.planSpaces.addAttribute("w_resfootpath_max")
+        self.planSpaces.addAttribute("w_resnaturestrip_min")
+        self.planSpaces.addAttribute("w_resnaturestrip_max")
+        self.planSpaces.addAttribute("w_resfootpath_med")
+        self.planSpaces.addAttribute("w_resnaturestrip_med")
+        
+        self.planSpaces.addAttribute("w_comfootpath_min")
+        self.planSpaces.addAttribute("w_comfootpath_max")
+        self.planSpaces.addAttribute("w_comnaturestrip_min")
+        self.planSpaces.addAttribute("w_comnaturestrip_max")
+        self.planSpaces.addAttribute("w_comfootpath_med")
+        self.planSpaces.addAttribute("w_comnaturestrip_med")
+        
+        self.planSpaces.addAttribute("w_collectlane_min")
+        self.planSpaces.addAttribute("w_collectlane_max")
+        self.planSpaces.addAttribute("w_collectlane_med")
+        self.planSpaces.addAttribute("collect_crossfall")
+        
+        self.planSpaces.addAttribute("w_artlane_min")
+        self.planSpaces.addAttribute("w_artlane_max")
+        self.planSpaces.addAttribute("w_artlane_med")
+        self.planSpaces.addAttribute("w_artmedian")
+        self.planSpaces.addAttribute("artmedian_reserved")
+        self.planSpaces.addAttribute("art_crossfall")
+        
+        self.planSpaces.addAttribute("w_hwylane_avg")
+        self.planSpaces.addAttribute("w_hwymedian")
+        self.planSpaces.addAttribute("hwy_buffered")
+        self.planSpaces.addAttribute("hwymedian_reserved")
+        self.planSpaces.addAttribute("hwy_crossfall")
+
+
+	#Datastream
+	datastream = []
+	datastream.append(self.mapattributes)
+	datastream.append(self.basin)
+	datastream.append(self.planGen)
+	datastream.append(self.planRes)
+	datastream.append(self.planNonres)
+	datastream.append(self.planFacilities)
+	datastream.append(self.planSpaces)
+	
+	self.addData("City", datastream)
+
         
     def run(self):
-        #Link input vectors with local variables
-        blockcityin = self.blockcityin.getItem()                #incoming vector data from delinblocks
-        blockcityout = self.blockcityout.getItem()              #outgoing vector data to next module
-        existingblock = self.existingblock.getItem()            #incoming existing vector data from previous module
-        patchcityin = self.patchcityin.getItem()
-        patchcityout = self.patchcityout.getItem()
-        planningrules = self.planningrules.getItem()
-        
-        map_attr = blockcityin.getAttributes("MapAttributes")   #GET map attributes
+	city = self.getData("City")
+	#self.initBasinIDtoUUID(city)
+	strvec = city.getUUIDsOfComponentsInView(self.mapattributes)
+        map_attr = city.getComponent(strvec[0])   #GET map attributes
 
         #get data needed to being for loop analysis
-        blocks_num = map_attr.getAttribute("NumBlocks")     #number of blocks to loop through
-        blocks_size = map_attr.getAttribute("BlockSize")    #size of block
-        map_w = map_attr.getAttribute("WidthBlocks")        #num of blocks wide
-        map_h = map_attr.getAttribute("HeightBlocks")       #num of blocks tall
-        input_res = map_attr.getAttribute("InputReso")      #resolution of input data
-        urbansimdata = map_attr.getStringAttribute("UrbanSimData")
-        
-        basins = map_attr.getAttribute("TotalBasins")
-        for i in range(int(basins)):
-            currentID = i+1
-            basin_attr = blockcityin.getAttributes("BasinID"+str(currentID))
-            blockcityout.setAttributes("BasinID"+str(currentID), basin_attr)
-        
+        blocks_num = map_attr.getAttribute("NumBlocks").getDouble()    #number of blocks to loop through
+        blocks_size = map_attr.getAttribute("BlockSize").getDouble()    #size of block
+        map_w = map_attr.getAttribute("WidthBlocks").getDouble()        #num of blocks wide
+        map_h = map_attr.getAttribute("HeightBlocks").getDouble()       #num of blocks tall
+        input_res = map_attr.getAttribute("InputReso").getDouble()      #resolution of input data
+
+
         #SAMPLING RANGE ADJUSTMENT
         #if parameter range median boxes were checked, adjust these parameters to reflect that
         if self.w_resfootpath_med == True:
@@ -531,264 +728,210 @@ class urbplanbb(Module):
         #these are grouped into a few useful groups and written to the planning rules vector
         
         #Groups for General
-        plan_gen = Attribute()
+        plan_gen = Component()
+        city.addComponent(plan_gen,self.planGen)
+        plan_gen.addAttribute("maximperv", self.maximperv)
+        plan_gen.addAttribute("maxsitecover", self.maxsitecover)
+        plan_gen.addAttribute("locality_mun_trans", self.locality_mun_trans)
         
-        plan_gen.setAttribute("maximperv", self.maximperv)
-        plan_gen.setAttribute("maxsitecover", self.maxsitecover)
-        plan_gen.setAttribute("locality_mun_trans", self.locality_mun_trans)
-        
-        planningrules.setAttributes("GeneralRules", plan_gen)
+        #planningrules.setAttributes("GeneralRules", plan_gen)
         
         #Groups for RES
-        plan_res = Attribute()
+        plan_res = Component()
+	city.addComponent(plan_res, self.planRes)
         
-        plan_res.setAttribute("occup_avg", self.occup_avg)
-        plan_res.setAttribute("occup_max", self.occup_max)
-        plan_res.setAttribute("person_space", self.person_space)
-        plan_res.setAttribute("extra_comm_area", self.extra_comm_area)
+        plan_res.addAttribute("occup_avg", self.occup_avg)
+        plan_res.addAttribute("occup_max", self.occup_max)
+        plan_res.addAttribute("person_space", self.person_space)
+        plan_res.addAttribute("extra_comm_area", self.extra_comm_area)
         
-        plan_res.setAttribute("setback_f_min", self.setback_f_min)
-        plan_res.setAttribute("setback_f_max", self.setback_f_max)
-        plan_res.setAttribute("setback_s_min", self.setback_s_min)
-        plan_res.setAttribute("setback_s_max", self.setback_s_max)
+        plan_res.addAttribute("setback_f_min", self.setback_f_min)
+        plan_res.addAttribute("setback_f_max", self.setback_f_max)
+        plan_res.addAttribute("setback_s_min", self.setback_s_min)
+        plan_res.addAttribute("setback_s_max", self.setback_s_max)
         
-        plan_res.setAttribute("carports_max", self.carports_max)
-        plan_res.setAttribute("garage_incl", self.garage_incl)
-        plan_res.setAttribute("w_driveway_min", self.w_driveway_min)
-        plan_res.setAttribute("patio_area_max", self.patio_area_max)
-        plan_res.setAttribute("patio_covered", self.patio_covered)
-        plan_res.setAttribute("floor_num_max", self.floor_num_max)
-        plan_res.setAttribute("floor_autobuild", self.floor_autobuild)
+        plan_res.addAttribute("carports_max", self.carports_max)
+        plan_res.addAttribute("garage_incl", self.garage_incl)
+        plan_res.addAttribute("w_driveway_min", self.w_driveway_min)
+        plan_res.addAttribute("patio_area_max", self.patio_area_max)
+        plan_res.addAttribute("patio_covered", self.patio_covered)
+        plan_res.addAttribute("floor_num_max", self.floor_num_max)
+        plan_res.addAttribute("floor_autobuild", self.floor_autobuild)
         
-        plan_res.setAttribute("occup_flat_avg", self.occup_flat_avg)
-        plan_res.setAttribute("commspace_indoor", self.commspace_indoor)
-        plan_res.setAttribute("commspace_outdoor", self.commspace_outdoor)
-        plan_res.setAttribute("flat_area_max", self.flat_area_max)
-        plan_res.setAttribute("setback_HDR_avg", self.setback_HDR_avg)
-        plan_res.setAttribute("setback_HDR_auto", self.setback_HDR_auto)
-        plan_res.setAttribute("roof_connected", self.roof_connected)
-        plan_res.setAttribute("imperv_prop_dced", self.imperv_prop_dced)
+        plan_res.addAttribute("occup_flat_avg", self.occup_flat_avg)
+        plan_res.addAttribute("commspace_indoor", self.commspace_indoor)
+        plan_res.addAttribute("commspace_outdoor", self.commspace_outdoor)
+        plan_res.addAttribute("flat_area_max", self.flat_area_max)
+        plan_res.addAttribute("setback_HDR_avg", self.setback_HDR_avg)
+        plan_res.addAttribute("setback_HDR_auto", self.setback_HDR_auto)
+
+	#roof_connected_attr = Attribute("roof_connected")
+	#roof_connected_attr.setString(str(self.roof_connected))
+        plan_res.addAttribute(self.StringToAttribute("roof_connected", self.roof_connected))
+
+        plan_res.addAttribute("imperv_prop_dced", self.imperv_prop_dced)
         
-        planningrules.setAttributes("ResidentialRules", plan_res)
+        #planningrules.setAttributes("ResidentialRules", plan_res)
         
         #Groups for NonRES
-        plan_nonres = Attribute()
+        plan_nonres = Component()
+	city.addComponent(plan_nonres,self.planNonres)
         
-        plan_nonres.setAttribute("employment_data", self.employment_data)
-        plan_nonres.setAttribute("employment_rad", self.employment_rad)
-        plan_nonres.setAttribute("employment_rate", self.employment_rate)
-        plan_nonres.setAttribute("employment_adjust", self.employment_adjust)
-        plan_nonres.setAttribute("com_spacevary_check", self.com_spacevary_check)
+        plan_nonres.addAttribute(self.StringToAttribute("employment_data", self.employment_data))
+	
+        plan_nonres.addAttribute("employment_rad", self.employment_rad)
+        plan_nonres.addAttribute("employment_rate", self.employment_rate)
+        plan_nonres.addAttribute("employment_adjust", self.employment_adjust)
+        plan_nonres.addAttribute("com_spacevary_check", self.com_spacevary_check)
         
-        plan_nonres.setAttribute("Atrad_cc", self.Atrad_cc)
-        plan_nonres.setAttribute("Atrad_uf", self.Atrad_uf)
-        plan_nonres.setAttribute("Aoff_cc", self.Aoff_cc)
-        plan_nonres.setAttribute("Aoff_uf", self.Aoff_uf)
-        plan_nonres.setAttribute("Alind_cc", self.Alind_cc)
-        plan_nonres.setAttribute("Alind_uf", self.Alind_uf)
-        plan_nonres.setAttribute("Ahind_cc", self.Ahind_cc)
-        plan_nonres.setAttribute("Ahind_uf", self.Ahind_uf)
-        plan_nonres.setAttribute("ddecay_type", self.ddecay_type)
+        plan_nonres.addAttribute("Atrad_cc", self.Atrad_cc)
+        plan_nonres.addAttribute("Atrad_uf", self.Atrad_uf)
+        plan_nonres.addAttribute("Aoff_cc", self.Aoff_cc)
+        plan_nonres.addAttribute("Aoff_uf", self.Aoff_uf)
+        plan_nonres.addAttribute("Alind_cc", self.Alind_cc)
+        plan_nonres.addAttribute("Alind_uf", self.Alind_uf)
+        plan_nonres.addAttribute("Ahind_cc", self.Ahind_cc)
+        plan_nonres.addAttribute("Ahind_uf", self.Ahind_uf)
+        plan_nonres.addAttribute(self.StringToAttribute("ddecay_type", self.ddecay_type))
         
-        plan_nonres.setAttribute("com_fsetback_min", self.com_fsetback_min)
-        plan_nonres.setAttribute("com_setback_auto", self.com_setback_auto)
-        plan_nonres.setAttribute("com_floors_max", self.com_floors_max)
+        plan_nonres.addAttribute("com_fsetback_min", self.com_fsetback_min)
+        plan_nonres.addAttribute("com_setback_auto", self.com_setback_auto)
+        plan_nonres.addAttribute("com_floors_max", self.com_floors_max)
         
-        plan_nonres.setAttribute("com_carpark_dmin", self.com_carpark_dmin)
-        plan_nonres.setAttribute("com_carparkW", self.com_carparkW)
-        plan_nonres.setAttribute("com_carparkD", self.com_carparkD)
-        plan_nonres.setAttribute("com_carpark_avgimp", self.com_carpark_avgimp)
-        plan_nonres.setAttribute("com_carpark_share", self.com_carpark_share)
-        plan_nonres.setAttribute("com_service_dmin", self.com_service_dmin)
+        plan_nonres.addAttribute("com_carpark_dmin", self.com_carpark_dmin)
+        plan_nonres.addAttribute("com_carparkW", self.com_carparkW)
+        plan_nonres.addAttribute("com_carparkD", self.com_carparkD)
+        plan_nonres.addAttribute("com_carpark_avgimp", self.com_carpark_avgimp)
+        plan_nonres.addAttribute("com_carpark_share", self.com_carpark_share)
+        plan_nonres.addAttribute("com_service_dmin", self.com_service_dmin)
         
-        plan_nonres.setAttribute("access_perp", self.access_perp)
-        plan_nonres.setAttribute("access_parall", self.access_parall)
-        plan_nonres.setAttribute("access_cds", self.access_cds)
-        plan_nonres.setAttribute("access_parall_medwidth", self.access_parall_medwidth)
-        plan_nonres.setAttribute("access_cds_circlerad", self.access_cds_circlerad)
-        plan_nonres.setAttribute("access_ped_include", self.access_ped_include)
+        plan_nonres.addAttribute("access_perp", self.access_perp)
+        plan_nonres.addAttribute("access_parall", self.access_parall)
+        plan_nonres.addAttribute("access_cds", self.access_cds)
+        plan_nonres.addAttribute("access_parall_medwidth", self.access_parall_medwidth)
+        plan_nonres.addAttribute("access_cds_circlerad", self.access_cds_circlerad)
+        plan_nonres.addAttribute("access_ped_include", self.access_ped_include)
         
-        plan_nonres.setAttribute("lscape_hsbal", self.lscape_hsbal)
-        plan_nonres.setAttribute("lscape_avgimp_dced", self.lscape_avgimp_dced)
+        plan_nonres.addAttribute("lscape_hsbal", self.lscape_hsbal)
+        plan_nonres.addAttribute("lscape_avgimp_dced", self.lscape_avgimp_dced)
         
-        planningrules.setAttributes("NonResRules", plan_nonres)
+        #planningrules.setAttributes("NonResRules", plan_nonres)
         
         #Groups for Facilities
-        plan_facilities = Attribute()
+        plan_facilities = Component()
+	city.addComponent(plan_facilities, self.planFacilities)
         
-        plan_facilities.setAttribute("mun_explicit", self.mun_explicit)
-        plan_facilities.setAttribute("edu_school", self.edu_school)
-        plan_facilities.setAttribute("edu_uni", self.edu_uni)
-        plan_facilities.setAttribute("edu_lib", self.edu_lib)
+        plan_facilities.addAttribute("mun_explicit", self.mun_explicit)
+        plan_facilities.addAttribute("edu_school", self.edu_school)
+        plan_facilities.addAttribute("edu_uni", self.edu_uni)
+        plan_facilities.addAttribute("edu_lib", self.edu_lib)
         
-        plan_facilities.setAttribute("civ_hospital", self.civ_hospital)
-        plan_facilities.setAttribute("civ_clinic", self.civ_clinic)
-        plan_facilities.setAttribute("civ_police", self.civ_police)
-        plan_facilities.setAttribute("civ_fire", self.civ_fire)
-        plan_facilities.setAttribute("civ_jail", self.civ_jail)
-        plan_facilities.setAttribute("civ_worship", self.civ_worship)
-        plan_facilities.setAttribute("civ_leisure", self.civ_leisure)
-        plan_facilities.setAttribute("civ_museum", self.civ_museum)
-        plan_facilities.setAttribute("civ_zoo", self.civ_zoo)
-        plan_facilities.setAttribute("civ_stadium", self.civ_stadium)
-        plan_facilities.setAttribute("civ_racing", self.civ_racing)
-        plan_facilities.setAttribute("civ_cemetery", self.civ_cemetery)
+        plan_facilities.addAttribute("civ_hospital", self.civ_hospital)
+        plan_facilities.addAttribute("civ_clinic", self.civ_clinic)
+        plan_facilities.addAttribute("civ_police", self.civ_police)
+        plan_facilities.addAttribute("civ_fire", self.civ_fire)
+        plan_facilities.addAttribute("civ_jail", self.civ_jail)
+        plan_facilities.addAttribute("civ_worship", self.civ_worship)
+        plan_facilities.addAttribute("civ_leisure", self.civ_leisure)
+        plan_facilities.addAttribute("civ_museum", self.civ_museum)
+        plan_facilities.addAttribute("civ_zoo", self.civ_zoo)
+        plan_facilities.addAttribute("civ_stadium", self.civ_stadium)
+        plan_facilities.addAttribute("civ_racing", self.civ_racing)
+        plan_facilities.addAttribute("civ_cemetery", self.civ_cemetery)
         
-        plan_facilities.setAttribute("sut_waste", self.sut_waste)
-        plan_facilities.setAttribute("sut_gas", self.sut_gas)
-        plan_facilities.setAttribute("sut_electricity", self.sut_electricity)
-        plan_facilities.setAttribute("sut_water", self.sut_water)
-        plan_facilities.setAttribute("sut_lgoffice", self.sut_lgoffice)
+        plan_facilities.addAttribute("sut_waste", self.sut_waste)
+        plan_facilities.addAttribute("sut_gas", self.sut_gas)
+        plan_facilities.addAttribute("sut_electricity", self.sut_electricity)
+        plan_facilities.addAttribute("sut_water", self.sut_water)
+        plan_facilities.addAttribute("sut_lgoffice", self.sut_lgoffice)
         
-        plan_facilities.setAttribute("trans_explicit", self.trans_explicit)
-        plan_facilities.setAttribute("trans_airport", self.trans_airport)
-        plan_facilities.setAttribute("trans_comseaport", self.trans_comseaport)
-        plan_facilities.setAttribute("trans_indseaport", self.trans_indseaport)
-        plan_facilities.setAttribute("trans_busdepot", self.trans_busdepot)
-        plan_facilities.setAttribute("trans_railterminal", self.trans_railterminal)
+        plan_facilities.addAttribute("trans_explicit", self.trans_explicit)
+        plan_facilities.addAttribute("trans_airport", self.trans_airport)
+        plan_facilities.addAttribute("trans_comseaport", self.trans_comseaport)
+        plan_facilities.addAttribute("trans_indseaport", self.trans_indseaport)
+        plan_facilities.addAttribute("trans_busdepot", self.trans_busdepot)
+        plan_facilities.addAttribute("trans_railterminal", self.trans_railterminal)
         
-        planningrules.setAttributes("FacilitiesRules", plan_facilities)
+        #planningrules.setAttributes("FacilitiesRules", plan_facilities)
         
         #Groups for OpenSpaces
-        plan_spaces = Attribute()
+        plan_spaces = Component()
+	city.addComponent(plan_spaces, self.planSpaces)
         #PARKS, RESERVES GROUP
-        plan_spaces.setAttribute("pg_clustering_degree", self.pg_clustering_degree)
-        plan_spaces.setAttribute("pg_greengrey_ratio", self.pg_greengrey_ratio)
-        plan_spaces.setAttribute("pg_linear_threshold", self.pg_linear_threshold)
+        plan_spaces.addAttribute("pg_clustering_degree", self.pg_clustering_degree)
+        plan_spaces.addAttribute("pg_greengrey_ratio", self.pg_greengrey_ratio)
+        plan_spaces.addAttribute("pg_linear_threshold", self.pg_linear_threshold)
         
-        plan_spaces.setAttribute("pg_footpath_cross", self.pg_footpath_cross)
-        plan_spaces.setAttribute("pg_footpath_circle", self.pg_footpath_circle)
-        plan_spaces.setAttribute("pg_footpath_perimeter", self.pg_footpath_perimeter)
-        plan_spaces.setAttribute("pg_circle_radius", self.pg_circle_radius)
-        plan_spaces.setAttribute("pg_circle_accesses", self.pg_circle_accesses)
-        plan_spaces.setAttribute("pg_perimeter_setback", self.pg_perimeter_setback)
-        plan_spaces.setAttribute("pg_perimeter_accesses", self.pg_perimeter_accesses)
-        plan_spaces.setAttribute("pg_footpath_avgW", self.pg_footpath_avgW)
-        plan_spaces.setAttribute("pg_footpath_impdced", self.pg_footpath_impdced)
-        plan_spaces.setAttribute("pg_footpath_varyW", self.pg_footpath_varyW)
-        plan_spaces.setAttribute("pg_footpath_multiply", self.pg_footpath_multiply)
+        plan_spaces.addAttribute("pg_footpath_cross", self.pg_footpath_cross)
+        plan_spaces.addAttribute("pg_footpath_circle", self.pg_footpath_circle)
+        plan_spaces.addAttribute("pg_footpath_perimeter", self.pg_footpath_perimeter)
+        plan_spaces.addAttribute("pg_circle_radius", self.pg_circle_radius)
+        plan_spaces.addAttribute("pg_circle_accesses", self.pg_circle_accesses)
+        plan_spaces.addAttribute("pg_perimeter_setback", self.pg_perimeter_setback)
+        plan_spaces.addAttribute("pg_perimeter_accesses", self.pg_perimeter_accesses)
+        plan_spaces.addAttribute("pg_footpath_avgW", self.pg_footpath_avgW)
+        plan_spaces.addAttribute("pg_footpath_impdced", self.pg_footpath_impdced)
+        plan_spaces.addAttribute("pg_footpath_varyW", self.pg_footpath_varyW)
+        plan_spaces.addAttribute("pg_footpath_multiply", self.pg_footpath_multiply)
         
-        plan_spaces.setAttribute("rfw_partialimp_check", self.rfw_partialimp_check)
-        plan_spaces.setAttribute("rfw_partialimp", self.rfw_partialimp)
-        plan_spaces.setAttribute("rfw_areausable_check", self.rfw_areausable_check)
-        plan_spaces.setAttribute("rfw_areausable", self.rfw_areausable)
+        plan_spaces.addAttribute("rfw_partialimp_check", self.rfw_partialimp_check)
+        plan_spaces.addAttribute("rfw_partialimp", self.rfw_partialimp)
+        plan_spaces.addAttribute("rfw_areausable_check", self.rfw_areausable_check)
+        plan_spaces.addAttribute("rfw_areausable", self.rfw_areausable)
         
         #UNCLASSIFIED GROUP
-        plan_spaces.setAttribute("unc_merge", self.unc_merge)
-        plan_spaces.setAttribute("unc_unc2square", self.unc_unc2square)
-        plan_spaces.setAttribute("unc_unc2square_weight", self.unc_unc2square_weight)
-        plan_spaces.setAttribute("unc_unc2park", self.unc_unc2park)
-        plan_spaces.setAttribute("unc_unc2park_weight", self.unc_unc2park_weight)
-        plan_spaces.setAttribute("unc_unc2road", self.unc_unc2road)
-        plan_spaces.setAttribute("unc_unc2road_weight", self.unc_unc2road_weight)
-        plan_spaces.setAttribute("unc_landmark", self.unc_landmark)
-        plan_spaces.setAttribute("unc_landmark_threshold", self.unc_landmark_threshold)
-        plan_spaces.setAttribute("unc_landmark_avgimp", self.unc_landmark_avgimp)
-        plan_spaces.setAttribute("unc_landmark_otherwater", self.unc_landmark_otherwater)
+        plan_spaces.addAttribute("unc_merge", self.unc_merge)
+        plan_spaces.addAttribute("unc_unc2square", self.unc_unc2square)
+        plan_spaces.addAttribute("unc_unc2square_weight", self.unc_unc2square_weight)
+        plan_spaces.addAttribute("unc_unc2park", self.unc_unc2park)
+        plan_spaces.addAttribute("unc_unc2park_weight", self.unc_unc2park_weight)
+        plan_spaces.addAttribute("unc_unc2road", self.unc_unc2road)
+        plan_spaces.addAttribute("unc_unc2road_weight", self.unc_unc2road_weight)
+        plan_spaces.addAttribute("unc_landmark", self.unc_landmark)
+        plan_spaces.addAttribute("unc_landmark_threshold", self.unc_landmark_threshold)
+        plan_spaces.addAttribute("unc_landmark_avgimp", self.unc_landmark_avgimp)
+        plan_spaces.addAttribute("unc_landmark_otherwater", self.unc_landmark_otherwater)
         
         #UNDEVELOPED GROUP
-        plan_spaces.setAttribute("und_whattodo", self.und_whattodo)
-        plan_spaces.setAttribute("und_allowspace", self.und_allowspace)
-        plan_spaces.setAttribute("und_autodeterminetype", self.und_autodeterminetype)
+        plan_spaces.addAttribute(self.StringToAttribute("und_whattodo", self.und_whattodo))
+        plan_spaces.addAttribute("und_allowspace", self.und_allowspace)
+        plan_spaces.addAttribute("und_autodeterminetype", self.und_autodeterminetype)
                 
         #ROADS & HIGHWAYS GROUP
-        plan_spaces.setAttribute("w_resfootpath_min", self.w_resfootpath_min)
-        plan_spaces.setAttribute("w_resfootpath_max", self.w_resfootpath_max)
-        plan_spaces.setAttribute("w_resnaturestrip_min", self.w_resnaturestrip_min)
-        plan_spaces.setAttribute("w_resnaturestrip_max", self.w_resnaturestrip_max)
-        plan_spaces.setAttribute("w_resfootpath_med", self.w_resfootpath_med)
-        plan_spaces.setAttribute("w_resnaturestrip_med", self.w_resnaturestrip_med)
+        plan_spaces.addAttribute("w_resfootpath_min", self.w_resfootpath_min)
+        plan_spaces.addAttribute("w_resfootpath_max", self.w_resfootpath_max)
+        plan_spaces.addAttribute("w_resnaturestrip_min", self.w_resnaturestrip_min)
+        plan_spaces.addAttribute("w_resnaturestrip_max", self.w_resnaturestrip_max)
+        plan_spaces.addAttribute("w_resfootpath_med", self.w_resfootpath_med)
+        plan_spaces.addAttribute("w_resnaturestrip_med", self.w_resnaturestrip_med)
         
-        plan_spaces.setAttribute("w_comfootpath_min", self.w_comfootpath_min)
-        plan_spaces.setAttribute("w_comfootpath_max", self.w_comfootpath_max)
-        plan_spaces.setAttribute("w_comnaturestrip_min", self.w_comnaturestrip_min)
-        plan_spaces.setAttribute("w_comnaturestrip_max", self.w_comnaturestrip_max)
-        plan_spaces.setAttribute("w_comfootpath_med", self.w_comfootpath_med)
-        plan_spaces.setAttribute("w_comnaturestrip_med", self.w_comnaturestrip_med)
+        plan_spaces.addAttribute("w_comfootpath_min", self.w_comfootpath_min)
+        plan_spaces.addAttribute("w_comfootpath_max", self.w_comfootpath_max)
+        plan_spaces.addAttribute("w_comnaturestrip_min", self.w_comnaturestrip_min)
+        plan_spaces.addAttribute("w_comnaturestrip_max", self.w_comnaturestrip_max)
+        plan_spaces.addAttribute("w_comfootpath_med", self.w_comfootpath_med)
+        plan_spaces.addAttribute("w_comnaturestrip_med", self.w_comnaturestrip_med)
         
-        plan_spaces.setAttribute("w_collectlane_min", self.w_collectlane_min)
-        plan_spaces.setAttribute("w_collectlane_max", self.w_collectlane_max)
-        plan_spaces.setAttribute("w_collectlane_med", self.w_collectlane_med)
-        plan_spaces.setAttribute("collect_crossfall", self.collect_crossfall)
+        plan_spaces.addAttribute("w_collectlane_min", self.w_collectlane_min)
+        plan_spaces.addAttribute("w_collectlane_max", self.w_collectlane_max)
+        plan_spaces.addAttribute("w_collectlane_med", self.w_collectlane_med)
+        plan_spaces.addAttribute("collect_crossfall", self.collect_crossfall)
         
-        plan_spaces.setAttribute("w_artlane_min", self.w_artlane_min)
-        plan_spaces.setAttribute("w_artlane_max", self.w_artlane_max)
-        plan_spaces.setAttribute("w_artlane_med", self.w_artlane_med)
-        plan_spaces.setAttribute("w_artmedian", self.w_artmedian)
-        plan_spaces.setAttribute("artmedian_reserved", self.artmedian_reserved)
-        plan_spaces.setAttribute("art_crossfall", self.art_crossfall)
+        plan_spaces.addAttribute("w_artlane_min", self.w_artlane_min)
+        plan_spaces.addAttribute("w_artlane_max", self.w_artlane_max)
+        plan_spaces.addAttribute("w_artlane_med", self.w_artlane_med)
+        plan_spaces.addAttribute("w_artmedian", self.w_artmedian)
+        plan_spaces.addAttribute("artmedian_reserved", self.artmedian_reserved)
+        plan_spaces.addAttribute("art_crossfall", self.art_crossfall)
         
-        plan_spaces.setAttribute("w_hwylane_avg", self.w_hwylane_avg)
-        plan_spaces.setAttribute("w_hwymedian", self.w_hwymedian)
-        plan_spaces.setAttribute("hwy_buffered", self.hwy_buffered)
-        plan_spaces.setAttribute("hwymedian_reserved", self.hwymedian_reserved)
-        plan_spaces.setAttribute("hwy_crossfall", self.hwy_crossfall)
+        plan_spaces.addAttribute("w_hwylane_avg", self.w_hwylane_avg)
+        plan_spaces.addAttribute("w_hwymedian", self.w_hwymedian)
+        plan_spaces.addAttribute("hwy_buffered", self.hwy_buffered)
+        plan_spaces.addAttribute("hwymedian_reserved", self.hwymedian_reserved)
+        plan_spaces.addAttribute("hwy_crossfall", self.hwy_crossfall)
         
-        planningrules.setAttributes("SpacesRules", plan_spaces)
+        #planningrules.setAttributes("SpacesRules", plan_spaces)
         
-        #begin for loop
-        for i in range(int(blocks_num)):
-            currentID = i + 1
-            currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))        #attribute list of current block structure
-            currentPatchList = patchcityin.getAttributes("PatchDataID"+str(currentID))
-            #existingAttList = existingblock.getAttributes("BlockID"+str(currentID))    #attribute list of the existing block structure
-            plist = blockcityin.getPoints("BlockID"+str(currentID))
-            flist = blockcityin.getFaces("BlockID"+str(currentID))
-            pnetlist = blockcityin.getPoints("NetworkID"+str(currentID))
-            enetlist = blockcityin.getEdges("NetworkID"+str(currentID))
-            network_attr = blockcityin.getAttributes("NetworkID"+str(currentID))
-            
-            #-----------------------------------------------------------------#
-            #        DETERMINE WHETHER TO UPDATE CURRENT BLOCK AT ALL         #
-            #-----------------------------------------------------------------#
-            
-            block_status = currentAttList.getAttribute("Status")
-            if block_status == 0:
-                print "BlockID"+str(currentID)+" is not active in simulation"
-                #even if block isn't active at all, attributes from previous module are passed on
-                blockcityout.setPoints("BlockID"+str(currentID),plist)
-                blockcityout.setFaces("BlockID"+str(currentID),flist)
-                blockcityout.setAttributes("BlockID"+str(currentID),currentAttList)
-                blockcityout.setPoints("NetworkID"+str(currentID), pnetlist)
-                blockcityout.setEdges("NetworkID"+str(currentID), enetlist)
-                blockcityout.setAttributes("NetworkID"+str(currentID), network_attr)
-                
-                patchcityout.setPoints("PatchDataID"+str(currentID), plist)
-                patchcityout.setFaces("PatchDataID"+str(currentID),flist)
-                patchcityout.setAttributes("PatchDataID"+str(currentID), currentPatchList)
-            
-                #skips the for loop iteration to the next block, not more needs to be done
-                continue
-            
-            print currentID
-            
-            #if <comparison between existing blocks and new blocks> condition TRUE:
-            #   assign an attribute "UPDATE" or "DO NOT UPDATE" so that all future block modules can review this!
-            #   blockcityout.setPoints("BlockID"+str(currentID),plist)
-            #   blockcityout.setFaces("BlockID"+str(currentID), flist)
-            #   blockcityout.setAttributes("BlockID"+str(currentID), existingAttList)
-            #   continue        #no need to replace block urban form, therefore continue!        
-            
-            #-----------------------------------------------------------------#
-            #        Write all updated Attribute Lists to the output          #
-            #-----------------------------------------------------------------#
-            
-            blockcityout.setPoints("BlockID"+str(currentID),plist)
-            blockcityout.setFaces("BlockID"+str(currentID),flist)
-            blockcityout.setAttributes("BlockID"+str(currentID),currentAttList)
-            blockcityout.setPoints("NetworkID"+str(currentID), pnetlist)
-            blockcityout.setEdges("NetworkID"+str(currentID), enetlist)
-            blockcityout.setAttributes("NetworkID"+str(currentID), network_attr)
-            
-            patchcityout.setPoints("PatchDataID"+str(currentID), plist)
-            patchcityout.setFaces("PatchDataID"+str(currentID),flist)
-            patchcityout.setAttributes("PatchDataID"+str(currentID), currentPatchList)
-            
-            #FOR LOOP END (Repeat for next BlockID)
-            
-        #Output vector update
-        blockcityout.setAttributes("MapAttributes", map_attr)
-
     
     ########################################################
     #LINK WITH GUI                                         #
