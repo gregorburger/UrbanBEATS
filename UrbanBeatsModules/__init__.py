@@ -43,8 +43,8 @@ from delinbasins import *				#identifies all upstream blocks for each block in t
 ### --- Modules for planning urban form and reconstructing cityscape based on planning
 ###     rules for residential, non-residential, facilities, open spaces and roads
 from urbplanbb import *					#organises the data and inputs (GUI)
-#from ubp_residential import *			#plans residential districts
-#from ubp_nonres import *				#plans non-res i.e. commercial, industrial districts
+from ubp_residential import *			#plans residential districts
+from ubp_nonres import *				#plans non-res i.e. commercial, industrial districts
 #from ubp_facilities import *			#identifies municipal and transport FACILITIES
 #from ubp_spaces import *				#plans out open spaces, reserves, etc.
 #from urbplansummary import *			#summarizes four output grids for each land use into one
