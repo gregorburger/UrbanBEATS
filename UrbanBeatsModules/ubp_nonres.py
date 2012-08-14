@@ -129,6 +129,7 @@ class ubp_nonres(Module):
 
 	#Datastream
 	datastream = []
+	datastream.append(self.blocks)
 	datastream.append(self.mapattributes)
 	datastream.append(self.planGen)
 	datastream.append(self.planNonres)
@@ -178,9 +179,9 @@ class ubp_nonres(Module):
 	strvec = city.getUUIDsOfComponentsInView(self.planGen)        
 	plan_gen = city.getComponent(strvec[0])
         
-        maximperv = plan_gen.getAttribute("maximperv")                          #DOUBLE -- maximum site imperviousness [%]
-        maxsitecover = plan_gen.getAttribute("maxsitecover")                    #DOUBLE -- maximum site cover [%]
-        lcality_mun_trans = plan_gen.getAttribute("locality_mun_trans")         #BOOL -- locality map for municipal & transport?
+        maximperv = plan_gen.getAttribute("maximperv").getDouble()                          #DOUBLE -- maximum site imperviousness [%]
+        maxsitecover = plan_gen.getAttribute("maxsitecover").getDouble()                    #DOUBLE -- maximum site cover [%]
+        lcality_mun_trans = plan_gen.getAttribute("locality_mun_trans").getDouble()         #BOOL -- locality map for municipal & transport?
         
         #===-----------------
         strvec = city.getUUIDsOfComponentsInView(self.planNonres)
@@ -257,9 +258,9 @@ class ubp_nonres(Module):
             #            CONDITIONAL CHECK TO SEE IF CURRENT BLOCK IS RELEVANT               #
             #--------------------------------------------------------------------------------#
             #2 conditions to skip: (1) status = 0, (2) no industrial/trade area
-	    block_status = int(round(currentAttList.getAttribute("Status").getDouble()))
-            tot_nonres_area = int(round(currentAttList.getAttribute("ALUC_Trad").getDouble() + currentAttList.getAttribute("ALUC_ORC").getDouble() \
-		+ currentAttList.getAttribute("ALUC_LI").getDouble() + currentAttList.getAttribute("ALUC_HI").getDouble()))
+	    block_status = currentAttList.getAttribute("Status").getDouble()
+            tot_nonres_area = currentAttList.getAttribute("ALUC_Trad").getDouble() + currentAttList.getAttribute("ALUC_ORC").getDouble() \
+		+ currentAttList.getAttribute("ALUC_LI").getDouble() + currentAttList.getAttribute("ALUC_HI").getDouble()
             if block_status == 0 or tot_nonres_area == 0:
                 print "BlockID"+str(currentID)+" not active or no relevant non-res area"
                 continue
