@@ -88,28 +88,36 @@ class techplacement(Module):
         self.ration_pollute = True               #Design for pollution management?
         self.runoff_pri = 1                      #Priority of flood mitigation?
         self.pollute_pri = 1                      #Priority of pollution management?
+        self.ration_harvest = False             #Design for harvesting & reuse? Adds storage-sizing to certain systems
+        self.harvest_pri = 1                    #Priority for harvesting & reuse
         self.addParameter(self, "ration_runoff", VIBe2.BOOL)
         self.addParameter(self, "ration_pollute", VIBe2.BOOL)
         self.addParameter(self, "runoff_pri", VIBe2.DOUBLE)
         self.addParameter(self, "pollute_pri", VIBe2.DOUBLE)
+        self.addParameter(self, "ration_harvest", VIBe2.BOOL)
+        self.addParameter(self, "harvest_pri", VIBe2.DOUBLE)
         
         #WATER MANAGEMENT TARGETS
         self.targets_runoff = 80                 #Runoff reduction target [%]
         self.targets_TSS = 80                      #TSS Load reduction target [%]
         self.targets_TN = 30                       #TN Load reduction target [%]
         self.targets_TP = 30                       #TP Load reduction target [%]
+        self.targets_harvest = 50                #required reliability of harvesting systems
         self.runoff_auto = False
         self.TSS_auto = False
         self.TN_auto = False
         self.TP_auto = False
+        self.harvest_auto = False
         self.addParameter(self, "targets_runoff", VIBe2.DOUBLE)
         self.addParameter(self, "targets_TSS", VIBe2.DOUBLE)
         self.addParameter(self, "targets_TN", VIBe2.DOUBLE)
         self.addParameter(self, "targets_TP", VIBe2.DOUBLE)
+        self.addParameter(self, "targets_harvest", VIBe2.DOUBLE)
         self.addParameter(self, "runoff_auto", VIBe2.BOOL)
         self.addParameter(self, "TSS_auto", VIBe2.BOOL)
         self.addParameter(self, "TN_auto", VIBe2.BOOL)
         self.addParameter(self, "TP_auto", VIBe2.BOOL)
+        self.addParameter(self, "harvest_auto", VIBe2.BOOL)
         
         #STRATEGY CUSTOMIZE
         self.strategy_lot_check = True
@@ -150,15 +158,19 @@ class techplacement(Module):
         #---RETROFIT CONDITIONS INPUTS------------------------------------------
         self.retrofit_scenario = "N"    #N = Do Nothing, R = With Renewal, F = Forced
         self.renewal_cycle_def = 1      #Defined renewal cycle?
-        self.renewal_years = 10         #number of years to apply renewal rate
-        self.renewal_perc = 5           #renewal percentage
+        self.renewal_lot_years = 10         #number of years to apply renewal rate
+        self.renewal_street_years = 20      #cycle of years for street-scale renewal
+        self.renewal_neigh_years = 40       #cycle of years for neighbourhood-precinct renewal
+        self.renewal_lot_perc = 5           #renewal percentage
         self.force_street = 0              #forced renewal on lot?
         self.force_neigh = 0           #forced renewal on street?
         self.force_prec = 0            #forced renewal on neighbourhood and precinct?
         self.addParameter(self, "retrofit_scenario", VIBe2.STRING)
         self.addParameter(self, "renewal_cycle_def", VIBe2.BOOL)
-        self.addParameter(self, "renewal_years", VIBe2.DOUBLE)
-        self.addParameter(self, "renewal_perc", VIBe2.DOUBLE)
+        self.addParameter(self, "renewal_lot_years", VIBe2.DOUBLE)
+        self.addParameter(self, "renewal_street_years", VIBe2.DOUBLE)
+        self.addParameter(self, "renewal_neigh_years", VIBe2.DOUBLE)
+        self.addParameter(self, "renewal_lot_perc", VIBe2.DOUBLE)
         self.addParameter(self, "force_street", VIBe2.BOOL)
         self.addParameter(self, "force_neigh", VIBe2.BOOL)
         self.addParameter(self, "force_prec", VIBe2.BOOL)
@@ -171,6 +183,9 @@ class techplacement(Module):
         self.neigh_decom = 0
         self.prec_renew = 0
         self.prec_decom = 0
+        self.decom_thresh = 40
+        self.renewal_thresh = 30
+        self.renewal_alternative = "K"          #if renewal cannot be done, what to do then? K=Keep, D=Decommission
         self.addParameter(self, "lot_renew", VIBe2.BOOL)
         self.addParameter(self, "lot_decom", VIBe2.BOOL)
         self.addParameter(self, "street_renew", VIBe2.BOOL)
@@ -179,6 +194,9 @@ class techplacement(Module):
         self.addParameter(self, "neigh_decom", VIBe2.BOOL)
         self.addParameter(self, "prec_renew", VIBe2.BOOL)
         self.addParameter(self, "prec_decom", VIBe2.BOOL)
+        self.addParameter(self, "decom_thresh", VIBe2.DOUBLE)
+        self.addParameter(self, "renewal_thresh", VIBe2.DOUBLE)
+        self.addParameter(self, "renewal_alternative", VIBe2.STRING)
         
         
         #---GENERAL DESIGN CRITERIA---------------------------------------------
@@ -707,6 +725,30 @@ class techplacement(Module):
         des_attr.setAttribute("strategy_specific4", self.strategy_specific4)
         des_attr.setAttribute("strategy_specific5", self.strategy_specific5)
         des_attr.setAttribute("strategy_specific6", self.strategy_specific6)
+        
+        #--------------------------------------------------------------------------------#
+        #       TRANSFER ALL RETROFIT INPUTS TO TO DES_ATTR                            #
+        #--------------------------------------------------------------------------------#
+        des_attr.setAttribute("retrofit_scenario", self.retrofit_scenario)
+        des_attr.setAttribute("renewal_cycle_def", self.renewal_cycle_def)
+        des_attr.setAttribute("renewal_lot_years", self.renewal_lot_years)
+        des_attr.setAttribute("renewal_street_years", self.renewal_street_years)
+        des_attr.setAttribute("renewal_neigh_years", self.renewal_neigh_years)
+        des_attr.setAttribute("renewal_lot_perc", self.renewal_lot_perc)
+        des_attr.setAttribute("force_street", self.force_street)
+        des_attr.setAttribute("force_neigh", self.force_neigh)
+        des_attr.setAttribute("force_prec", self.force_prec)
+        des_attr.setAttribute("lot_renew", self.lot_renew)
+        des_attr.setAttribute("lot_decom", self.lot_decom)
+        des_attr.setAttribute("street_renew", self.street_renew)
+        des_attr.setAttribute("street_decom", self.street_decom)
+        des_attr.setAttribute("neigh_renew", self.neigh_renew)
+        des_attr.setAttribute("neigh_decom", self.neigh_decom)
+        des_attr.setAttribute("prec_renew", self.prec_renew)
+        des_attr.setAttribute("prec_decom", self.prec_decom)
+        des_attr.setAttribute("decom_thresh", self.decom_thresh)
+        des_attr.setAttribute("renewal_thresh", self.renewal_thresh)
+        des_attr.setAttribute("renewal_alternative", self.renewal_alternative)
         
         #--------------------------------------------------------------------------------#
         #       TRANSFER ALL TECHNOLOGY STATUSES TO DES_ATTR                             #

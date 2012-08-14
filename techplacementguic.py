@@ -54,8 +54,14 @@ class activatetechplacementGUI(QtGui.QDialog):
         else:
             self.ui.ration_pollute_check.setChecked(0)
         
+        if self.module.getParameterAsString("ration_harvest") == "1":
+            self.ui.ration_harvest_check.setChecked(1)
+        else:
+            self.ui.ration_harvest_check.setChecked(0)
+        
         self.ui.runoff_pri_spin.setValue(int(self.module.getParameterAsString("runoff_pri")))
         self.ui.pollute_pri_spin.setValue(int(self.module.getParameterAsString("pollute_pri")))
+        self.ui.harvest_pri_spin.setValue(int(self.module.getParameterAsString("harvest_pri")))
         
         #----------------------------------------------------------------------#
         #-------- MANAGEMENT TARGETS ------------------------------------------#
@@ -64,6 +70,7 @@ class activatetechplacementGUI(QtGui.QDialog):
         self.ui.targets_TSS_spin.setValue(float(self.module.getParameterAsString("targets_TSS")))
         self.ui.targets_TN_spin.setValue(float(self.module.getParameterAsString("targets_TN")))
         self.ui.targets_TP_spin.setValue(float(self.module.getParameterAsString("targets_TP")))
+        self.ui.targets_reuse_spin.setValue(float(self.module.getParameterAsString("targets_harvest")))
         
         if self.module.getParameterAsString("runoff_auto") == "1":
             self.ui.targets_runoff_auto.setChecked(1)
@@ -84,6 +91,11 @@ class activatetechplacementGUI(QtGui.QDialog):
             self.ui.targets_TP_auto.setChecked(1)
         else:
             self.ui.targets_TP_auto.setChecked(0)
+        
+        if self.module.getParameterAsString("harvest_auto") == "1":
+            self.ui.targets_reuse_auto.setChecked(1)
+        else:
+            self.ui.targets_reuse_auto.setChecked(0)
         
         #----------------------------------------------------------------------#
         #-------- STRATEGY SETUP ----------------------------------------------#
@@ -156,18 +168,62 @@ class activatetechplacementGUI(QtGui.QDialog):
         #######################################
         if self.module.getParameterAsString("retrofit_scenario") == "N":
             self.ui.area_retrofit_combo.setCurrentIndex(0)
+            self.ui.lot_renew_check.setEnabled(0)
+            self.ui.lot_decom_check.setEnabled(0)
+            self.ui.street_decom_check.setEnabled(0)
+            self.ui.street_renew_check.setEnabled(0)
+            self.ui.neigh_renew_check.setEnabled(0)
+            self.ui.neigh_decom_check.setEnabled(0)
+            self.ui.prec_renew_check.setEnabled(0)
+            self.ui.prec_decom_check.setEnabled(0)
+            self.ui.decom_slider.setEnabled(0)
+            self.ui.decom_box.setEnabled(0)
+            self.ui.renew_slider.setEnabled(0)
+            self.ui.renew_box.setEnabled(0)
+            self.ui.radioKeep.setEnabled(0)
+            self.ui.radioDecom.setEnabled(0)
         elif self.module.getParameterAsString("retrofit_scenario") == "R":
             self.ui.area_retrofit_combo.setCurrentIndex(1)
+            self.ui.lot_renew_check.setEnabled(1)
+            self.ui.lot_decom_check.setEnabled(1)
+            self.ui.street_decom_check.setEnabled(1)
+            self.ui.street_renew_check.setEnabled(1)
+            self.ui.neigh_renew_check.setEnabled(1)
+            self.ui.neigh_decom_check.setEnabled(1)
+            self.ui.prec_renew_check.setEnabled(1)
+            self.ui.prec_decom_check.setEnabled(1)
+            self.ui.decom_slider.setEnabled(1)
+            self.ui.decom_box.setEnabled(1)
+            self.ui.renew_slider.setEnabled(1)
+            self.ui.renew_box.setEnabled(1)
+            self.ui.radioKeep.setEnabled(1)
+            self.ui.radioDecom.setEnabled(1)
         elif self.module.getParameterAsString("retrofit_scenario") == "F":
             self.ui.area_retrofit_combo.setCurrentIndex(2)
+            self.ui.lot_renew_check.setEnabled(1)
+            self.ui.lot_decom_check.setEnabled(1)
+            self.ui.street_decom_check.setEnabled(1)
+            self.ui.street_renew_check.setEnabled(1)
+            self.ui.neigh_renew_check.setEnabled(1)
+            self.ui.neigh_decom_check.setEnabled(1)
+            self.ui.prec_renew_check.setEnabled(1)
+            self.ui.prec_decom_check.setEnabled(1)
+            self.ui.decom_slider.setEnabled(1)
+            self.ui.decom_box.setEnabled(1)
+            self.ui.renew_slider.setEnabled(1)
+            self.ui.renew_box.setEnabled(1)
+            self.ui.radioKeep.setEnabled(1)
+            self.ui.radioDecom.setEnabled(1)
         
         if self.module.getParameterAsString("renewal_cycle_def") == "1":
             self.ui.retrofit_renewal_check.setChecked(1)
         else:
             self.ui.retrofit_renewal_check.setChecked(0)
         
-        self.ui.retrofit_renewal_years.setValue(float(self.module.getParameterAsString("renewal_years")))
-        self.ui.retrofit_renewal_percent.setValue(float(self.module.getParameterAsString("renewal_perc")))
+        self.ui.renewal_lot_years.setValue(float(self.module.getParameterAsString("renewal_lot_years")))
+        self.ui.renewal_lot_spin.setValue(float(self.module.getParameterAsString("renewal_lot_perc")))
+        self.ui.renewal_street_years.setValue(float(self.module.getParameterAsString("renewal_street_years")))
+        self.ui.renewal_neigh_years.setValue(float(self.module.getParameterAsString("renewal_neigh_years")))
         
         if self.module.getParameterAsString("force_street") == "1":
             self.ui.retrofit_forced_street_check.setChecked(1)
@@ -225,6 +281,19 @@ class activatetechplacementGUI(QtGui.QDialog):
         else:
             self.ui.prec_decom_check.setChecked(0)
         
+        self.ui.decom_slider.setValue(int(self.module.getParameterAsString("decom_thresh")))
+        self.ui.decom_box.setText(self.module.getParameterAsString("decom_thresh")+"%")
+        self.ui.renew_slider.setValue(int(self.module.getParameterAsString("renewal_thresh")))
+        self.ui.renew_box.setText(self.module.getParameterAsString("renewal_thresh")+"%")
+        QtCore.QObject.connect(self.ui.decom_slider, QtCore.SIGNAL("valueChanged(int)"), self.decom_update)
+        QtCore.QObject.connect(self.ui.renew_slider, QtCore.SIGNAL("valueChanged(int)"), self.renew_update)
+        
+        if self.module.getParameterAsString("renewal_alternative") == "K":
+            self.ui.radioKeep.setChecked(True)
+        if self.module.getParameterAsString("renewal_alternative") == "D":
+            self.ui.radioDecom.setChecked(True)
+        
+        QtCore.QObject.connect(self.ui.area_retrofit_combo, QtCore.SIGNAL("currentIndexChanged(int)"), self.update_retrofitoptions)
         
         #######################################
         #Choose & Customize Technologies Tab
@@ -1067,7 +1136,56 @@ class activatetechplacementGUI(QtGui.QDialog):
         if self.ui.top_score_combo.currentIndex() == 1:         #CI option
             self.ui.top_rank_spin.setEnabled(0)
             self.ui.top_CI_spin.setEnabled(1)
-
+    
+    def decom_update(self, currentValue):
+        self.ui.decom_box.setText(str(currentValue)+"%")
+        self.module.setParameterValue("decom_thresh", str(currentValue))
+        if self.ui.renew_slider.value() > self.ui.decom_slider.value():
+            self.renew_all_update(self.ui.decom_slider.value())
+    
+    def renew_update(self, currentValue):
+        self.ui.renew_box.setText(str(currentValue)+"%")
+        self.module.setParameterValue("renewal_thresh", str(currentValue))
+        if self.ui.renew_slider.value() > self.ui.decom_slider.value():
+            self.renew_all_update(self.ui.decom_slider.value())
+    
+    def renew_all_update(self, currentValue):
+        self.ui.renew_box.setText(str(currentValue)+"%")
+        self.ui.renew_slider.setValue(currentValue)
+        self.module.setParameterValue("renewal_thresh", str(currentValue))
+    
+    def update_retrofitoptions(self, currentind):
+        if currentind == 0:
+            self.ui.lot_renew_check.setEnabled(0)
+            self.ui.lot_decom_check.setEnabled(0)
+            self.ui.street_decom_check.setEnabled(0)
+            self.ui.street_renew_check.setEnabled(0)
+            self.ui.neigh_renew_check.setEnabled(0)
+            self.ui.neigh_decom_check.setEnabled(0)
+            self.ui.prec_renew_check.setEnabled(0)
+            self.ui.prec_decom_check.setEnabled(0)
+            self.ui.decom_slider.setEnabled(0)
+            self.ui.decom_box.setEnabled(0)
+            self.ui.renew_slider.setEnabled(0)
+            self.ui.renew_box.setEnabled(0)
+            self.ui.radioKeep.setEnabled(0)
+            self.ui.radioDecom.setEnabled(0)
+        else:
+            self.ui.lot_renew_check.setEnabled(1)
+            self.ui.lot_decom_check.setEnabled(1)
+            self.ui.street_decom_check.setEnabled(1)
+            self.ui.street_renew_check.setEnabled(1)
+            self.ui.neigh_renew_check.setEnabled(1)
+            self.ui.neigh_decom_check.setEnabled(1)
+            self.ui.prec_renew_check.setEnabled(1)
+            self.ui.prec_decom_check.setEnabled(1)
+            self.ui.decom_slider.setEnabled(1)
+            self.ui.decom_box.setEnabled(1)
+            self.ui.renew_slider.setEnabled(1)
+            self.ui.renew_box.setEnabled(1)
+            self.ui.radioKeep.setEnabled(1)
+            self.ui.radioDecom.setEnabled(1)    
+    
     ### BIOFILTRATION SYSTEMS SIGNAL-SLOT FUNCTIONS
     def openFileDialog_BF(self):
         fname = QtGui.QFileDialog.getOpenFileName(self, "Choose Design Curve File...", os.curdir, str("Design Curves (*.dcv *.txt)"))
@@ -1176,11 +1294,21 @@ class activatetechplacementGUI(QtGui.QDialog):
             ration_pollute = 0
         self.module.setParameterValue("ration_pollute", str(ration_pollute))
         
+        if self.ui.ration_harvest_check.isChecked() == 1:
+            ration_harvest = 1
+        else:
+            ration_harvest = 0
+        self.module.setParameterValue("ration_harvest", str(ration_harvest))
+        
         runoff_pri = str(self.ui.runoff_pri_spin.value())
         self.module.setParameterValue("runoff_pri", runoff_pri)
         
         pollute_pri = str(self.ui.pollute_pri_spin.value())
         self.module.setParameterValue("pollute_pri", pollute_pri)
+        
+        harvest_pri = str(self.ui.harvest_pri_spin.value())
+        self.module.setParameterValue("harvest_pri", harvest_pri)
+        
         
         #----------------------------------------------------------------------#
         #-------- MANAGEMENT TARGETS ------------------------------------------#
@@ -1196,6 +1324,9 @@ class activatetechplacementGUI(QtGui.QDialog):
         
         targets_TP = str(self.ui.targets_TP_spin.value())
         self.module.setParameterValue("targets_TP", targets_TP)
+        
+        targets_harvest = str(self.ui.targets_reuse_spin.value())
+        self.module.setParameterValue("targets_harvest", targets_harvest)
         
         if self.ui.targets_runoff_auto.isChecked() == 1:
             runoff_auto = 1
@@ -1220,6 +1351,12 @@ class activatetechplacementGUI(QtGui.QDialog):
         else:
             TP_auto = 0
         self.module.setParameterValue("TP_auto", str(TP_auto))
+        
+        if self.ui.targets_reuse_auto.isChecked() == 1:
+            harvest_auto = 1
+        else:
+            harvest_auto = 0
+        self.module.setParameterValue("harvest_auto", str(harvest_auto))
         
         #----------------------------------------------------------------------#
         #-------- STRATEGY SETUP ----------------------------------------------#
@@ -1317,11 +1454,17 @@ class activatetechplacementGUI(QtGui.QDialog):
             renewal_cycle_def = 0
         self.module.setParameterValue("renewal_cycle_def", str(renewal_cycle_def))
         
-        renewal_years = str(self.ui.retrofit_renewal_years.value())
-        self.module.setParameterValue("renewal_years", renewal_years)
+        renewal_lot_years = str(self.ui.renewal_lot_years.value())
+        self.module.setParameterValue("renewal_lot_years", renewal_lot_years)
         
-        renewal_perc = str(self.ui.retrofit_renewal_percent.value())
-        self.module.setParameterValue("renewal_perc", renewal_perc)
+        renewal_lot_perc = str(self.ui.renewal_lot_spin.value())
+        self.module.setParameterValue("renewal_lot_perc", renewal_lot_perc)
+        
+        renewal_street_years = str(self.ui.renewal_street_years.value())
+        self.module.setParameterValue("renewal_street_years", renewal_street_years)
+        
+        renewal_neigh_years = str(self.ui.renewal_neigh_years.value())
+        self.module.setParameterValue("renewal_neigh_years", renewal_neigh_years)
         
         if self.ui.retrofit_forced_street_check.isChecked() == 1:
             force_street = 1
@@ -1388,6 +1531,18 @@ class activatetechplacementGUI(QtGui.QDialog):
         else:
             prec_decom = 0
         self.module.setParameterValue("prec_decom", str(prec_decom))
+        
+        decom_thresh = str(self.ui.decom_slider.value())
+        self.module.setParameterValue("decom_thresh", decom_thresh)
+        
+        renewal_thresh = str(self.ui.renew_slider.value())
+        self.module.setParameterValue("renewal_thresh", renewal_thresh)
+        
+        if self.ui.radioKeep.isChecked() == True:
+            renewal_alternative = "K"
+        if self.ui.radioDecom.isChecked() == True:
+            renewal_alternative = "D"
+        self.module.setParameterValue("renewal_alternative", renewal_alternative)
         
         
         #######################################

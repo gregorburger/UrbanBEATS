@@ -74,7 +74,7 @@ from techopp_precinct import *			#finds opportunities for precinct tech in group
 from techstrategy_eval import *		#collates the three scales into strategies and evaluates these
 
 from techimplement import *             #implements technology configurations into existing urban environments depending on chosen design
-
+from techretrofit import *              #assesses existing technologies based on retrofitting rules and modifies existing map of technologies before passing it on
 ### GUI Files that go with these modules include:
 ###		- techplacementgui.py - customize technologies
 ###             - techimplementgui.py - set rules for implementation

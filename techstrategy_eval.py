@@ -845,7 +845,7 @@ class techstrategy_eval(Module):
             
             #BEGIN MONTE CARLO LOOP
             basin_strategies_matrix = []
-            for iterations in range(1):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
+            for iterations in range(1000):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
                 print "Iteration No. ", iterations+1," -----------------------"
                 
                 #PART 1a - SETTING UP THE STORAGE CONTAINER OF INFORMATION
@@ -1188,11 +1188,16 @@ class techstrategy_eval(Module):
             
             chosen_strategy_p = rand.random()
             index = 0
-            for i in range(len(ranking_cdf)):
-                if chosen_strategy_p >= ranking_cdf[i]:
-                    index = i
-                else:
-                    continue
+            ranking_cdf.append(chosen_strategy_p)
+            ranking_cdf.sort()
+            index = ranking_cdf.index(chosen_strategy_p)
+            ranking_cdf.remove(chosen_strategy_p)
+            print "The index in the CDF is: "+str(index)
+#            for i in range(len(ranking_cdf)):
+#                if chosen_strategy_p >= ranking_cdf[i]:
+#                    index = i
+#                else:
+#                    continue
             
             top_wsud_strategy = final_basin_strategies[index][2]        #select the final strategy
             basin_strategy_groups.append(top_wsud_strategy)
