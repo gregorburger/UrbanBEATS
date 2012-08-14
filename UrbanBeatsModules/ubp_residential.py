@@ -138,6 +138,7 @@ class ubp_residential(Module):
 
 	#Datastream
 	datastream = []
+	datastream.append(self.blocks)
 	datastream.append(self.mapattributes)
 	datastream.append(self.planGen)
 	datastream.append(self.planRes)
@@ -251,8 +252,8 @@ class ubp_residential(Module):
             #            CONDITIONAL CHECK TO SEE IF CURRENT BLOCK IS RELEVANT               #
             #--------------------------------------------------------------------------------#
             
-            block_status = int(round(currentAttList.getAttribute("Status").getDouble()))
-            tot_res_area = int(round(currentAttList.getAttribute("ALUC_Res") .getDouble()))
+            block_status = currentAttList.getAttribute("Status").getDouble()
+	    tot_res_area = currentAttList.getAttribute("ALUC_Res").getDouble()
             if block_status == 0 or tot_res_area == 0:          #2 conditions to skip: (1) block status = 0, (2) area of residential = 0
                 print "BlockID"+str(currentID)+" is not active or has no residential area"
                 continue
@@ -265,7 +266,8 @@ class ubp_residential(Module):
             
             #GET AREAS AND POPULATION
             #Total Residential Area - planning MUST balance with this area by the end of the module!
-            res_area_tot = float(currentAttList.getAttribute("ALUC_Res").getDouble())
+            
+	    res_area_tot = currentAttList.getAttribute("ALUC_Res").getDouble()
             print "Total Residential Area for Block "+str(currentID)+"= "+str(res_area_tot)+"sqm"
             
             res_pop_dens = currentAttList.getAttribute("POP_Res").getDouble()
