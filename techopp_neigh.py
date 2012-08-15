@@ -85,11 +85,11 @@ class techopp_neigh(Module):
         lot_increment = des_attr.getAttribute("lot_increment")
         neigh_increment = des_attr.getAttribute("neigh_increment")
         
-        lot_alts = [0]                          #e.g. [0, 0.25, 0.5, 0.75, 1.0]
+        lot_alts_complete = [0]                          #e.g. [0, 0.25, 0.5, 0.75, 1.0]
         for i in range(int(lot_increment)):
-            lot_alts.append(float(1/lot_increment*(i+1.0)))
+            lot_alts_complete.append(float(1/lot_increment*(i+1.0)))
         
-        print lot_alts
+        print lot_alts_complete
         
         neigh_alts = []                         #e.g. [0.25, 0.5, 0.75, 1.0]
         for i in range(int(neigh_increment)):
@@ -122,7 +122,11 @@ class techopp_neigh(Module):
             #--------------------------------------------------------------------------------#
             
             block_status = currentAttList.getAttribute("Status")
-            neigh_avail_sp = currentAttList.getAttribute("ALUC_PG")    
+            if currentAttList.getAttribute("HasNeighS") != 0:
+                neigh_avail_sp = currentAttList.getAttribute("ALUC_PG")
+            else:
+                neigh_avail_sp = 0
+                
             #2 conditions to skip: (1) block status = 0, (2) no available space on either street or neighbourhood
             if block_status == 0 or neigh_avail_sp == 0:          
                 print "BlockID"+str(currentID)+" is not active or has no available space"
@@ -136,8 +140,21 @@ class techopp_neigh(Module):
             soilK = currentAttList.getAttribute("Soil_k")                       #soil infiltration rate on area
             Aimplot = currentAttList.getAttribute("ResLotConImpA")              #connected impervious area on ONE lot
             
+            #Modify the combinations vector just for this block
+            lot_alts = []
+            for deg in lot_alts_complete:
+                lot_alts.append(deg)
+            max_houses = currentAttList.getAttribute("MaxLotDeg")
+            lot_alts.append(max_houses)
+            lot_alts.sort()
+            lastindex = lot_alts.index(max_houses)
+            lot_alts.remove(max_houses)
+            lot_alts = lot_alts[0:lastindex]
+            
+            print "Modified Lot-alts: ", str(lot_alts)
+            
             allotments = currentAttList.getAttribute("ResAllots")
-            total_res_Aimp = currentAttList.getAttribute("ResTIArea")           #NOTE: Change to Effective Impervious Area
+            total_res_Aimp = currentAttList.getAttribute("IADeficit")           #NOTE: This is the deficit area after passing through retrofit, etc.
             
             combinations = len(lot_alts)*len(neigh_alts)
             neigh_strats.setAttribute("TotalCombinations", combinations)
@@ -167,8 +184,8 @@ class techopp_neigh(Module):
                         print "Aimpneigh: "+str(Aimpneigh)+", System Targets: "+str(system_tarQ)+", "+str(system_tarTSS)+", "+str(system_tarTP)+", "+str(system_tarTN)+" Soil K: "+str(soilK)+", Max Size: "+str(maxsize)
                         
                         Asystem = eval('td.design_'+str(j)+'('+str(Aimpneigh)+',"'+str(dcvpath)+'",'+str(system_tarQ)+','+str(system_tarTSS)+','+str(system_tarTP)+','+str(system_tarTN)+','+str(soilK)+','+str(maxsize)+')')
-                        
-                        neightechs.append([j, Asystem, Aimpneigh])
+                        print Asystem
+                        neightechs.append([j, Asystem[0], Aimpneigh, Asystem[1]])
                     print "Neighbourhood-Scale Technology Areas Required (in sqm)"
                     print neightechs
                     
@@ -178,7 +195,7 @@ class techopp_neigh(Module):
                         currenttech = neightechs[tech][0]
                         if neightechs[tech][1] < neigh_avail_sp:
                             print "Possible to fit "+str(currenttech)+" at the neighbourhood scale"
-                            final_neigh_techs.append([currenttech, neightechs[tech][1], neightechs[tech][2]])
+                            final_neigh_techs.append([currenttech, neightechs[tech][1], neightechs[tech][2], neightechs[tech][3]])
                     
                     #--------------------------------------------------------------------------------#
                     #            TRANSFER TECHNOLOGY DESIGNS INTO VECTOR                             #

@@ -105,7 +105,11 @@ class techopp_lot(Module):
             #--------------------------------------------------------------------------------#
             
             block_status = currentAttList.getAttribute("Status")
-            lot_avail_sp = currentAttList.getAttribute("AvlResLot")      #available lot space
+            if currentAttList.getAttribute("HasLotS") != 0:
+                lot_avail_sp = currentAttList.getAttribute("AvlResLot")      #available lot space
+            else:
+                lot_avail_sp = 0
+                
             #2 conditions to skip: (1) block status = 0, (2) no available space
             if block_status == 0 or lot_avail_sp == 0:          
                 print "BlockID"+str(currentID)+" is not active or has no available space"
@@ -135,8 +139,8 @@ class techopp_lot(Module):
                 print "Aimplot: "+str(Aimplot)+", System Targets: "+str(system_tarQ)+", "+str(system_tarTSS)+", "+str(system_tarTP)+", "+str(system_tarTN)+" Soil K: "+str(soilK)+", Max Size: "+str(maxsize)
                 
                 Asystem = eval('td.design_'+str(j)+'('+str(Aimplot)+',"'+str(dcvpath)+'",'+str(system_tarQ)+','+str(system_tarTSS)+','+str(system_tarTP)+','+str(system_tarTN)+','+str(soilK)+','+str(maxsize)+')')
-                
-                lottechs.append([j, Asystem, Aimplot])          #append [Tech Abbreviation, Size, Area Served]
+                print Asystem
+                lottechs.append([j, Asystem[0], Aimplot, Asystem[1]])          #append [Tech Abbreviation, Size, Area Served]
             print "Lot-Scale Technology Areas Required (in sqm)"
             print lottechs
             
@@ -146,7 +150,7 @@ class techopp_lot(Module):
                 currenttech = lottechs[tech][0]
                 if lottechs[tech][1] < lot_avail_sp:
                     print "Possible to fit "+str(currenttech)+" at the lot scale"
-                    final_lot_techs.append([currenttech, lottechs[tech][1], lottechs[tech][2]])
+                    final_lot_techs.append([currenttech, lottechs[tech][1], lottechs[tech][2], lottechs[tech][3]])
                 else:
                     print "Not possible to fit "+str(currenttech)+" at the lot scale"
             

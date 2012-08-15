@@ -1062,6 +1062,17 @@ class techplacement(Module):
                 #skips the for loop iteration to the next block, not more needs to be done
                 continue
             
+            #Initialize some attributes for use in later parts
+            currentAttList.setAttribute("HasLotS", 0)
+            currentAttList.setAttribute("HasStreetS", 0)
+            currentAttList.setAttribute("HasNeighS", 0)
+            currentAttList.setAttribute("HasPrecS", 0)
+            
+            currentAttList.setAttribute("IAServiced", 0)
+            totimparea = currentAttList.getAttribute("ResTIArea")
+            currentAttList.setAttribute("IADeficit", totimparea)
+            currentAttList.setAttribute("UpstrImpTreat", 0)
+            
             blockcityout.setPoints("BlockID"+str(currentID),plist)
             blockcityout.setFaces("BlockID"+str(currentID),flist)
             blockcityout.setAttributes("BlockID"+str(currentID),currentAttList)

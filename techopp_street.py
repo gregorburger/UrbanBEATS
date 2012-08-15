@@ -85,11 +85,11 @@ class techopp_street(Module):
         lot_increment = des_attr.getAttribute("lot_increment")
         street_increment = des_attr.getAttribute("street_increment")
         
-        lot_alts = [0]                          #e.g. [0, 0.25, 0.5, 0.75, 1.0]
+        lot_alts_complete = [0]                          #e.g. [0, 0.25, 0.5, 0.75, 1.0]
         for i in range(int(lot_increment)):
-            lot_alts.append(float(1/lot_increment*(i+1.0)))
-        
-        print lot_alts
+            lot_alts_complete.append(float(1/lot_increment*(i+1.0)))
+            
+        print lot_alts_complete
         
         street_alts = []                       #e.g. [0.25, 0.5, 0.75, 1.0]
         for i in range(int(street_increment)):
@@ -120,7 +120,11 @@ class techopp_street(Module):
             #--------------------------------------------------------------------------------#
             
             block_status = currentAttList.getAttribute("Status")
-            street_avail_sp = currentAttList.getAttribute("AvlStreet")
+            if currentAttList.getAttribute("HasStreetS") != 0:
+                street_avail_sp = currentAttList.getAttribute("AvlStreet")
+            else:
+                street_avail_sp = 0
+                
             #2 conditions to skip: (1) block status = 0, (2) no available space on street
             if block_status == 0 or street_avail_sp == 0:          
                 print "BlockID"+str(currentID)+" is not active or has no available space"
@@ -134,8 +138,21 @@ class techopp_street(Module):
             soilK = currentAttList.getAttribute("Soil_k")                       #soil infiltration rate on area
             Aimplot = currentAttList.getAttribute("ResLotConImpA")              #connected impervious area on ONE lot
             
+            #Modify the combinations vector just for this block
+            lot_alts = []
+            for deg in lot_alts_complete:
+                lot_alts.append(deg)
+            max_houses = currentAttList.getAttribute("MaxLotDeg")
+            lot_alts.append(max_houses)
+            lot_alts.sort()
+            lastindex = lot_alts.index(max_houses)
+            lot_alts.remove(max_houses)
+            lot_alts = lot_alts[0:lastindex]
+            
+            print "Modified Lot-alts: ", str(lot_alts)
+            
             allotments = currentAttList.getAttribute("ResAllots")
-            total_res_Aimp = currentAttList.getAttribute("ResTIArea")           #NOTE: Change to Effective Impervious Area
+            total_res_Aimp = currentAttList.getAttribute("IADeficit")           #NOTE: This is the deficit area after passing through retrofit, etc.
             
             combinations = len(lot_alts)*len(street_alts)
             street_strats.setAttribute("TotalCombinations", combinations)
@@ -165,8 +182,8 @@ class techopp_street(Module):
                         print "Aimpstreet: "+str(Aimpstreet)+", System Targets: "+str(system_tarQ)+", "+str(system_tarTSS)+", "+str(system_tarTP)+", "+str(system_tarTN)+" Soil K: "+str(soilK)+", Max Size: "+str(maxsize)
                         
                         Asystem = eval('td.design_'+str(j)+'('+str(Aimpstreet)+',"'+str(dcvpath)+'",'+str(system_tarQ)+','+str(system_tarTSS)+','+str(system_tarTP)+','+str(system_tarTN)+','+str(soilK)+','+str(maxsize)+')')
-                        
-                        streettechs.append([j, Asystem, Aimpstreet])
+                        print Asystem
+                        streettechs.append([j, Asystem[0], Aimpstreet, Asystem[1]])
                     print "Street-Scale Technology Areas Required (in sqm)"
                     print streettechs
                     
@@ -180,7 +197,7 @@ class techopp_street(Module):
                                 continue
                         if streettechs[tech][1] < street_avail_sp:
                             print "Possible to fit "+str(currenttech)+" at the street scale"
-                            final_street_techs.append([currenttech, streettechs[tech][1], streettechs[tech][2]])
+                            final_street_techs.append([currenttech, streettechs[tech][1], streettechs[tech][2], streettechs[tech][3]])
             
                     #--------------------------------------------------------------------------------#
                     #            TRANSFER TECHNOLOGY DESIGNS INTO VECTOR                             #

@@ -26,7 +26,7 @@ import random as rand
 import numpy as np
 
 class WSUD(object):
-    def __init__(self, type, size, units, scale, imp_area):
+    def __init__(self, type, size, units, scale, imp_area, areafactor):
         #technology type = initials of the tech e.g. BF = biofilter
         #       type = system type in terms of abbreviation e.g. 'BF'
         #       size = surface area/ volume depending on system
@@ -37,6 +37,7 @@ class WSUD(object):
         self.__units = units
         self.__surfacearea = 0
         self.__storagevol = 0
+        self.__areafactor = areafactor
         
         #biophysical components of the system
         if self.__units == 'sqm':
@@ -67,6 +68,9 @@ class WSUD(object):
     #BIOPHYSICAL FUNCTIONS ----------------------------------------------------------------------------
     def getType(self):
         return self.__type
+    
+    def getAreaFactor(self):
+        return self.__areafactor
     
     def getSize(self):
         if self.__units == 'cum':
@@ -738,6 +742,17 @@ class BasinManagementStrategy(object):
         else:
             strat = None
         return strat
+    
+    def getOutBlockStrategyDeg(self, currentID):
+        if currentID in self.__precpartakeIDs:
+            strat = self.__precarray[self.__precpartakeIDs.index(currentID)]
+            if len(strat) == 0:
+                degofstrat = None
+            else:
+                degofstrat = self.__degreesarray[self.__precpartakeIDs.index(currentID)][1]
+        else:
+            degofstrat = None
+        return degofstrat
         
     def reportBasinStrategy(self):
         print "-----------------------------------------"

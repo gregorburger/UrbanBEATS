@@ -62,6 +62,7 @@ class techstrategy_eval(Module):
         self.designdetails = VectorDataIn
         self.blockcityout = VectorDataIn
         self.patchcityout = VectorDataIn
+        self.techconfigin = VectorDataIn
         self.systemsout = VectorDataIn
         self.addParameter(self, "lot_opps", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "street_opps", VIBe2.VECTORDATA_IN)
@@ -73,6 +74,7 @@ class techstrategy_eval(Module):
         self.addParameter(self, "blockcityout", VIBe2.VECTORDATA_OUT)
         self.addParameter(self, "patchcityout", VIBe2.VECTORDATA_OUT)
         self.addParameter(self, "systemsout", VIBe2.VECTORDATA_OUT)
+        self.addParameter(self, "techconfigin", VIBe2.VECTORDATA_IN)
         
         self.reportin = VectorDataIn
         self.reportout = VectorDataIn
@@ -92,7 +94,7 @@ class techstrategy_eval(Module):
         designdetails = self.designdetails.getItem()
         blockcityout = self.blockcityout.getItem()
         systemsout = self.systemsout.getItem()
-        
+        techconfigin = self.techconfigin.getItem()
         map_attr = blockcityin.getAttributes("MapAttributes")
         des_attr = designdetails.getAttributes("DesignAttributes")
         
@@ -338,7 +340,7 @@ class techstrategy_eval(Module):
                 currentoption = lot_strats.getStringAttribute("LotOption_"+str(a+1))                    #WSUD Object as written in technology.py
                 currentoption = currentoption.split(',')                                                #it has several attributes that can be
                 currentoption.remove('')                                                                #accessed simply by typing the following:
-                tech_array_lot.append(tech.WSUD(currentoption[0], currentoption[1], 'sqm', 'L', currentoption[2]))    #   tech_array[index].function()
+                tech_array_lot.append(tech.WSUD(currentoption[0], currentoption[1], 'sqm', 'L', currentoption[2], currentoption[3]))    #   tech_array[index].function()
             
             #COMMENT NOTES -----------------------------------------------------------------------------------------------------------------------------------------
             #
@@ -379,7 +381,7 @@ class techstrategy_eval(Module):
                         currentoption = street_strats_combo.getStringAttribute("StreetOption_"+str(c+1))
                         currentoption = currentoption.split(',')
                         currentoption.remove('')
-                        tech_array_street[a][b].append(tech.WSUD(currentoption[0],currentoption[1], 'sqm', 'S', currentoption[2]))
+                        tech_array_street[a][b].append(tech.WSUD(currentoption[0],currentoption[1], 'sqm', 'S', currentoption[2], currentoption[3]))
             
             ### >>>>>> FILL OUT TECH_ARRAY_NEIGH >>>>>>    (based on lot_deg and neigh_deg)   
             for a in range(len(lot_alts)):
@@ -397,7 +399,7 @@ class techstrategy_eval(Module):
                         currentoption = neigh_strats_combo.getStringAttribute("NeighOption_"+str(c+1))
                         currentoption = currentoption.split(',')
                         currentoption.remove('')
-                        tech_array_neigh[a][b].append(tech.WSUD(currentoption[0],currentoption[1],'sqm', 'N', currentoption[2]))
+                        tech_array_neigh[a][b].append(tech.WSUD(currentoption[0],currentoption[1],'sqm', 'N', currentoption[2], currentoption[3]))
             
             
             #--STEP 3-- Piece together Strategy Objects using WSUD Object Vectors ----#
@@ -778,7 +780,7 @@ class techstrategy_eval(Module):
                         print "Prec_deg = "+str(prec_deg)
                         
                         #create the WSUD object
-                        tech_object = tech.WSUD(currentoption[0],currentoption[1], 'sqm', 'P', currentoption[2])
+                        tech_object = tech.WSUD(currentoption[0],currentoption[1], 'sqm', 'P', currentoption[2], currentoption[3])
                         tech_array_prec[3][index_counter].append(tech_object)
                 
                 prec_technologies_list.append(tech_array_prec)
@@ -845,7 +847,7 @@ class techstrategy_eval(Module):
             
             #BEGIN MONTE CARLO LOOP
             basin_strategies_matrix = []
-            for iterations in range(1000):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
+            for iterations in range(10):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
                 print "Iteration No. ", iterations+1," -----------------------"
                 
                 #PART 1a - SETTING UP THE STORAGE CONTAINER OF INFORMATION
@@ -1249,16 +1251,19 @@ class techstrategy_eval(Module):
                     print current_wsud.getType()
                     wsud_attr.setAttribute("Sys"+str(1)+"Type", current_wsud.getType())
                     wsud_attr.setAttribute("Sys"+str(1)+"TypeN", system_type_numeric[system_type_matrix.index(current_wsud.getType())]) 
+                    wsud_attr.setAttribute("Sys"+str(1)+"Qty", 1)
                     wsud_attr.setAttribute("Sys"+str(1)+"Degree", inblock_degs[j])
                     wsud_attr.setAttribute("Sys"+str(1)+"Area", current_wsud.getSize())
                     wsud_attr.setAttribute("Sys"+str(1)+"Status", 0)            #0 = Planned, 1 = constructed
                     wsud_attr.setAttribute("Sys"+str(1)+"Year", 9999)           #Year constructed
+                    wsud_attr.setAttribute("Sys"+str(1)+"EAFact", current_wsud.getAreaFactor())
                     
                     systemsout.setPoints("BlockID"+str(currentBlockID)+str(scale), plist)
                     systemsout.setAttributes("BlockID"+str(currentBlockID)+str(scale), wsud_attr)
                 
                 #PRECINCT
                 outblock_strat = top_wsud_strategy.getOutBlockStrategy(currentBlockID)
+                outblock_strat_deg = top_wsud_strategy.getOutBlockStrategyDeg(currentBlockID)
                 if outblock_strat == None:
                     pass
                 else:
@@ -1274,10 +1279,12 @@ class techstrategy_eval(Module):
                     wsud_attr.setAttribute("Location", currentBlockID)
                     wsud_attr.setAttribute("Sys"+str(1)+"Type", outblock_strat.getType())
                     wsud_attr.setAttribute("Sys"+str(1)+"TypeN", system_type_numeric[system_type_matrix.index(outblock_strat.getType())])
-                    wsud_attr.setAttribute("Sys"+str(1)+"Degree", 0)
+                    wsud_attr.setAttribute("Sys"+str(1)+"Qty", 1)
+                    wsud_attr.setAttribute("Sys"+str(1)+"Degree", outblock_strat_deg)
                     wsud_attr.setAttribute("Sys"+str(1)+"Area", outblock_strat.getSize())
                     wsud_attr.setAttribute("Sys"+str(1)+"Status", 0)            #0 = Planned, 1 = constructed
                     wsud_attr.setAttribute("Sys"+str(1)+"Year", 9999)           #Year constructed
+                    wsud_attr.setAttribute("Sys"+str(1)+"EAFact", outblock_strat.getAreaFactor())
                     
                     systemsout.setPoints("BlockID"+str(currentBlockID)+str(scale), plist)
                     systemsout.setAttributes("BlockID"+str(currentBlockID)+str(scale), wsud_attr)

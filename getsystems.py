@@ -52,7 +52,7 @@ class GetSystems(Module):
         Module.__init__(self)
         self.ubeats_file = 1            #Was this file created by UrbanBEATS or is it man-made?
         self.ongoing_sim = 0            #Is this module part of an ongoing simulation?
-        self.path_name = "C:/"          #specify C-drive as default value
+        self.path_name = "C:/UBEATS/Replicate100/0_SCreekTest1-500msys-1970_points.shp"          #specify C-drive as default value
         self.system_list = VectorDataIn
         self.addParameter(self, "ubeats_file", VIBe2.BOOL)
         self.addParameter(self, "ongoing_sim", VIBe2.BOOL)
@@ -67,7 +67,7 @@ class GetSystems(Module):
         driver = ogr.GetDriverByName('ESRI Shapefile')
         
         #Use the following file for testing: C:/UBEATS/0_UrbanBEATS-SC-500m_points.shp
-        self.path_name = "C:/UBEATS/0_UrbanBEATS-SCreek-500msys_points.shp"
+        #self.path_name = "C:/UBEATS/Replicate100/0_SCreekTest1-500msys-1970_points.shp"
         save_file = "ubeats_out.shp"
         if self.ongoing_sim == True:
             file_name = self.path_name + save_file
@@ -117,6 +117,7 @@ class GetSystems(Module):
             for j in range(int(syscount)):
                 #System TypeN (Type Numeric, translates the code into string)
                 type_code = feature.GetFieldAsInteger("Sys"+str(j+1)+"TypeN")
+                print type_code
                 type = system_type_matrix[system_type_numeric.index(type_code)]
                 sys_attr.setAttribute("Type"+str(j+1), type)
                 
@@ -132,6 +133,12 @@ class GetSystems(Module):
                 
                 yearbuilt = feature.GetField("Sys"+str(j+1)+"Year")
                 sys_attr.setAttribute("YearConst"+str(j+1), yearbuilt)
+                
+                sys_qty = feature.GetField("Sys"+str(j+1)+"Qty")
+                sys_attr.setAttribute("Quantity"+str(j+1), sys_qty)
+                
+                sys_eafact = feature.GetField("Sys"+str(j+1)+"EAFact")
+                sys_attr.setAttribute("AreaFactor"+str(j+1), sys_eafact)
                 
             #Save the Attributes List & Destroy the feature to free up memory
             system_list.setAttributes("System"+str(i), sys_attr)

@@ -121,8 +121,11 @@ class techopp_precinct(Module):
             #--------------------------------------------------------------------------------#
             
             block_status = currentAttList.getAttribute("Status")
-            neigh_avail_sp = currentAttList.getAttribute("ALUC_PG")      #available lot space
-            
+            if currentAttList.getAttribute("HasPrecS") != 0:
+                neigh_avail_sp = currentAttList.getAttribute("ALUC_PG")      #available lot space
+            else:
+                neigh_avail_sp = 0
+                
             if block_status == 0 or neigh_avail_sp == 0:                                        #SKIP CONDITION #1: If Status = 0
                 print "BlockID"+str(currentID)+" is not active or has no available space"       #SKIP CONDITION #2: If no available space
                 continue
@@ -149,7 +152,15 @@ class techopp_precinct(Module):
             #--------------------------------------------------------------------------------#
             #GET INFORMATION FROM VECTOR DATA
             soilK = currentAttList.getAttribute("Soil_k")                       #soil infiltration rate on area
-            Aimptot = self.getUpstreamImpArea(currentID, upstreamIDs) + currentAttList.getAttribute("ResTIArea")
+            Aimpserviced = self.getUpstreamImpArea(currentID, upstreamIDs, "T") + currentAttList.getAttribute("IADeficit") + currentAttList.getAttribute("UpstrImpTreat")       #total upstream treated impervious area
+            Aimptotupstr = self.getUpstreamImpArea(currentID, upstreamIDs, "A") + currentAttList.getAttribute("ResTIArea")
+            Aimptot = max(Aimptotupstr - Aimpserviced, 0)
+            
+            print "Precinct Area finding: ------ ><><><><><><><><><><><><><><><><><><>"
+            print Aimpserviced
+            print Aimptotupstr
+            print Aimptot
+            print "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>"
             
             if Aimptot == 0:                                                                   #SKIP CONDITION #4: If there is no impervious area (likely to disappear in future)
                 print "BlockID"+str(currentID)+" does not need to service any upstream impervious area"
@@ -180,8 +191,8 @@ class techopp_precinct(Module):
                     print "Aimpprec: "+str(Aimpprec)+", System Targets: "+str(system_tarQ)+", "+str(system_tarTSS)+", "+str(system_tarTP)+", "+str(system_tarTN)+" Soil K: "+str(soilK)+", Max Size: "+str(maxsize)
                     
                     Asystem = eval('td.design_'+str(j)+'('+str(Aimpprec)+',"'+str(dcvpath)+'",'+str(system_tarQ)+','+str(system_tarTSS)+','+str(system_tarTP)+','+str(system_tarTN)+','+str(soilK)+','+str(maxsize)+')')
-                
-                    prectechs.append([j, Asystem, Aimpprec])
+                    print Asystem
+                    prectechs.append([j, Asystem[0], Aimpprec, Asystem[1]])
                 print "Precinct-Scale Technology Areas Required (in sqm)"
                 print prectechs
                 
@@ -191,7 +202,7 @@ class techopp_precinct(Module):
                     currenttech = prectechs[tech][0]
                     if prectechs[tech][1] < neigh_avail_sp:
                         print "Possible to fit "+str(currenttech)+" at the precinct scale to serve all upstream areas"
-                        final_prec_techs.append([currenttech, prectechs[tech][1], prectechs[tech][2]])
+                        final_prec_techs.append([currenttech, prectechs[tech][1], prectechs[tech][2], prectechs[tech][3]])
                 #--------------------------------------------------------------------------------#
                 #            TRANSFER TECHNOLOGY DESIGNS INTO VECTOR                             #
                 #--------------------------------------------------------------------------------#
@@ -216,11 +227,10 @@ class techopp_precinct(Module):
         #END OF MODULE
             
             
-    def getUpstreamImpArea(self, BlockID, upstreamIDs):
+    def getUpstreamImpArea(self, BlockID, upstreamIDs, case):
         #This function scans the database of blockIDs and tallies up the total 
         #upstream impervious area returning it to the main run function of the
         #module.
-        
         blockcityin = self.blockcityin.getItem()
         currentID = BlockID
         currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))
@@ -228,9 +238,13 @@ class techopp_precinct(Module):
         Aimptotal = 0   #tally for total upstream impervious area
         for i in range(int(total_upstream_blocks)):
             current_upstreamID = int(upstreamIDs[i])
-            addImpArea = blockcityin.getAttributes("BlockID"+str(current_upstreamID)).getAttribute("ResTIArea")
-            Aimptotal += addImpArea
-        print "Total upstream imperviousness [ha]: "+str(Aimptotal/10000)
+            if case == "A":             #ALL IMPERVIOUS AREA UPSTREAM
+                addImpArea = blockcityin.getAttributes("BlockID"+str(current_upstreamID)).getAttribute("ResTIArea")
+                Aimptotal += addImpArea
+            elif case == "T":            #ALL TREATED IMPERVIOUS AREA UPSTREAM
+                addImpArea = blockcityin.getAttributes("BlockID"+str(current_upstreamID)).getAttribute("IAServiced")
+                addImpArea += blockcityin.getAttributes("BlockID"+str(current_upstreamID)).getAttribute("UpstrImpTreat")
+                Aimptotal += addImpArea
         return Aimptotal        #in sqm units
     
     def getGreenSpacePatchData(self, BlockID):

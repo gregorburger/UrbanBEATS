@@ -53,8 +53,8 @@ class GetPreviousBlocks(Module):
         Module.__init__(self)
         self.ongoing_sim = 0            #Is this module part of an ongoing simulation?
         self.path_name = "C:/UBEATS/"          #specify C-drive as default value
-        self.block_path_name = "C:/UBEATS/0_UrbanBEATS-SCreek-500m_faces.shp"
-        self.patch_path_name = "C:/UBEATS/0_UrbanBEATS-SCreek-500mp_faces.shp"    
+        self.block_path_name = "C:/UBEATS/Replicate100/0_SCreekTest1-500m_faces.shp"
+        self.patch_path_name = "C:/UBEATS/Replicate100/0_SCreekTest1-500mp_faces.shp"    
         self.previousblocksout = VectorDataIn
         self.previouspatchout = VectorDataIn
         self.addParameter(self, "ongoing_sim", VIBe2.BOOL)
