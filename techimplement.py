@@ -111,7 +111,7 @@ class techimplement(Module):
         self.addParameter(self, "driver_establish", VIBe2.BOOL)
     
     def run(self):
-        currentyear = 1960
+        currentyear = 2000
         #Get vector data
         blockcityin = self.blockcityin.getItem()
         patchdatain = self.patchdatain.getItem()
@@ -204,8 +204,9 @@ class techimplement(Module):
                     print "No Lot Systems planned for Block "+str(currentID)
                 else:
                     new_lot_details = self.implementLot(currentID, sys_implement_lot, mpdata, [centreX, centreY], currentyear)
-                    lot_details[0] += new_lot_details[0]        #update total impervious area treated at lot
-                    lot_details[1] = new_lot_details[1]         #update the % implementation at lot scale
+                    if new_lot_details != 0:
+                        lot_details[0] += new_lot_details[0]        #update total impervious area treated at lot
+                        lot_details[1] = new_lot_details[1]         #update the % implementation at lot scale
             
             ### STREET IMPLEMENTATION ###
             ### Condition 1: block_skip=False, Condition 2: there are street systems planned
@@ -358,30 +359,34 @@ class techimplement(Module):
         lotsysstatus = sys_descr.getAttribute("Status1")
         lotsysbuildyr = sys_descr.getAttribute("YearConst1")
         loteafact = sys_descr.getAttribute("AreaFactor1")
+        lotqty = sys_descr.getAttribute("Quantity1")
+        lotimpT = sys_descr.getAttribute("ImpTreated1")
         
         print lottype, lotdeg, lotsysarea, lotsysstatus, lotsysbuildyr
         
-        goallots = int(lotdeg*mpdata[0])        #final number of houses with systems (masterplan)
-        print "Goal Lots: ", str(goallots)
+        if lotsysbuildyr == 9999:               #if the system is already implemented, then skip
+            goallots = int(lotdeg*mpdata[0])        #final number of houses with systems (masterplan)
+            print "Goal Lots: ", str(goallots)
+            
+            #calculate how many to implement based on allotment rules
+            if self.bb_lot_rule == "AMAP":
+                #AMAP = as many as possible
+                #lesser of: how many we ultimately want or how many have been built
+                num_systems_impl = min(goallots, allotments)
+                print num_systems_impl
+            elif self.bb_lot_rule == "STRICT":
+                #STRICT = strictly follow %
+                #number of allotments built * %
+                num_systems_impl = int(allotments * lotdeg)
+                print num_systems_impl
+                lotqty = num_systems_impl
+            
+            tot_system_area = num_systems_impl * lotsysarea
+            tot_lot_treated = num_systems_impl * lotimparea
+            lotimpT = tot_lot_treated
+            print tot_system_area
+            print tot_lot_treated
         
-        #calculate how many to implement based on allotment rules
-        if self.bb_lot_rule == "AMAP":
-            #AMAP = as many as possible
-            #lesser of: how many we ultimately want or how many have been built
-            num_systems_impl = min(goallots, allotments)
-            print num_systems_impl
-        elif self.bb_lot_rule == "STRICT":
-            #STRICT = strictly follow %
-            #number of allotments built * %
-            num_systems_impl = num_systems_impl = int(allotments * lotdeg)
-            print num_systems_impl
-        
-        tot_system_area = num_systems_impl * lotsysarea
-        tot_lot_treated = num_systems_impl * lotimparea
-        
-        print tot_system_area
-        print tot_lot_treated
-    
         #Write to outputs
         techimpl_attr = Attribute()
         techimpl_attr.setAttribute("Location", ID)
@@ -390,16 +395,18 @@ class techimplement(Module):
         for j in range(int(lotcount)):
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Type", lottype)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"TypeN", system_type_numeric[system_type_matrix.index(lottype)])
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", num_systems_impl)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"TotA", tot_system_area)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", tot_lot_treated)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", lotqty)
+            #techimpl_attr.setAttribute("Sys"+str(j+1)+"TotA", tot_system_area)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", lotimpT)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Area", lotsysarea)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Status", 1)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", currentyear)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(lotsysbuildyr, currentyear))
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", lotdeg)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", loteafact)
             
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "L", techimpl_attr)
+        if lotsysbuildyr < currentyear:               #if the system is already implemented, then skip
+            return [lotimpT, lotdeg]
         return [tot_lot_treated, lotdeg]
     
     def implementStreet(self, ID, sys_descr, mpdata, centrePoints, currentyear, lot_details):
@@ -425,32 +432,36 @@ class techimplement(Module):
         streetsysstatus = sys_descr.getAttribute("Status1")
         streetsysbuildyr = sys_descr.getAttribute("YearConst1")
         streeteafact = sys_descr.getAttribute("AreaFactor1")
+        streetqty = sys_descr.getAttribute("Quantity1")
+        streetimpT = sys_descr.getAttribute("ImpTreated1")
         
         print streettype, streetdeg, streetsysarea, streetsysstatus, streetsysbuildyr
         
-        #GET CURRENT DETAILS
-        resimparea = currentAttList.getAttribute("ResTIArea")
-        street_neigh_imp_area = resimparea - lot_details[0]        #if there was no lot implementation, then tot_lot_treated = 0
-        street_avl_space = currentAttList.getAttribute("AvlStreet")
-        print "Street Areas:"
-        print resimparea, street_neigh_imp_area, street_avl_space
-        
-        #Masterplan details
-        street_neigh_masterplan = mpdata[1] - (mpdata[2]*lot_details[1]*mpdata[0])
-        print "Masterplan: "
-        print mpdata[1], street_neigh_masterplan, mpdata[3]
-        
-        #Compare impervious areas
-        imp_developed = float(resimparea)/float(mpdata[1])
-        if imp_developed < float(self.block_based_thresh/100):              #QUIT CONDITION 1: developed imp area less than threshold
-            return True
-        if self.bb_street_zone == 0 and street_avl_space < streetsysarea:   #QUIT CONDITION 2: no space and model was restrained to available space
-            return True
-        
-        #else implement the system
-        tot_street_treated = streetdeg * street_neigh_imp_area
-        print "Street Area treated: ", str(tot_street_treated)
-        
+        if streetsysbuildyr == 9999:               #if the system is already implemented, then skip
+            #GET CURRENT DETAILS
+            resimparea = currentAttList.getAttribute("ResTIArea")
+            street_neigh_imp_area = resimparea - lot_details[0]        #if there was no lot implementation, then tot_lot_treated = 0
+            street_avl_space = currentAttList.getAttribute("AvlStreet")
+            print "Street Areas:"
+            print resimparea, street_neigh_imp_area, street_avl_space
+            
+            #Masterplan details
+            street_neigh_masterplan = mpdata[1] - (mpdata[2]*lot_details[1]*mpdata[0])
+            print "Masterplan: "
+            print mpdata[1], street_neigh_masterplan, mpdata[3]
+            
+            #Compare impervious areas
+            imp_developed = float(resimparea)/float(mpdata[1])
+            if imp_developed < float(self.block_based_thresh/100):              #QUIT CONDITION 1: developed imp area less than threshold
+                return True
+            if self.bb_street_zone == 0 and street_avl_space < streetsysarea:   #QUIT CONDITION 2: no space and model was restrained to available space
+                return True
+            
+            #else implement the system
+            tot_street_treated = streetdeg * street_neigh_imp_area
+            streetimpT = tot_street_treated
+            print "Street Area treated: ", str(tot_street_treated)
+            
         techimpl_attr = Attribute()
         techimpl_attr.setAttribute("Location", ID)
         techimpl_attr.setAttribute("Scale", self.scale_matrix.index("S"))
@@ -458,11 +469,11 @@ class techimplement(Module):
         for j in range(int(streetcount)):
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Type", streettype)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"TypeN", system_type_numeric[system_type_matrix.index(streettype)])
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", 1)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", streetqty)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Area", streetsysarea)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", tot_street_treated)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", streetimpT)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Status", 1)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", currentyear)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(streetsysbuildyr, currentyear))
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", streetdeg)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", streeteafact)
             
@@ -491,32 +502,36 @@ class techimplement(Module):
         neighsysstatus = sys_descr.getAttribute("Status1")
         neighsysbuildyr = sys_descr.getAttribute("YearConst1")
         neigheafact = sys_descr.getAttribute("AreaFactor1")
+        neighqty = sys_descr.getAttribute("Quantity1")
+        neighimpT = sys_descr.getAttribute("ImpTreated1")
         
         print neightype, neighdeg, neighsysarea, neighsysstatus, neighsysbuildyr
         #Follow the same as street, but check the open space first
-
-        #Current Year Details
-        resimparea = currentAttList.getAttribute("ResTIArea")
-        street_neigh_imp_area = resimparea - lot_details[0]        #if there was no lot implementation, then tot_lot_treated = 0
-        neigh_avail_sp = currentAttList.getAttribute("ALUC_PG")
-        print "Neigh Areas:"
-        print resimparea, street_neigh_imp_area, neigh_avail_sp
         
-        #Masterplan details
-        street_neigh_masterplan = mpdata[1] - (mpdata[2]*lot_details[1]*mpdata[0])
-        print "Masterplan: "
-        print mpdata[1], street_neigh_masterplan, mpdata[4]
-        
-        #Compare impervious areas
-        imp_developed = float(resimparea)/float(mpdata[1])
-        if imp_developed < float(self.block_based_thresh/100):
-            return True
-        if self.bb_street_zone == 0 and neigh_avl_space < streetsysarea:
-            return True
-        
-        #else implement the system
-        tot_neigh_treated = neighdeg * street_neigh_imp_area
-        print "Neigh Area treated: ", str(tot_neigh_treated)
+        if neighsysbuildyr == 9999:               #if the system is already implemented, then skip
+            #Current Year Details
+            resimparea = currentAttList.getAttribute("ResTIArea")
+            street_neigh_imp_area = resimparea - lot_details[0]        #if there was no lot implementation, then tot_lot_treated = 0
+            neigh_avail_sp = currentAttList.getAttribute("ALUC_PG")
+            print "Neigh Areas:"
+            print resimparea, street_neigh_imp_area, neigh_avail_sp
+            
+            #Masterplan details
+            street_neigh_masterplan = mpdata[1] - (mpdata[2]*lot_details[1]*mpdata[0])
+            print "Masterplan: "
+            print mpdata[1], street_neigh_masterplan, mpdata[4]
+            
+            #Compare impervious areas
+            imp_developed = float(resimparea)/float(mpdata[1])
+            if imp_developed < float(self.block_based_thresh/100):
+                return True
+            if self.bb_street_zone == 0 and neigh_avl_space < streetsysarea:
+                return True
+            
+            #else implement the system
+            tot_neigh_treated = neighdeg * street_neigh_imp_area
+            neighimpT = tot_neigh_treated
+            print "Neigh Area treated: ", str(tot_neigh_treated)
         
         techimpl_attr = Attribute()
         techimpl_attr.setAttribute("Location", ID)
@@ -525,11 +540,11 @@ class techimplement(Module):
         for j in range(int(neighcount)):
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Type", neightype)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"TypeN", system_type_numeric[system_type_matrix.index(neightype)])
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", 1)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", neighqty)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Area", neighsysarea)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", tot_neigh_treated)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", neighimpT)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Status", 1)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", currentyear)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(neighsysbuildyr, currentyear))
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", neighdeg) 
             techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", neigheafact)
             
@@ -620,20 +635,24 @@ class techimplement(Module):
         precsysstatus = sys_descr.getAttribute("Status1")
         precsysbuildyr = sys_descr.getAttribute("YearConst1")
         preceafact = sys_descr.getAttribute("AreaFactor1")
+        precqty = sys_descr.getAttribute("Quantity1")
+        precimpT = sys_descr.getAttribute("ImpTreated1")
         
         print prectype, precdeg, precsysarea, precsysstatus, precsysbuildyr
         #Follow the same as street, but check the open space first
         
-        neigh_avail_sp = currentAttList.getAttribute("ALUC_PG") 
-        
-        #check if space
-        if self.prec_zone_ignore == False and precsysarea > neigh_avail_sp:
-            print "Not enough space yet"
-            return True
-        
-        imp_area_tot = self.getUpstreamImpArea(ID, upstreamIDs)
-        tot_prec_treated = precdeg * imp_area_tot
-        
+        if precsysbuildyr == 9999:               #if the system is already implemented, then skip
+            neigh_avail_sp = currentAttList.getAttribute("ALUC_PG") 
+            
+            #check if space
+            if self.prec_zone_ignore == False and precsysarea > neigh_avail_sp:
+                print "Not enough space yet"
+                return True
+            
+            imp_area_tot = self.getUpstreamImpArea(ID, upstreamIDs)
+            tot_prec_treated = precdeg * imp_area_tot
+            precimpT = tot_prec_treated
+            
         techimpl_attr = Attribute()
         techimpl_attr.setAttribute("Location", ID)
         techimpl_attr.setAttribute("Scale", self.scale_matrix.index("P"))
@@ -641,11 +660,11 @@ class techimplement(Module):
         for j in range(int(preccount)):
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Type", prectype)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"TypeN", system_type_numeric[system_type_matrix.index(prectype)])
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", 1)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", precqty)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Area", precsysarea)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", tot_prec_treated)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", precimpT)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Status", 1)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", currentyear)
+            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(precsysbuildyr, currentyear))
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", precdeg) 
             techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", preceafact)
         

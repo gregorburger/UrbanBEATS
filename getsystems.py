@@ -142,6 +142,9 @@ class GetSystems(Module):
                 sys_eafact = feature.GetField("Sys"+str(j+1)+"EAFact")
                 sys_attr.setAttribute("AreaFactor"+str(j+1), sys_eafact)
                 
+                sys_imptreated = feature.GetField("Sys"+str(j+1)+"ImpT")
+                sys_attr.setAttribute("ImpTreated"+str(j+1), sys_imptreated)
+                
             #Save the Attributes List & Destroy the feature to free up memory
             system_list.setAttributes("System"+str(i), sys_attr)
             feature.Destroy()

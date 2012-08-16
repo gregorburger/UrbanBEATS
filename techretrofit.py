@@ -332,8 +332,6 @@ class techretrofit(Module):
             print "System size = "+str(Asys)
             print "Total System Size = "+str(Asyseffectivetotal)
             
-            techconfigout.setAttributes("BlockID"+str(int(ID))+scale, techimpl_attr)
-            
             ### EXCEPTION FOR SWALES AT THE MOMENT WHILE THERE ARE NO DESIGN CURVE FILES ###
             if type == "SW":
                 return 0
@@ -364,6 +362,8 @@ class techretrofit(Module):
                 print "Results - new targets cannot be met, system will not be considered"
                 imptreatedbysystem = 0
                 imptreated += imptreatedbysystem
+                
+                techimpl_attr.setAttribute("Sys"+str(i+1)+"ImpT", imptreatedbysystem)
             else:
                 #calculate the system's current Atreated
                 print "Results"
@@ -371,6 +371,10 @@ class techretrofit(Module):
                 imptreatedbysystem = Asyseffectivetotal/sys_perc
                 imptreated += imptreatedbysystem
                 print imptreatedbysystem
+                techimpl_attr.setAttribute("Sys"+str(i+1)+"ImpT", imptreatedbysystem)
+            
+            techconfigout.setAttributes("BlockID"+str(int(ID))+scale, techimpl_attr)    
+                
         return imptreated
     
     

@@ -875,7 +875,7 @@ class techstrategy_eval(Module):
             
             #BEGIN MONTE CARLO LOOP
             basin_strategies_matrix = []
-            for iterations in range(1000):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
+            for iterations in range(500):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
                 print "Iteration No. ", iterations+1," -----------------------"
                 
                 #PART 1a - SETTING UP THE STORAGE CONTAINER OF INFORMATION
@@ -1305,6 +1305,7 @@ class techstrategy_eval(Module):
                     wsud_attr.setAttribute("Sys"+str(1)+"Status", 0)            #0 = Planned, 1 = constructed
                     wsud_attr.setAttribute("Sys"+str(1)+"Year", 9999)           #Year constructed
                     wsud_attr.setAttribute("Sys"+str(1)+"EAFact", current_wsud.getAreaFactor())
+                    wsud_attr.setAttribute("Sys"+str(1)+"ImpT", 0)
                     
                     systemsout.setPoints("BlockID"+str(currentBlockID)+str(scale), plist)
                     systemsout.setAttributes("BlockID"+str(currentBlockID)+str(scale), wsud_attr)
@@ -1333,6 +1334,7 @@ class techstrategy_eval(Module):
                     wsud_attr.setAttribute("Sys"+str(1)+"Status", 0)            #0 = Planned, 1 = constructed
                     wsud_attr.setAttribute("Sys"+str(1)+"Year", 9999)           #Year constructed
                     wsud_attr.setAttribute("Sys"+str(1)+"EAFact", outblock_strat.getAreaFactor())
+                    wsud_attr.setAttribute("Sys"+str(1)+"ImpT", 0)
                     
                     systemsout.setPoints("BlockID"+str(currentBlockID)+str(scale), plist)
                     systemsout.setAttributes("BlockID"+str(currentBlockID)+str(scale), wsud_attr)
