@@ -64,36 +64,12 @@ class urbplanbb(Module):
 	@ingroup DAnCE4Water
 	@author Peter M Bach
 	"""
-    def StringToAttribute(self,AttrName, Value):
-	attr = Attribute(AttrName)
-	attr.setString(str(Value))
-	return attr
 
 
     def __init__(self):
         Module.__init__(self)
         #inputs from previous modules and output vector data to next module
-	'''        
-	self.blockcityin = VectorDataIn
-        self.blockcityout = VectorDataIn
-        self.patchcityin = VectorDataIn
-        self.existingblock = VectorDataIn
-        self.patchcityout = VectorDataIn
-        self.planningrules = VectorDataIn
 
-        self.createParameter( "blockcityin", VIBe2.VECTORDATA_IN)
-        self.createParameter( "existingblock", VIBe2.VECTORDATA_IN)
-        self.createParameter( "blockcityout", VIBe2.VECTORDATA_OUT)
-        self.createParameter( "patchcityin", VIBe2.VECTORDATA_IN)
-        self.createParameter( "patchcityout", VIBe2.VECTORDATA_OUT)
-        self.createParameter( "planningrules", VIBe2.VECTORDATA_OUT)
-        
-        self.reportin = VectorDataIn
-        self.reportout = VectorDataIn
-	       
-	self.createParameter( "reportin", VIBe2.VECTORDATA_IN)
-        self.createParameter( "reportout", VIBe2.VECTORDATA_OUT)
-      	   '''
         #parameters for blocks analysis (these are contained in the GUI)
         
         ############################
@@ -767,7 +743,7 @@ class urbplanbb(Module):
 
 	#roof_connected_attr = Attribute("roof_connected")
 	#roof_connected_attr.setString(str(self.roof_connected))
-        plan_res.addAttribute(self.StringToAttribute("roof_connected", self.roof_connected))
+        plan_res.addAttribute("roof_connected", self.roof_connected)
 
         plan_res.addAttribute("imperv_prop_dced", self.imperv_prop_dced)
         
@@ -777,7 +753,7 @@ class urbplanbb(Module):
         plan_nonres = Component()
 	city.addComponent(plan_nonres,self.planNonres)
         
-        plan_nonres.addAttribute(self.StringToAttribute("employment_data", self.employment_data))
+        plan_nonres.addAttribute("employment_data", self.employment_data)
 	
         plan_nonres.addAttribute("employment_rad", self.employment_rad)
         plan_nonres.addAttribute("employment_rate", self.employment_rate)
@@ -792,7 +768,7 @@ class urbplanbb(Module):
         plan_nonres.addAttribute("Alind_uf", self.Alind_uf)
         plan_nonres.addAttribute("Ahind_cc", self.Ahind_cc)
         plan_nonres.addAttribute("Ahind_uf", self.Ahind_uf)
-        plan_nonres.addAttribute(self.StringToAttribute("ddecay_type", self.ddecay_type))
+        plan_nonres.addAttribute("ddecay_type", self.ddecay_type)
         
         plan_nonres.addAttribute("com_fsetback_min", self.com_fsetback_min)
         plan_nonres.addAttribute("com_setback_auto", self.com_setback_auto)
@@ -893,7 +869,7 @@ class urbplanbb(Module):
         plan_spaces.addAttribute("unc_landmark_otherwater", self.unc_landmark_otherwater)
         
         #UNDEVELOPED GROUP
-        plan_spaces.addAttribute(self.StringToAttribute("und_whattodo", self.und_whattodo))
+        plan_spaces.addAttribute("und_whattodo", self.und_whattodo)
         plan_spaces.addAttribute("und_allowspace", self.und_allowspace)
         plan_spaces.addAttribute("und_autodeterminetype", self.und_autodeterminetype)
                 
