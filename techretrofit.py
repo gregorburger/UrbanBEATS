@@ -77,6 +77,8 @@ class techretrofit(Module):
         self.addParameter(self, "techconfigout", VIBe2.VECTORDATA_OUT)
         self.technames = ["ASHP", "AQ", "ASR", "BF", "GR", "GT", "GPT", "IS", "PPL", "PB", "PP", "RT", "SF", "ST", "IRR", "WSUB", "WSUR", "SW", "TPS", "UT", "WWRR", "WT", "WEF"]
         
+        
+        
     def run(self):
         #Link input vectors with local variables
         blockcityin = self.blockcityin.getItem()
@@ -87,7 +89,9 @@ class techretrofit(Module):
         design_details = self.design_details.getItem()
         
         map_attr = blockcityin.getAttributes("MapAttributes")
-        totsystems = techconfigin.getAttributes("GlobalSystemAttributes").getAttribute("TotalSystems")
+        globsys_attr = techconfigin.getAttributes("GlobalSystemAttributes")
+        totsystems = globsys_attr.getAttribute("TotalSystems")
+        
         print "Total Existing Systems in map: "+str(totsystems)
         
         #get data needed to being for loop analysis
@@ -188,6 +192,7 @@ class techretrofit(Module):
             #FOR LOOP END (Repeat for next BlockID)
             
         #Output vector update
+        techconfigout.setAttributes("GlobalSystemAttributes", globsys_attr)
         blockcityout.setAttributes("MapAttributes", map_attr)
         
     
@@ -210,34 +215,34 @@ class techretrofit(Module):
         inblock_imp_treated = 0         #Initialize to keep track of treated in-block imperviousness
         
         #LOT SYSTEMS
-        sys_implement_lot = self.locatePlannedSystems(sys_implement, "L")
-        if sys_implement_lot == None:
+        sys_descr = self.locatePlannedSystems(sys_implement, "L")
+        if sys_descr == None:
             inblock_imp_treated += 0
             currentAttList.setAttribute("HasLotS", 0)
         else:
             currentAttList.setAttribute("HasLotS", 1)    #mark the system as having been taken
-            print "Lot Count: ", str(sys_implement_lot.getAttribute("TotSystems"))
-            imptreated = self.retrieveNewAimpTreated(ID, "L", sys_implement_lot)
+            print "Lot Count: ", str(sys_descr.getAttribute("TotSystems"))
+            imptreated = self.retrieveNewAimpTreated(ID, "L", sys_descr)
             inblock_imp_treated += imptreated
-    
+                                  
         #STREET SYSTEMS
-        sys_implement_street = self.locatePlannedSystems(sys_implement, "S")
-        if sys_implement_street == None:
+        sys_descr = self.locatePlannedSystems(sys_implement, "S")
+        if sys_descr == None:
             currentAttList.setAttribute("HasStreetS", 0)
         else:
             currentAttList.setAttribute("HasStreetS", 1) #mark the system as having been taken
-            print "Street Count: ", str(sys_implement_street.getAttribute("TotSystems"))
-            imptreated = self.retrieveNewAimpTreated(ID, "S", sys_implement_street)
+            print "Street Count: ", str(sys_descr.getAttribute("TotSystems"))
+            imptreated = self.retrieveNewAimpTreated(ID, "S", sys_descr)
             inblock_imp_treated += imptreated
-        
+            
         #NEIGHBOURHOOD SYSTEMS
-        sys_implement_neigh = self.locatePlannedSystems(sys_implement, "N")
-        if sys_implement_neigh == None:
+        sys_descr = self.locatePlannedSystems(sys_implement, "N")
+        if sys_descr == None:
             currentAttList.setAttribute("HasNeighS", 0)
         else:
             currentAttList.setAttribute("HasNeighS", 1)
-            print "Neigh Count: ", str(sys_implement_neigh.getAttribute("TotSystems"))
-            imptreated = self.retrieveNewAimpTreated(ID, "N", sys_implement_neigh)
+            print "Neigh Count: ", str(sys_descr.getAttribute("TotSystems"))
+            imptreated = self.retrieveNewAimpTreated(ID, "N", sys_descr)
             inblock_imp_treated += imptreated
         
         currentAttList.setAttribute("IAServiced", inblock_imp_treated)
@@ -249,22 +254,22 @@ class techretrofit(Module):
         allotments = currentAttList.getAttribute("ResAllots")
         Aimplot = currentAttList.getAttribute("ResLotImpA")
         print "Allotments = "+str(allotments)+" of each "+str(Aimplot)+" sqm impervious"
-        max_houses = (inblock_impdeficit/Aimplot)/allotments
+        max_houses = max((inblock_impdeficit/Aimplot)/allotments, 1)
         print "A Lot Strategy in this Block would permit a maximum implementation in: "+str(max_houses*100)+"% of houses"
         currentAttList.setAttribute("MaxLotDeg", max_houses)
         
         #PRECINCT SYSTEMS
-        sys_implement_prec = self.locatePlannedSystems(sys_implement, "P")
-        if sys_implement_prec == None:
+        sys_descr = self.locatePlannedSystems(sys_implement, "P")
+        if sys_descr == None:
             currentAttList.setAttribute("HasPrecS", 0)
             currentAttList.setAttribute("UpstrImpTreat", 0)
         else:
             currentAttList.setAttribute("HasPrecS", 1)
-            precimptreated = self.retrieveNewAimpTreated(ID, "P", sys_implement_prec)
-            print "Prec Count: ", str(sys_implement_prec.getAttribute("TotSystems"))
-            
+            precimptreated = self.retrieveNewAimpTreated(ID, "P", sys_descr)
+            print "Prec Count: ", str(sys_descr.getAttribute("TotSystems"))
             currentAttList.setAttribute("UpstrImpTreat", precimptreated)
-    
+            
+        
         blockcityout.setAttributes("BlockID"+str(ID), currentAttList)
         print "---------------------------------------------"
         
@@ -273,6 +278,8 @@ class techretrofit(Module):
     def retrieveNewAimpTreated(self, ID, scale, sys_descr):
         #Grab the vectors and relevant attribute lists
         blockcityin, blockcityout = self.getBlockCityVectors()
+        techconfigout = self.techconfigout.getItem()
+        
         design_attr = self.design_details.getItem().getAttributes("DesignAttributes")
         #Determine impervious area to deal with depending on scale
         currentAttList = blockcityin.getAttributes("BlockID"+str(ID))
@@ -284,22 +291,48 @@ class techretrofit(Module):
         #Grab the current WSUD information
         totsystems = sys_descr.getAttribute("TotSystems")
         imptreated = 0      #initialize to tally up
+        
+        #Write to outputs
+        techimpl_attr = Attribute()
+        techimpl_attr.setAttribute("Location", ID)
+        techimpl_attr.setAttribute("Scale", scale)
+        techimpl_attr.setAttribute("TotSystems", totsystems)
+        
         for i in range(int(totsystems)):         #loop through systems and grab all info
-            #Get WSUD attributes
-            deg = sys_descr.getAttribute("Service"+str(i+1))
-            Asys = sys_descr.getAttribute("Area"+str(i+1))
-            status_sys = sys_descr.getAttribute("Status"+str(i+1))
-            yearbuilt = sys_descr.getAttribute("YearConst"+str(i+1))
+            #Get WSUD attributes and set for output...
+            typeN = sys_descr.getAttribute("TypeN"+str(i+1))
+            techimpl_attr.setAttribute("Sys"+str(i+1)+"TypeN", typeN)
+
             type = sys_descr.getStringAttribute("Type"+str(i+1))
-            qty = sys_descr.getAttribute("Quantity"+str(i+1))
-            areafactor = sys_descr.getAttribute("AreaFactor"+str(i+1))
-            Asyseffectivetotal = (Asys * qty)/areafactor                        #need to be using the effective area, not the planning area!
+            techimpl_attr.setAttribute("Sys"+str(i+1)+"Type", type)
             
+            Asys = sys_descr.getAttribute("Area"+str(i+1))
+            techimpl_attr.setAttribute("Sys"+str(i+1)+"Area", Asys)
+             
+            deg = sys_descr.getAttribute("Service"+str(i+1))
+            techimpl_attr.setAttribute("Sys"+str(i+1)+"Degree", deg)
+                        
+            status_sys = sys_descr.getAttribute("Status"+str(i+1))
+            techimpl_attr.setAttribute("Sys"+str(i+1)+"Status", status_sys)
+                        
+            yearbuilt = sys_descr.getAttribute("YearConst"+str(i+1))
+            techimpl_attr.setAttribute("Sys"+str(i+1)+"Year", yearbuilt)
+            
+            qty = sys_descr.getAttribute("Quantity"+str(i+1))
+            techimpl_attr.setAttribute("Sys"+str(i+1)+"Qty", qty)
+            
+            areafactor = sys_descr.getAttribute("AreaFactor"+str(i+1))
+            techimpl_attr.setAttribute("Sys"+str(i+1)+"EAFact", areafactor)
+                        
+            Asyseffectivetotal = (Asys * qty)/areafactor                        #need to be using the effective area, not the planning area!
+
             print "System of Type: ", type
             print "treats: "+str(deg)+" degree"
             print "Residential Imp area: "+str(currentAttList.getAttribute("ResTIArea"))
             print "System size = "+str(Asys)
             print "Total System Size = "+str(Asyseffectivetotal)
+            
+            techconfigout.setAttributes("BlockID"+str(int(ID))+scale, techimpl_attr)
             
             ### EXCEPTION FOR SWALES AT THE MOMENT WHILE THERE ARE NO DESIGN CURVE FILES ###
             if type == "SW":
@@ -322,7 +355,9 @@ class techretrofit(Module):
             #DESIGN DETAILS VECTOR LIST
             pathname = design_attr.getStringAttribute(type+"descur_path")
             print pathname
-        
+            
+            
+            
             sys_perc = dcv.retrieveDesign(pathname, type, ksat, targets)
             if sys_perc == np.inf:
                 #release the imp area, but mark the space as taken!

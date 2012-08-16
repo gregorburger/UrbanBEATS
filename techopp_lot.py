@@ -105,7 +105,7 @@ class techopp_lot(Module):
             #--------------------------------------------------------------------------------#
             
             block_status = currentAttList.getAttribute("Status")
-            if currentAttList.getAttribute("HasLotS") != 0:
+            if currentAttList.getAttribute("HasLotS") == 0:
                 lot_avail_sp = currentAttList.getAttribute("AvlResLot")      #available lot space
             else:
                 lot_avail_sp = 0

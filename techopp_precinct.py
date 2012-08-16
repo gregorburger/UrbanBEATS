@@ -121,7 +121,7 @@ class techopp_precinct(Module):
             #--------------------------------------------------------------------------------#
             
             block_status = currentAttList.getAttribute("Status")
-            if currentAttList.getAttribute("HasPrecS") != 0:
+            if currentAttList.getAttribute("HasPrecS") == 0:
                 neigh_avail_sp = currentAttList.getAttribute("ALUC_PG")      #available lot space
             else:
                 neigh_avail_sp = 0

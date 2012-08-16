@@ -1067,7 +1067,7 @@ class techplacement(Module):
             currentAttList.setAttribute("HasStreetS", 0)
             currentAttList.setAttribute("HasNeighS", 0)
             currentAttList.setAttribute("HasPrecS", 0)
-            
+            currentAttList.setAttribute("MaxLotDeg", 1.1)
             currentAttList.setAttribute("IAServiced", 0)
             totimparea = currentAttList.getAttribute("ResTIArea")
             currentAttList.setAttribute("IADeficit", totimparea)

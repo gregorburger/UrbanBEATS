@@ -95,8 +95,10 @@ class techstrategy_eval(Module):
         blockcityout = self.blockcityout.getItem()
         systemsout = self.systemsout.getItem()
         techconfigin = self.techconfigin.getItem()
+        
         map_attr = blockcityin.getAttributes("MapAttributes")
         des_attr = designdetails.getAttributes("DesignAttributes")
+        globsys_attr = techconfigin.getAttributes("GlobalSystemAttributes")
         
         #Open a file to write output to
         output_file = open("UBEATS_BlockStrategies.csv", 'w')
@@ -119,9 +121,9 @@ class techstrategy_eval(Module):
         basin_target_min = des_attr.getAttribute("basin_target_min")/100
         basin_target_max = des_attr.getAttribute("basin_target_max")/100
         
-        lot_alts = [0]
+        lot_alts_complete = [0]
         for i in range(int(lot_increment)):
-            lot_alts.append(float(1/lot_increment*(i+1)))
+            lot_alts_complete.append(float(1/lot_increment*(i+1)))
         
         street_alts = [0]
         for i in range(int(street_increment)):
@@ -292,8 +294,8 @@ class techstrategy_eval(Module):
             #-----------------------------------------------------------------#
             
             block_status = currentAttList.getAttribute("Status")
-            if block_status == 0 or currentAttList.getAttribute("ResTIArea") == 0:
-                print "BlockID"+str(currentID)+" is not active in simulation or has no residential area"
+            if block_status == 0 or currentAttList.getAttribute("ResTIArea") == 0 or currentAttList.getAttribute("IADeficit") == 0:
+                print "BlockID"+str(currentID)+" is not active in simulation, has no residential area or no imperviousness left to service"
                 #even if block isn't active at all, attributes from previous module are passed on
                 blockcityout.setPoints("BlockID"+str(currentID),plist)
                 blockcityout.setFaces("BlockID"+str(currentID),flist)
@@ -315,7 +317,7 @@ class techstrategy_eval(Module):
             #--- GET SOME BLOCK INFORMATION -------#
             print "Block ID: "+str(currentID)
             allotments = currentAttList.getAttribute("ResAllots")
-            totalimparea = currentAttList.getAttribute("ResTIArea")
+            totalimparea = currentAttList.getAttribute("IADeficit")             #Deficit left to service!
             
             #--STEP 1-- Get the attribute lists for different strategies -----------------#
             lot_strats = lot_opps.getAttributes("BlockID"+str(currentID)+"_Lot")
@@ -334,6 +336,18 @@ class techstrategy_eval(Module):
             tech_array_lot = []         #all lot options
             tech_array_street = []      #all street options in all possible degrees, 3D Array, each Column holds one street_deg list
             tech_array_neigh = []       #all neigh options in all possible degrees, 
+            
+            #--PRE STEP -- Modify the combinations vector just for this block
+            lot_alts = []
+            for deg in lot_alts_complete:
+                lot_alts.append(deg)
+            max_houses = currentAttList.getAttribute("MaxLotDeg")
+            if max_houses != 1.0:               #if not 100%, adjust the possible degrees
+                lot_alts.append(max_houses)
+                lot_alts.sort()
+                lastindex = lot_alts.index(max_houses)
+                lot_alts.remove(max_houses)
+                lot_alts = lot_alts[0:lastindex]
             
             ### >>>>>> FILL OUT TECH_ARRAY_LOT >>>>>>                                                   #COMMENT ON USE OF CLASS TECHNOLOGY
             for a in range(int(lot_options)):                                                           #each element in tech_array contains one
@@ -401,7 +415,6 @@ class techstrategy_eval(Module):
                         currentoption.remove('')
                         tech_array_neigh[a][b].append(tech.WSUD(currentoption[0],currentoption[1],'sqm', 'N', currentoption[2], currentoption[3]))
             
-            
             #--STEP 3-- Piece together Strategy Objects using WSUD Object Vectors ----#
             strategies_collection = []
             strategies = []
@@ -464,7 +477,6 @@ class techstrategy_eval(Module):
             
             #print strategies_collection
             print "Total Combinations: "+str(len(strategies_collection))            
-            
             
             #--STEP 5a-- SORT INTO BINS ----#
             strategy_bins = []  #array holds x sub-arrays, where x is the number of prec_alts - 1 e.g. if prec_alts = [0, 0.5, 1], then bins = [1, >0.5, >0]
@@ -690,6 +702,16 @@ class techstrategy_eval(Module):
             print basinblockIDs
             print len(basinblockIDs)
             
+            ### CALCULATE THE ALREADY TREATED IMPERVIOUS AREA IN THIS BASIN             <<<<<<<<<<<<<<<<<< REFERENCE VARIABLES for total and already treated impervious areas
+            btia = 0            #Acronym = BASIN TOTAL IMPERVIOUS AREA
+            batia = 0           #Acronym = BASIN ALREADY TREATED IMPERVIOUS AREA 
+            for j in range(len(basinblockIDs)):
+                currentblockID = basinblockIDs[j]
+                batia += blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("IAServiced")
+                batia += blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("UpstrImpTreat")
+                btia += blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("ResTIArea")
+            ### THIS HAS TO BE ADDED TO THE TOTAL BASIN STRATEGIES LIST LATER ON! ###
+            
             #LOOP OVER THE UPSTREAM IDs of the Basin first and see which of the IDs can accommodate precinct-scale technologies
             #Find the blocks in the basin that can fit a precinct system (so we can Monte Carlo them later)
             prec_blocks_partakeIDs = []         #holds all IDs that can fit precinct scale systems
@@ -805,12 +827,18 @@ class techstrategy_eval(Module):
 #            print region_bin_scores
             
             #Get the total basin's imperviousness (and population for future versions)
-            cumu_Aimp = 0
+            cumu_Aimp_treated = 0
+            tot_Aimp_in_basin = 0
             for j in range(len(basinblockIDs)):
                 currentblockID = basinblockIDs[j]
-                cumu_Aimp += blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("ResTIArea")
-            print "Total Basin Imperviousness: ", cumu_Aimp
+                cumu_Aimp_treated += blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("IAServiced")
+                cumu_Aimp_treated += blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("UpstrImpTreat")
+                tot_Aimp_in_basin += blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("ResTIArea")
+            cumu_Aimp = tot_Aimp_in_basin - cumu_Aimp_treated    #deficit remaining to be treated = Total - (all inblocks + all precinct treated)
+            print "Total Basin Imperviousness still left to deal with: ", cumu_Aimp
             print prec_blocks_partakeIDs
+            
+            
             
         #########################################################################################################################
         # MONTE CARLO STRATEGY PIECING TOGETHER ALGORITHM
@@ -847,7 +875,7 @@ class techstrategy_eval(Module):
             
             #BEGIN MONTE CARLO LOOP
             basin_strategies_matrix = []
-            for iterations in range(10):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
+            for iterations in range(1000):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
                 print "Iteration No. ", iterations+1," -----------------------"
                 
                 #PART 1a - SETTING UP THE STORAGE CONTAINER OF INFORMATION
@@ -971,10 +999,17 @@ class techstrategy_eval(Module):
                     print "Remaining Upstream Blocks to deal with: ", remain_upstreamIDs
                     #this matrix will represents the individual blocks not part of the sub-basin that we need to scan aside from subbasins
                     
-                    #get the total impervious area of the sub-basin = currentID's imp + ResTIArea for all upstreamIDs
-                    totalAimp_subbasin = blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("ResTIArea")
+                    #get the total impervious area of the sub-basin to treat = currentID's imp + ResTIArea for all upstreamIDs
+                    completeAimp_subbasin = blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("ResTIArea")
+                    totalblockAimp_subbasin = blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("IAServiced")
+                    totalprectreat_subbasin = blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("UpstrImpTreat")
+                    
                     for sbID in upstreamIDs:
-                        totalAimp_subbasin += blockcityout.getAttributes("BlockID"+str(sbID)).getAttribute("ResTIArea")
+                        completeAimp_subbasin += blockcityout.getAttributes("BlockID"+str(sbID)).getAttribute("ResTIArea")
+                        totalblockAimp_subbasin += blockcityout.getAttributes("BlockID"+str(sbID)).getAttribute("IAServiced")
+                        totalprectreat_subbasin += blockcityout.getAttributes("BlockID"+str(sbID)).getAttribute("UpstrImpTreat")
+                    
+                    totalAimp_subbasin = completeAimp_subbasin - totalblockAimp_subbasin - totalprectreat_subbasin    
                     print "Total Sub-basin Impervious Area: ", totalAimp_subbasin
                     print "as proportion of overall imp Area: ", totalAimp_subbasin/cumu_Aimp*100, "%"
                     
@@ -1061,7 +1096,7 @@ class techstrategy_eval(Module):
                         #rbID is the current BlockID in the remaining ID list
                         print "Block ID: ", rbID
                         #get impervious area
-                        block_Aimp = blockcityout.getAttributes("BlockID"+str(rbID)).getAttribute("ResTIArea")
+                        block_Aimp = blockcityout.getAttributes("BlockID"+str(rbID)).getAttribute("IADeficit")          #Deficit, i.e. remaining AImp to deal with
                         print "Block Impervious Area: ", block_Aimp
                         if block_Aimp == 0:
                             print "No impervious area, therefore continuing"
@@ -1155,11 +1190,24 @@ class techstrategy_eval(Module):
                 basin_strategies_matrix.append([current_bstrategy.getPropImpServed(), current_bstrategy.getMCAtotscore(), current_bstrategy])
                 output_file.write(str(currentID)+","+str(iterations+1)+","+str(current_bstrategy.getPropImpServed())+","+str(current_bstrategy.getMCAtotscore())+","+str(len(prec_blocks_chosenIDs))+","+str(len(inblocks_chosenIDs))+"\n")
             
+            
+            print "ENDED BRAINSTORMING, NOW CHOOSING -----------------------------------------------------"
+            
             #Grab all options within the desired minimum basin target
             #check if they are above the top-ten/number
             final_basin_strategies = []
+            previous_basin_service = batia/btia                         #x(t-1)% = Atreated / Atotal
+            delta_percent = (basin_target_min - previous_basin_service)/(1-previous_basin_service)      #x(t)% = [target(t) - x(t-1)%]/[1 - x(t-1)%]
+            
+            print "Previous Treatment Efficiency: "+str(previous_basin_service)
+            print "must choose a strategy now that treats: "+str(delta_percent*100)+ "% of basin"
+            print "***"
+#            print "possible strategies: "
+#            print basin_strategies_matrix
+#            print "-----------------------------------"
+            
             for ind_strat in basin_strategies_matrix:
-                if ind_strat[0]/100 > basin_target_min:
+                if ind_strat[0]/100 > delta_percent:
                     final_basin_strategies.append(ind_strat)
             
             #Determine the threshold
@@ -1288,10 +1336,28 @@ class techstrategy_eval(Module):
                     
                     systemsout.setPoints("BlockID"+str(currentBlockID)+str(scale), plist)
                     systemsout.setAttributes("BlockID"+str(currentBlockID)+str(scale), wsud_attr)
-
+                
+                #ADD ALL EXISTING SYSTEMS TO THE VECTOR
+                total_entries = globsys_attr.getAttribute("TotalSystems")
+                print "Total Entries: "+str(total_entries)
+                loopscales = ["L", "S", "N", "P"]
+                for lpsc in loopscales:
+                    wsud_attr = techconfigin.getAttributes("BlockID"+str(currentBlockID)+str(lpsc))
+                    print wsud_attr.getAttribute("TotSystems")
+                    if wsud_attr.getAttribute("TotSystems") > 0:
+                        print wsud_attr.getStringAttribute("Sys1Type")
+                        print wsud_attr.getStringAttribute("Scale")
+                        print wsud_attr.getAttribute("Location")
+                        print "Transfer the system"
+                        plist = pyvibe.PointList()
+                        coordinates = offsets_matrix[loopscales.index(lpsc)]
+                        plist.append(Point(coordinates[0], coordinates[1], 0))
+                        wsud_attr.setAttribute("Scale", loopscales.index(lpsc))
+                        systemsout.setPoints("BlockID"+str(currentBlockID)+str(lpsc), plist)
+                        systemsout.setAttributes("BlockID"+str(currentBlockID)+str(lpsc), wsud_attr)
+            
             #Write the overarching strategy output to Basin ID
             blockcityout.setAttributes("BasinID"+str(currentID), basin_attr)
-            
             
         #Output vector update
         blockcityout.setAttributes("MapAttributes", map_attr)

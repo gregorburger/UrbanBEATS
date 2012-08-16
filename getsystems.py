@@ -117,7 +117,9 @@ class GetSystems(Module):
             for j in range(int(syscount)):
                 #System TypeN (Type Numeric, translates the code into string)
                 type_code = feature.GetFieldAsInteger("Sys"+str(j+1)+"TypeN")
+                sys_attr.setAttribute("TypeN"+str(j+1), type_code)
                 print type_code
+                
                 type = system_type_matrix[system_type_numeric.index(type_code)]
                 sys_attr.setAttribute("Type"+str(j+1), type)
                 

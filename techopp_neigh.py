@@ -122,7 +122,7 @@ class techopp_neigh(Module):
             #--------------------------------------------------------------------------------#
             
             block_status = currentAttList.getAttribute("Status")
-            if currentAttList.getAttribute("HasNeighS") != 0:
+            if currentAttList.getAttribute("HasNeighS") == 0:
                 neigh_avail_sp = currentAttList.getAttribute("ALUC_PG")
             else:
                 neigh_avail_sp = 0
@@ -145,11 +145,12 @@ class techopp_neigh(Module):
             for deg in lot_alts_complete:
                 lot_alts.append(deg)
             max_houses = currentAttList.getAttribute("MaxLotDeg")
-            lot_alts.append(max_houses)
-            lot_alts.sort()
-            lastindex = lot_alts.index(max_houses)
-            lot_alts.remove(max_houses)
-            lot_alts = lot_alts[0:lastindex]
+            if max_houses != 1.0:               #if not 100%, adjust the possible degrees
+                lot_alts.append(max_houses)
+                lot_alts.sort()
+                lastindex = lot_alts.index(max_houses)
+                lot_alts.remove(max_houses)
+                lot_alts = lot_alts[0:lastindex]
             
             print "Modified Lot-alts: ", str(lot_alts)
             
