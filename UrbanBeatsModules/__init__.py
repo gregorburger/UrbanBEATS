@@ -66,7 +66,7 @@ from urbplansummary import *			#summarizes four output grids for each land use i
 
 
 ### --- Modules for technology assessment, opportunities, design and placement
-#from techplacement import *				#organises the data and inputs (GUI)
+from techplacement import *				#organises the data and inputs (GUI)
 #from techopp_lot import *				#finds opportunities for lot-scale techs in each block
 #from techopp_street import *			#finds opportunities for street techs in each block
 #from techopp_neigh import *				#finds opportunities for neighbourhood techs in each block
