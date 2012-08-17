@@ -119,7 +119,7 @@ class ubp_spaces(Module):
         self.planSpaces.getAttribute("hwymedian_reserved")
         self.planSpaces.getAttribute("hwy_crossfall") 
 
-	self.spacesAttr = View("SpacesAttribute",COMPONENT,WRITE)
+	self.spacesAttr = View("Spaces",COMPONENT,WRITE)
 	self.spacesAttr.addAttribute("BlockID")
 	self.spacesAttr.addAttribute("HasSpaces")
 	self.spacesAttr.addAttribute("rfw_Adev")
@@ -276,8 +276,9 @@ class ubp_spaces(Module):
             #--------------------------------------------------------------------------------#
             
             block_status = currentAttList.getAttribute("Status").getDouble()
-            total_space_area = currentAttList.getAttribute("ALUC_NA").getDouble() + currentAttList.getAttribute("ALUC_Rd").getDouble() \
-                + currentAttList.getAttribute("ALUC_PG").getDouble() + currentAttList.getAttribute("ALUC_RFlood").getDouble() + currentAttList.getAttribute("ALUC_Und").getDouble()
+	    landclassvec = currentAttList.getAttribute("Area_Landclass").getDoubleVector()
+            total_space_area = landclassvec[13] + landclassvec[8] \
+                + landclassvec[10] + landclassvec[11] + landclassvec[12]
             if block_status == 0 or total_space_area == 0:              #2 conditions to skip: (1) status = 0, (2) no spaces areas
                 print "BlockID"+str(currentID)+" is not active in simulation"
                 continue
@@ -289,13 +290,14 @@ class ubp_spaces(Module):
             #            SETUP DATA - RETRIEVE FROM BLOCKCITY AND SAMPLE VALUES              #
             #--------------------------------------------------------------------------------#
   
-            rd_area_map = float(currentAttList.getAttribute("ALUC_Rd").getDouble())
-            pg_area_tot = float(currentAttList.getAttribute("ALUC_PG").getDouble())
-            RFlood_area_tot = float(currentAttList.getAttribute("ALUC_RFlood").getDouble())
-            und_area_tot = float(currentAttList.getAttribute("ALUC_Und").getDouble())
+            rd_area_map = float(landclassvec[8])
+            pg_area_tot = float(landclassvec[10])
+            RFlood_area_tot = float(landclassvec[11])
+            und_area_tot = float(landclassvec[12])
             
-            unc_area_total = float(currentAttList.getAttribute("ALUC_NA").getDouble())
-            unc_area_pop = currentAttList.getAttribute("POP_NA").getDouble()
+            unc_area_total = float(landclassvec[13])
+	    landclassvec = currentAttList.getAttribute("PopulationDensity_Landclass").getDoubleVector()
+            unc_area_pop = landclassvec[13]
               
             #--------------------------------------------------------------------------------#
             #            DEAL WITH UNCLASSIFIED AREA FIRST                                   #
