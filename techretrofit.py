@@ -69,15 +69,17 @@ class techretrofit(Module):
         self.design_details = VectorDataIn
         self.techconfigin = VectorDataIn
         self.techconfigout = VectorDataIn
+        self.startyear = 1960
+        self.currentyear = 1960
         self.addParameter(self, "blockcityin", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "blockcityout", VIBe2.VECTORDATA_OUT)
         self.addParameter(self, "patchcityin", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "design_details", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "techconfigin", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "techconfigout", VIBe2.VECTORDATA_OUT)
+        self.addParameter(self, "startyear", VIBe2.DOUBLEDATA_IN)
+        self.addParameter(self, "currentyear", VIBe2.DOUBLEDATA_IN)
         self.technames = ["ASHP", "AQ", "ASR", "BF", "GR", "GT", "GPT", "IS", "PPL", "PB", "PP", "RT", "SF", "ST", "IRR", "WSUB", "WSUR", "SW", "TPS", "UT", "WWRR", "WT", "WEF"]
-        
-        
         
     def run(self):
         #Link input vectors with local variables
@@ -87,6 +89,11 @@ class techretrofit(Module):
         techconfigin = self.techconfigin.getItem()
         techconfigout = self.techconfigout.getItem()
         design_details = self.design_details.getItem()
+        
+        startyear = self.startyear
+        currentyear = self.currentyear
+        print "StartYear"+str(startyear)
+        print "CurrentYear"+str(currentyear)
         
         map_attr = blockcityin.getAttributes("MapAttributes")
         globsys_attr = techconfigin.getAttributes("GlobalSystemAttributes")
@@ -123,34 +130,6 @@ class techretrofit(Module):
         des_attr = design_details.getAttributes("DesignAttributes")
         retrofit_scenario = des_attr.getStringAttribute("retrofit_scenario")
         
-            #"With Renewal Scenario Parameters"
-        cycle_def = des_attr.getAttribute("renewal_cycle_def")
-        lot_years = des_attr.getAttribute("renewal_lot_years")
-        street_years = des_attr.getAttribute("renewal_street_years")
-        neigh_years = des_attr.getAttribute("renewal_neigh_years")
-        lot_perc = des_attr.getAttribute("renewal_lot_perc")
-        renewal_parameters = [cycle_def, lot_years, street_years, neigh_years, lot_perc]
-        
-            #"Forced Retrofit Scenario Parameters"
-        fstreet = des_attr.getAttribute("force_street")
-        fneigh = des_attr.getAttribute("force_neigh")
-        fprec = des_attr.getAttribute("force_prec")
-        forced_parameters = [fstreet, fneigh, fprec]
-        
-            #"Individual Systems Parameters"
-        lot_renew = des_attr.getAttribute("lot_renew")
-        lot_decom = des_attr.getAttribute("lot_decom")
-        street_renew = des_attr.getAttribute("street_renew")
-        street_decom = des_attr.getAttribute("street_decom")
-        neigh_renew = des_attr.getAttribute("neigh_renew")
-        neigh_decom = des_attr.getAttribute("neigh_decom")
-        prec_renew = des_attr.getAttribute("prec_renew")
-        prec_decom = des_attr.getAttribute("prec_decom")
-        decom_thresh = des_attr.getAttribute("decom_thresh")
-        renewal_thresh = des_attr.getAttribute("renewal_thresh")
-        renewal_alternative = des_attr.getStringAttribute("renewal_alternative")
-        
-        
         #BEGIN ALGORITHM FOR RETROFITTING - CHOOSE WHAT TO DO WITH THE AREA AND THEN DECIDE WHAT TO DO WITH SYSTEM
         for i in range(int(blocks_num)):
             currentID = i + 1
@@ -178,9 +157,9 @@ class techretrofit(Module):
             if retrofit_scenario == "N":                #Do nothing Scenario
                 self.retrofit_DoNothing(currentID, sys_implement)
             elif retrofit_scenario == "R":              #With Renewal Scenario
-                self.retrofit_WithRenewal(renewal_parameters)
+                self.retrofit_WithRenewal(currentID, sys_implement)
             elif retrofit_scenario == "F":              #Forced Scenario
-                self.retrofit_Forced(forced_parameters)
+                self.retrofit_Forced(currentID, sys_implement)
             
             blockcityout.setPoints("BlockID"+str(currentID),plist)
             blockcityout.setFaces("BlockID"+str(currentID),flist)
@@ -254,7 +233,7 @@ class techretrofit(Module):
         allotments = currentAttList.getAttribute("ResAllots")
         Aimplot = currentAttList.getAttribute("ResLotImpA")
         print "Allotments = "+str(allotments)+" of each "+str(Aimplot)+" sqm impervious"
-        max_houses = max((inblock_impdeficit/Aimplot)/allotments, 1)
+        max_houses = min((inblock_impdeficit/Aimplot)/allotments, 1)
         print "A Lot Strategy in this Block would permit a maximum implementation in: "+str(max_houses*100)+"% of houses"
         currentAttList.setAttribute("MaxLotDeg", max_houses)
         
@@ -274,6 +253,392 @@ class techretrofit(Module):
         print "---------------------------------------------"
         
         return True
+    
+    def retrofit_Forced(self, ID, sys_implement):
+        #Implements the "FORCED" Retrofit Scenario across the entire map
+        #Forced: Technologies at the checked scales are retrofitted depending on the three
+        #           options available: keep, upgrade, decommission
+        #   - See comments under "With Renewal" scenario for further details
+        blockcityin, blockcityout = self.getBlockCityVectors()
+        des_attr = self.design_details.getItem().getAttributes("DesignAttributes")
+        techconfigout = self.techconfigout.getItem()
+        
+        #Grab relevant parameters for this:
+        fstreet = des_attr.getAttribute("force_street")
+        fneigh = des_attr.getAttribute("force_neigh")
+        fprec = des_attr.getAttribute("force_prec")
+        
+        print "Block: "+str(ID)
+        print sys_implement
+        
+        currentAttList = blockcityin.getAttributes("BlockID"+str(ID))
+        inblock_imp_treated = 0
+        
+        #LOT
+        sys_descr = self.locatePlannedSystems(sys_implement, "L")
+        if sys_descr == None:
+            inblock_imp_treated += 0
+            currentAttList.setAttribute("HasLotS", 0)
+        else:
+            decision, newImpT = self.dealWithSystem(ID, sys_descr, "L")
+            decision = 1        #YOU CANNOT FORCE RETROFIT ON LOT, SO KEEP THE SYSTEMS
+            if decision == 1:       #keep
+                print "Keeping the System, Lot-scale forced retrofit not possible anyway!"
+                currentAttList.setAttribute("HasLotS", 1)
+                print "Lot Count: ", str(sys_descr.getAttribute("TotSystems"))
+                inblock_imp_treated += newImpT
+            #elif decision == 2:     #renewal
+            #    #REDESIGN THE SYSTEM
+            #    pass
+            #elif decision == 3:     #decom
+            #    currentAttList.setAttribute("HasLotS", 0)   #remove the system
+            #    inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
+            #    #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+            #    techimpl_attr = Attribute()
+            #    techconfigout.setAttributes("BlockID"+str(ID)+"L", techimpl_attr)
+                
+        #STREET
+        sys_descr = self.locatePlannedSystems(sys_implement, "S")
+        if sys_descr == None:
+            currentAttList.setAttribute("HasStreetS", 0)
+        else:
+            decision, newImpT = self.dealWithSystem(ID, sys_descr, "S")
+            if fstreet == 0:    #if we do not force retrofit on street, just keep the system
+                decision = 1
+            
+            if decision == 1:       #keep
+                print "Keeping the System"
+                currentAttList.setAttribute("HasStreetS", 1)
+                print "Street Count: ", str(sys_descr.getAttribute("TotSystems"))
+                inblock_imp_treated += newImpT
+            elif decision == 2:     #renewal
+                print "Renewing the System"
+                #REDESIGN THE SYSTEM
+                pass
+            elif decision == 3:     #decom
+                print "Decommissioning the system"
+                inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
+                #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                techimpl_attr = Attribute()
+                techconfigout.setAttributes("BlockID"+str(ID)+"S", techimpl_attr)
+            
+        #NEIGH
+        sys_descr = self.locatePlannedSystems(sys_implement, "N")
+        if sys_descr == None:
+            currentAttList.setAttribute("HasNeighS", 0)
+        else:
+            decision, newImpT = self.dealWithSystem(ID, sys_descr, "N")
+            if fneigh == 0:     #if we do not force retrofit on neighbourhood, just keep the system
+                decision = 1
+            
+            if decision == 1:       #keep
+                print "Keeping the System"
+                currentAttList.setAttribute("HasNeighS", 1)
+                print "Neigh Count: ", str(sys_descr.getAttribute("TotSystems"))
+                inblock_imp_treated += newImpT
+            elif decision == 2:     #renewal
+                print "Renewing the System"
+                #REDESIGN THE SYSTEM
+                pass
+            elif decision == 3:     #decom
+                print "Decommissioning the system"
+                inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
+                #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                techimpl_attr = Attribute()
+                techconfigout.setAttributes("BlockID"+str(ID)+"N", techimpl_attr)
+        
+        currentAttList.setAttribute("IAServiced", inblock_imp_treated)
+        inblock_impdeficit = max(currentAttList.getAttribute("ResTIArea") - inblock_imp_treated, 0)
+        currentAttList.setAttribute("IADeficit", inblock_impdeficit)
+        
+        allotments = currentAttList.getAttribute("ResAllots")
+        Aimplot = currentAttList.getAttribute("ResLotImpA")
+        print "Allotments = "+str(allotments)+" of each "+str(Aimplot)+" sqm impervious"
+        max_houses = min((inblock_impdeficit/Aimplot)/allotments, 1)
+        print "A Lot Strategy in this Block would permit a maximum implementation in: "+str(max_houses*100)+"% of houses"
+        currentAttList.setAttribute("MaxLotDeg", max_houses)
+        
+        #PREC
+        sys_descr = self.locatePlannedSystems(sys_implement, "P")
+        if sys_descr == None:
+            currentAttList.setAttribute("HasPrecS", 0)
+        else:
+            decision, newImpT = self.dealWithSystem(ID, sys_descr, "P")
+            if fprec == 0:      #if we do not force retrofit on precinct, just keep the system
+                decision = 1
+                
+            if decision == 1:       #keep
+                print "Keeping the System"
+                currentAttList.setAttribute("HasPrecS", 1)
+                print "Prec Count: ", str(sys_descr.getAttribute("TotSystems"))
+                currentAttList.setAttribute("UpstrImpTreat", newImpT)
+            elif decision == 2:     #renewal
+                print "Renewing the System"
+                #REDESIGN THE SYSTEM
+                pass
+            elif decision == 3:     #decom
+                print "Decommissioning the system"
+                currentAttList.setAttribute("UpstrImpTreat", 0)     #if system removed: imp treated = 0
+                #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                techimpl_attr = Attribute()
+                techconfigout.setAttributes("BlockID"+str(ID)+"P", techimpl_attr)
+        
+        blockcityout.setAttributes("BlockID"+str(ID), currentAttList)
+        return True
+
+    def retrofit_WithRenewal(self, ID, sys_implement):
+        #Implements the "WITH RENEWAL" Retrofit Scenario across the entire map
+        #With Renewal: Technologies at different scales are selected for retrofitting
+        #           depending on the block's age and renewal cycles configured by the user
+        #   - Technologies are first considered for keeping, upgrading or decommissioning
+        #   - Keep: impervious area they already treat will be removed from the outstanding
+        #           impervious area to be treated and that scale in said Block marked as 'taken'
+        #   - Upgrade: technology targets will be looked at and compared, the upgraded technology
+        #           is assessed and then implemented. Same procedures as for Keep are subsequently
+        #           carried out with the new design
+        #   - Decommission: technology is removed from the area, impervious area is freed up
+        #           scale in said block is marked as 'available'
+        blockcityin, blockcityou = self.getBlockCityVectors()
+        des_attr = self.design_details.getItem().getAttributes("DesignAttributes")
+        
+        currentyear = self.currentyear
+        startyear = self.startyear
+        time_passed = currentyear - startyear
+        
+        #Grab relevant parameters for this:
+        cycle_def = des_attr.getAttribute("renewal_cycle_def")
+        lot_years = des_attr.getAttribute("renewal_lot_years")
+        street_years = des_attr.getAttribute("renewal_street_years")
+        neigh_years = des_attr.getAttribute("renewal_neigh_years")
+        lot_perc = des_attr.getAttribute("renewal_lot_perc")
+        
+        print "Block: "+str(ID)
+        print sys_implement
+        
+        currentAttList = blockcityin.getAttributes("BlockID"+str(ID))
+        inblock_imp_treated = 0
+        
+        if cycle_def == 0:
+            self.retrofit_DoNothing(ID, sys_implement)      #if no renewal cycle was defined
+            return True                                     #go through the Do Nothing Loop instead
+            
+        #LOT
+        sys_descr = self.locatePlannedSystems(sys_implement, "L")
+        if sys_descr == None:
+            inblock_imp_treated += 0
+            currentAttList.setAttribute("HasLotS", 0)
+        else:
+            #DO SOMETHING TO DETERMINE IF YES/NO RETROFIT, then check the decision
+            if time_passed - (time_passed // lot_years)*lot_years == 0:
+                go_retrofit = 1     #then it's time for renewal
+            else:
+                go_retrofit = 0
+                
+            #NOW DETERMINE IF ARE RETROFITTING OR NOT: IF NOT READY FOR RETROFIT, KEEP, ELSE GO INTO CYCLE        
+            decision, newImpT = self.dealWithSystem(ID, sys_descr, "L")
+            if go_retrofit == 0:
+                decision = 1
+                
+            if decision == 1:       #keep
+                print "Keeping the System"
+                currentAttList.setAttribute("HasLotS", 1)
+                print "Lot Count: ", str(sys_descr.getAttribute("TotSystems"))
+                inblock_imp_treated += newImpT
+            elif decision == 2:     #renewal
+                print "Renewing the System"
+                #REDESIGN THE SYSTEM
+                pass
+            elif decision == 3:     #decom
+                print "Decommissioning the system"
+                currentAttList.setAttribute("HasLotS", 0)   #remove the system
+                inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
+                #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                techimpl_attr = Attribute()
+                techconfigout.setAttributes("BlockID"+str(ID)+"L", techimpl_attr)
+            
+        #STREET
+        sys_descr = self.locatePlannedSystems(sys_implement, "S")
+        if sys_descr == None:
+            currentAttList.setAttribute("HasStreetS", 0)
+        else:
+            #DO SOMETHING TO DETERMINE IF YES/NO RETROFIT, then check the decision
+            if time_passed - (time_passed // street_years)*street_years == 0:
+                go_retrofit = 1     #then it's time for renewal
+            else:
+                go_retrofit = 0
+            
+            #NOW DETERMINE IF ARE RETROFITTING OR NOT: IF NOT READY FOR RETROFIT, KEEP, ELSE GO INTO CYCLE   
+            decision, newImpT = self.dealWithSystem(ID, sys_descr, "S")
+            if go_retrofit == 0:
+                decision = 1
+                
+            if decision == 1:       #keep
+                print "Keeping the System"
+                currentAttList.setAttribute("HasStreetS", 1)
+                print "Street Count: ", str(sys_descr.getAttribute("TotSystems"))
+                inblock_imp_treated += newImpT
+            elif decision == 2:     #renewal
+                print "Renewing the System"
+                #REDESIGN THE SYSTEM
+                pass
+            elif decision == 3:     #decom
+                print "Decommissioning the system"
+                inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
+                #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                techimpl_attr = Attribute()
+                techconfigout.setAttributes("BlockID"+str(ID)+"S", techimpl_attr)
+        
+        #NEIGH
+        sys_descr = self.locatePlannedSystems(sys_implement, "N")
+        if sys_descr == None:
+            currentAttList.setAttribute("HasNeighS", 0)
+        else:
+            #DO SOMETHING TO DETERMINE IF YES/NO RETROFIT, then check the decision
+            if time_passed - (time_passed // neigh_years)*neigh_years == 0:
+                go_retrofit = 1     #then it's time for renewal
+            else:
+                go_retrofit = 0
+                
+            #NOW DETERMINE IF ARE RETROFITTING OR NOT: IF NOT READY FOR RETROFIT, KEEP, ELSE GO INTO CYCLE   
+            decision, newImpT = self.dealWithSystem(ID, sys_descr, "N")
+            if go_retrofit == 0:    #if not 1 then keep the system
+                decision = 1
+            
+            if decision == 1:       #keep
+                print "Keeping the System"
+                currentAttList.setAttribute("HasNeighS", 1)
+                print "Neigh Count: ", str(sys_descr.getAttribute("TotSystems"))
+                inblock_imp_treated += newImpT
+            elif decision == 2:     #renewal
+                print "Renewing the System"
+                #REDESIGN THE SYSTEM
+                pass
+            elif decision == 3:     #decom
+                print "Decommissioning the system"
+                inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
+                #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                techimpl_attr = Attribute()
+                techconfigout.setAttributes("BlockID"+str(ID)+"N", techimpl_attr)
+        
+        currentAttList.setAttribute("IAServiced", inblock_imp_treated)
+        inblock_impdeficit = max(currentAttList.getAttribute("ResTIArea") - inblock_imp_treated, 0)
+        currentAttList.setAttribute("IADeficit", inblock_impdeficit)
+        
+        allotments = currentAttList.getAttribute("ResAllots")
+        Aimplot = currentAttList.getAttribute("ResLotImpA")
+        print "Allotments = "+str(allotments)+" of each "+str(Aimplot)+" sqm impervious"
+        max_houses = min((inblock_impdeficit/Aimplot)/allotments, 1)
+        print "A Lot Strategy in this Block would permit a maximum implementation in: "+str(max_houses*100)+"% of houses"
+        currentAttList.setAttribute("MaxLotDeg", max_houses)
+        
+        #PREC
+        sys_descr = self.locatePlannedSystems(sys_implement, "P")
+        if sys_descr == None:
+            currentAttList.setAttribute("HasPrecS", 0)
+        else:
+            #DO SOMETHING TO DETERMINE IF YES/NO RETROFIT, then check the decision
+            if time_passed - (time_passed // neigh_years)*neigh_years == 0:
+                go_retrofit = 1     #then it's time for renewal
+            else:
+                go_retrofit = 0     #otherwise do not do anything
+                
+            #NOW DETERMINE IF ARE RETROFITTING OR NOT: IF NOT READY FOR RETROFIT, KEEP, ELSE GO INTO CYCLE   
+            decision, newImpT = self.dealWithSystem(ID, sys_descr, "P")
+            if go_retrofit == 0:
+                decision = 1
+                
+            if decision == 1:       #keep
+                print "Keeping the System"
+                currentAttList.setAttribute("HasPrecS", 1)
+                print "Prec Count: ", str(sys_descr.getAttribute("TotSystems"))
+                currentAttList.setAttribute("UpstrImpTreat", newImpT)
+            elif decision == 2:     #renewal
+                print "Renewing the System"
+                #REDESIGN THE SYSTEM
+                pass
+            elif decision == 3:     #decom
+                print "Decommissioning the system"
+                currentAttList.setAttribute("UpstrImpTreat", 0)     #if system removed: imp treated = 0
+                #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                techimpl_attr = Attribute()
+                techconfigout.setAttributes("BlocKID"+str(ID)+"P", techimpl_attr)
+        
+        blockcityout.setAttributes("BlockID"+str(ID), currentAttList)
+        return True
+
+    def dealWithSystem(self, ID, sys_descr, scale):
+        blockcityin, blockcityout = self.getBlockCityVectors()
+        currentyear = self.currentyear
+        
+        des_attr = self.design_details.getItem().getAttributes("DesignAttributes")
+        currentAttList = blockcityin.getAttributes("BlockID"+str(ID))
+        
+        #Grab 'what to do with system' parameters
+        lot_renew = des_attr.getAttribute("lot_renew")
+        lot_decom = des_attr.getAttribute("lot_decom")
+        street_renew = des_attr.getAttribute("street_renew")
+        street_decom = des_attr.getAttribute("street_decom")
+        neigh_renew = des_attr.getAttribute("neigh_renew")
+        neigh_decom = des_attr.getAttribute("neigh_decom")
+        prec_renew = des_attr.getAttribute("prec_renew")
+        prec_decom = des_attr.getAttribute("prec_decom")
+        decom_thresh = float(des_attr.getAttribute("decom_thresh"))/100
+        renewal_thresh = float(des_attr.getAttribute("renewal_thresh"))/100
+        renewal_alternative = des_attr.getStringAttribute("renewal_alternative")
+        
+        scalecheck = [[lot_renew, lot_decom], [street_renew, street_decom], [neigh_renew, neigh_decom], [prec_renew, prec_decom]]
+        scalematrix = ["L", "S", "N", "P"]
+        scaleconditions = scalecheck[scalematrix.index(scale)]
+        
+        decision_matrix = []        #contains numbers of each decision 1=Keep, 2=Renew, 3=Decom
+                                    #1st pass: decision based on the maximum i.e. if [1, 3], decommission
+        
+        ###-------------------------------------------------------
+        ### DECISION FACTOR 1: SYSTEM AGE
+        ###         Determine where the system age lies
+        ###-------------------------------------------------------
+        sys_age = sys_descr.getAttribute("YearConst1")
+        sys_type = sys_descr.getStringAttribute("Type1")
+        avglife = des_attr.getAttribute(sys_type+"avglife")
+        age = currentyear - sys_age
+        print "System Age: "+str(age)
+        
+        if scaleconditions[1] == 1 and age > avglife:             #decom
+            decision_matrix.append(3)
+        elif scaleconditions[0] == 1 and age > avglife/2:         #renew
+            decision_matrix.append(2)
+        else:                                                     #keep
+            decision_matrix.append(1)
+        
+        ###-------------------------------------------------------
+        ### DECISION FACTOR 2: DROP IN PERFORMANCE
+        ###         Determine where the system performance lies
+        ###-------------------------------------------------------
+        old_imp = sys_descr.getAttribute("ImpTreated1")
+        new_imp = self.retrieveNewAimpTreated(ID, scale, sys_descr)
+        perfdeficit = abs(old_imp - new_imp)/old_imp
+        print "Old Imp: "+str(old_imp)
+        print "New Imp: "+str(new_imp)
+        print "Performance Deficit of System: "+str(perfdeficit)
+        
+        if scaleconditions[1] == 1 and perfdeficit >= decom_thresh: #Decom = Checked, threshold exceeded
+            decision_matrix.append(3)
+        elif scaleconditions[0] == 1 and perfdeficit >= renewal_thresh:     #Renew = checked, threshold exceeded
+            decision_matrix.append(2)
+        else:
+            decision_matrix.append(1)
+        
+        ###-------------------------------------------------------
+        ### FUTURE DECISION FACTORS: ---
+        ###         ... description
+        ###-------------------------------------------------------
+        
+        
+        ### MAKE FINAL DECISION ###
+        print decision_matrix
+        final_decision = max(decision_matrix)       #1st pass: the worst-case chosen, i.e. maximum
+                                                    #future passes: more complex decision-making
+        return final_decision, new_imp
     
     def retrieveNewAimpTreated(self, ID, scale, sys_descr):
         #Grab the vectors and relevant attribute lists
@@ -354,8 +719,6 @@ class techretrofit(Module):
             pathname = design_attr.getStringAttribute(type+"descur_path")
             print pathname
             
-            
-            
             sys_perc = dcv.retrieveDesign(pathname, type, ksat, targets)
             if sys_perc == np.inf:
                 #release the imp area, but mark the space as taken!
@@ -367,10 +730,10 @@ class techretrofit(Module):
             else:
                 #calculate the system's current Atreated
                 print "Results"
-                print sys_perc
+                print "percentage of catchment: ", str(sys_perc)
                 imptreatedbysystem = Asyseffectivetotal/sys_perc
                 imptreated += imptreatedbysystem
-                print imptreatedbysystem
+                print "impervious area treated by system: "+str(imptreatedbysystem)
                 techimpl_attr.setAttribute("Sys"+str(i+1)+"ImpT", imptreatedbysystem)
             
             techconfigout.setAttributes("BlockID"+str(int(ID))+scale, techimpl_attr)    

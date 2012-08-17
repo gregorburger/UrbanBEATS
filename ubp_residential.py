@@ -241,7 +241,7 @@ class ubp_residential(Module):
                 
                 res_parking_area = carports_max * 2.6 * 4.9     ########NOTE! LOOK UP VALUE FOR CARPORTS!
                 if garage_incl == True:                         ########FUTURE VERSION: PUT IN PROPER GARAGE DIMENSIONS
-                    res_garage_area = carports * 2.6 * 4.9
+                    res_garage_area = carports * 2.6 * 4.9      #NOTE: CARPORTS NOT DEFINED!
                     res_parking_area = 0.5*res_parking_area
                 else:
                     res_garage_area = 0

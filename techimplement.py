@@ -60,6 +60,8 @@ class techimplement(Module):
         self.previouspatchin = VectorDataIn         #masterplan map of patches
         self.blockcityout = VectorDataIn        #current map of blocks based on present time
         self.techinplace = VectorDataIn         #technologies implement into present day blocks
+        self.currentyear = 1960
+        self.startyear = 1960
         self.addParameter(self, "blockcityin", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "patchdatain", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "techconfigin", VIBe2.VECTORDATA_IN)
@@ -67,6 +69,8 @@ class techimplement(Module):
         self.addParameter(self, "previouspatchin", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "blockcityout", VIBe2.VECTORDATA_OUT)
         self.addParameter(self, "techinplace", VIBe2.VECTORDATA_OUT)
+        self.addParameter(self, "startyear", VIBe2.DOUBLEDATA_IN)
+        self.addParameter(self, "currentyear", VIBe2.DOUBLEDATA_IN)
         
         self.scale_matrix = ["L", "S", "N", "P"] 
         
@@ -111,7 +115,8 @@ class techimplement(Module):
         self.addParameter(self, "driver_establish", VIBe2.BOOL)
     
     def run(self):
-        currentyear = 2000
+        currentyear = self.currentyear
+        startyear = self.startyear
         #Get vector data
         blockcityin = self.blockcityin.getItem()
         patchdatain = self.patchdatain.getItem()
@@ -383,9 +388,9 @@ class techimplement(Module):
             
             tot_system_area = num_systems_impl * lotsysarea
             tot_lot_treated = num_systems_impl * lotimparea
-            lotimpT = tot_lot_treated
+            #lotimpT = tot_lot_treated
             print tot_system_area
-            print tot_lot_treated
+            #print tot_lot_treated
         
         #Write to outputs
         techimpl_attr = Attribute()
@@ -403,6 +408,7 @@ class techimplement(Module):
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(lotsysbuildyr, currentyear))
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", lotdeg)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", loteafact)
+            #techimpl_attr.setAttribute("Sys"+str(j+1)+"curImpT", tot_lot_treated)
             
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "L", techimpl_attr)
         if lotsysbuildyr < currentyear:               #if the system is already implemented, then skip
@@ -459,7 +465,7 @@ class techimplement(Module):
             
             #else implement the system
             tot_street_treated = streetdeg * street_neigh_imp_area
-            streetimpT = tot_street_treated
+            #streetimpT = tot_street_treated
             print "Street Area treated: ", str(tot_street_treated)
             
         techimpl_attr = Attribute()
@@ -476,6 +482,7 @@ class techimplement(Module):
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(streetsysbuildyr, currentyear))
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", streetdeg)
             techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", streeteafact)
+            #techimpl_attr.setAttribute("Sys"+str(j+1)+"curImpT", tot_street_treated)
             
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "S", techimpl_attr)
         return True
@@ -530,7 +537,7 @@ class techimplement(Module):
             
             #else implement the system
             tot_neigh_treated = neighdeg * street_neigh_imp_area
-            neighimpT = tot_neigh_treated
+            #neighimpT = tot_neigh_treated
             print "Neigh Area treated: ", str(tot_neigh_treated)
         
         techimpl_attr = Attribute()
@@ -547,6 +554,7 @@ class techimplement(Module):
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(neighsysbuildyr, currentyear))
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", neighdeg) 
             techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", neigheafact)
+            #techimpl_attr.setAttribute("Sys"+str(j+1)+"curImpT", tot_neigh_treated)
             
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "N", techimpl_attr)
         return True
@@ -569,7 +577,6 @@ class techimplement(Module):
         techinplace.setAttributes("BlockID"+str(ID)+str(scale), techimpl_attr)
         return True
 
-    
     def getUpstreamIDs(self, ID):
         blockcityin = self.blockcityin.getItem()
         currentAttList = blockcityin.getAttributes("BlockID"+str(ID))
@@ -651,7 +658,7 @@ class techimplement(Module):
             
             imp_area_tot = self.getUpstreamImpArea(ID, upstreamIDs)
             tot_prec_treated = precdeg * imp_area_tot
-            precimpT = tot_prec_treated
+            #precimpT = tot_prec_treated
             
         techimpl_attr = Attribute()
         techimpl_attr.setAttribute("Location", ID)
@@ -667,7 +674,8 @@ class techimplement(Module):
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(precsysbuildyr, currentyear))
             techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", precdeg) 
             techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", preceafact)
-        
+            #techimpl_attr.setAttribute("Sys"+str(j+1)+"curImpT", tot_prec_treated)
+            
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "P", techimpl_attr)
         return True
     

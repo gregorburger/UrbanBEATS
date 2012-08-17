@@ -154,6 +154,8 @@ def findTargetSize(bracket, targetvalues):
             continue
         mindex = bracket[i+2].index(lower)
         maxdex = mindex + 1
+        print "Have to interpolate from: "
+        print lower, upper, bracket[0][mindex], bracket[0][maxdex], target
         Apercent.append(linearInterpolate(lower, upper, bracket[0][mindex], bracket[0][maxdex], target))
     #final Apercent has sizes for [Qreduction, TSSreduction, TPreduction, TNreduction, GPreduction]
     return Apercent

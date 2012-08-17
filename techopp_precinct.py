@@ -152,8 +152,8 @@ class techopp_precinct(Module):
             #--------------------------------------------------------------------------------#
             #GET INFORMATION FROM VECTOR DATA
             soilK = currentAttList.getAttribute("Soil_k")                       #soil infiltration rate on area
-            Aimpserviced = self.getUpstreamImpArea(currentID, upstreamIDs, "T") + currentAttList.getAttribute("IADeficit") + currentAttList.getAttribute("UpstrImpTreat")       #total upstream treated impervious area
-            Aimptotupstr = self.getUpstreamImpArea(currentID, upstreamIDs, "A") + currentAttList.getAttribute("ResTIArea")
+            Aimpserviced = self.getUpstreamImpArea(currentID, upstreamIDs, "T") #total upstream treated impervious area
+            Aimptotupstr = self.getUpstreamImpArea(currentID, upstreamIDs, "A")
             Aimptot = max(Aimptotupstr - Aimpserviced, 0)
             
             print "Precinct Area finding: ------ ><><><><><><><><><><><><><><><><><><>"
@@ -172,7 +172,7 @@ class techopp_precinct(Module):
             prec_strats.setAttribute("TotalCombinations", len(prec_alts))
             
             for prec_deg in prec_alts:
-                Aimpprec = Aimptot * prec_deg * basin_target_min  #how much of the total upstream basin imperviousness to treat?
+                Aimpprec = Aimptot * prec_deg #* basin_target_min  #how much of the total upstream basin imperviousness to treat?
                 prec_strats_combo = Attribute()
                 prec_name = str(currentID)+"_Pr_"+str(prec_deg)
                 prec_strats_combo.setAttribute("Name", prec_name)
@@ -235,7 +235,11 @@ class techopp_precinct(Module):
         currentID = BlockID
         currentAttList = blockcityin.getAttributes("BlockID"+str(currentID))
         total_upstream_blocks = len(upstreamIDs)
-        Aimptotal = 0   #tally for total upstream impervious area
+        if case == "A":
+            Aimptotal = blockcityin.getAttributes("BlockID"+str(BlockID)).getAttribute("ResTIArea")   #tally for total upstream impervious area
+        elif case  == "T":
+            Aimptotal = blockcityin.getAttributes("BlockID"+str(BlockID)).getAttribute("IAServiced")
+            Aimptotal += blockcityin.getAttributes("BlocKID"+str(BlockID)).getAttribute("UpstrImpTreat")
         for i in range(int(total_upstream_blocks)):
             current_upstreamID = int(upstreamIDs[i])
             if case == "A":             #ALL IMPERVIOUS AREA UPSTREAM
