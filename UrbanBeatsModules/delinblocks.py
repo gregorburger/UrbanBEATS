@@ -126,6 +126,7 @@ class delinblocks(Module):
         self.block.addAttribute("avg_slope")
         self.block.addAttribute("drainto_ID")
         self.block.addAttribute("h_pond")
+	#self.block.addAttribute("ALUC_
 
 
         self.mapattributes = View("Mapattributes", COMPONENT, WRITE)
