@@ -139,7 +139,6 @@ class techimplement(Module):
         input_res = map_attr.getAttribute("InputReso")      #resolution of input data
         urbansimdata = map_attr.getStringAttribute("UrbanSimData")
         
-        
         basins = map_attr.getAttribute("TotalBasins")
         for i in range(int(basins)):
             #Purpose of this loop is to transfer the basin attributes across to the outport of this module
@@ -343,7 +342,7 @@ class techimplement(Module):
         #   currentyear = current building year to be added to implemented system
         blockcityin, blockcityout = self.getBlockCityVectors()
         currentAttList = blockcityin.getAttributes("BlockID"+str(ID))
-        lotcount = sys_descr.getAttribute("TotSystems")
+
         system_type_matrix = ['BF', 'SW', 'WSUR', 'PB', 'IS']               
         system_type_numeric = [2463, 7925, 9787, 7663, 4635]                #Think Telephone Buttons :) ('Biof', 'Swal', 'WSUR', 'Pond', 'Infl')
             
@@ -358,21 +357,21 @@ class techimplement(Module):
         roofarea = currentAttList.getAttribute("ResLotRoofA")
         openspace = currentAttList.getAttribute("rfw_Adev")
         
-        lottype = sys_descr.getStringAttribute("Type1")
-        lotdeg = sys_descr.getAttribute("Service1")
-        lotsysarea = sys_descr.getAttribute("Area1")
-        lotsysstatus = sys_descr.getAttribute("Status1")
-        lotsysbuildyr = sys_descr.getAttribute("YearConst1")
-        loteafact = sys_descr.getAttribute("AreaFactor1")
-        lotqty = sys_descr.getAttribute("Quantity1")
-        lotimpT = sys_descr.getAttribute("ImpTreated1")
+        lottype = sys_descr.getStringAttribute("Type")
+        lotdeg = sys_descr.getAttribute("Degree")
+        lotsysarea = sys_descr.getAttribute("SysArea")
+        lotsysstatus = sys_descr.getAttribute("Status")
+        lotsysbuildyr = sys_descr.getAttribute("Year")
+        loteafact = sys_descr.getAttribute("EAFact")
+        lotqty = sys_descr.getAttribute("Qty")
+        lotimpT = sys_descr.getAttribute("ImpT")
+        currentimpT = sys_descr.getAttribute("CurImpT")
         
         print lottype, lotdeg, lotsysarea, lotsysstatus, lotsysbuildyr
+        goallots = int(lotdeg*mpdata[0])        #final number of houses with systems (masterplan)
+        print "Goal Lots: ", str(goallots)
         
-        if lotsysbuildyr == 9999:               #if the system is already implemented, then skip
-            goallots = int(lotdeg*mpdata[0])        #final number of houses with systems (masterplan)
-            print "Goal Lots: ", str(goallots)
-            
+        if lotsysbuildyr == 9999:               #if the system is already implemented, then check if it has been fully implemented
             #calculate how many to implement based on allotment rules
             if self.bb_lot_rule == "AMAP":
                 #AMAP = as many as possible
@@ -385,35 +384,43 @@ class techimplement(Module):
                 num_systems_impl = int(allotments * lotdeg)
                 print num_systems_impl
                 lotqty = num_systems_impl
-            
             tot_system_area = num_systems_impl * lotsysarea
             tot_lot_treated = num_systems_impl * lotimparea
-            #lotimpT = tot_lot_treated
+            currentimpT = tot_lot_treated
             print tot_system_area
             #print tot_lot_treated
-        
+        elif lotsysbuildyr != 9999:
+            #how many in the original plan? -- goallots
+            #how many already in?
+            remaining_lotqty = goallots - lotqty
+            if self.bb_lot_rule == "AMAP" and remaining_lotqty > 0:
+                #implement more lot systems
+                pass
+            elif self.bb_lot_rule == "STRICT" and remaining_lotqty > 0:
+                #implement more lot systems according to rule
+                pass
+            
         #Write to outputs
         techimpl_attr = Attribute()
         techimpl_attr.setAttribute("Location", ID)
-        techimpl_attr.setAttribute("Scale", self.scale_matrix.index("L"))
-        techimpl_attr.setAttribute("TotSystems", lotcount)
-        for j in range(int(lotcount)):
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Type", lottype)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"TypeN", system_type_numeric[system_type_matrix.index(lottype)])
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", lotqty)
-            #techimpl_attr.setAttribute("Sys"+str(j+1)+"TotA", tot_system_area)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", lotimpT)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Area", lotsysarea)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Status", 1)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(lotsysbuildyr, currentyear))
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", lotdeg)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", loteafact)
-            #techimpl_attr.setAttribute("Sys"+str(j+1)+"curImpT", tot_lot_treated)
+        techimpl_attr.setAttribute("ScaleN", self.scale_matrix.index("L"))
+        techimpl_attr.setAttribute("Scale", "L")
+        techimpl_attr.setAttribute("Type", lottype)
+        techimpl_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(lottype)])
+        techimpl_attr.setAttribute("Qty", lotqty)
+        #techimpl_attr.setAttribute("Sys"+str(j+1)+"TotA", tot_system_area)
+        techimpl_attr.setAttribute("ImpT", lotimpT)
+        techimpl_attr.setAttribute("SysArea", lotsysarea)
+        techimpl_attr.setAttribute("Status", 1)
+        techimpl_attr.setAttribute("Year", min(lotsysbuildyr, currentyear))
+        techimpl_attr.setAttribute("Degree", lotdeg)
+        techimpl_attr.setAttribute("EAFact", loteafact)
+        techimpl_attr.setAttribute("CurImpT", currentimpT)
             
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "L", techimpl_attr)
         if lotsysbuildyr < currentyear:               #if the system is already implemented, then skip
             return [lotimpT, lotdeg]
-        return [tot_lot_treated, lotdeg]
+        return [currentimpT, lotdeg]
     
     def implementStreet(self, ID, sys_descr, mpdata, centrePoints, currentyear, lot_details):
         #Implements street-scale technologies into current Block ID, takes several inputs
@@ -426,20 +433,20 @@ class techimplement(Module):
             #   lot_details = [total lot impervious treated, lot % implementation]
         blockcityin, blockcityout = self.getBlockCityVectors()
         currentAttList = blockcityin.getAttributes("BlockID"+str(ID))
-        streetcount = sys_descr.getAttribute("TotSystems")
+        
         system_type_matrix = ['BF', 'SW', 'WSUR', 'PB', 'IS']               
         system_type_numeric = [2463, 7925, 9787, 7663, 4635]                #Think Telephone Buttons :) ('Biof', 'Swal', 'WSUR', 'Pond', 'Infl')
            
-            
         #Grab data
-        streettype = sys_descr.getStringAttribute("Type1")
-        streetdeg = sys_descr.getAttribute("Service1")
-        streetsysarea = sys_descr.getAttribute("Area1")
-        streetsysstatus = sys_descr.getAttribute("Status1")
-        streetsysbuildyr = sys_descr.getAttribute("YearConst1")
-        streeteafact = sys_descr.getAttribute("AreaFactor1")
-        streetqty = sys_descr.getAttribute("Quantity1")
-        streetimpT = sys_descr.getAttribute("ImpTreated1")
+        streettype = sys_descr.getStringAttribute("Type")
+        streetdeg = sys_descr.getAttribute("Degree")
+        streetsysarea = sys_descr.getAttribute("SysArea")
+        streetsysstatus = sys_descr.getAttribute("Status")
+        streetsysbuildyr = sys_descr.getAttribute("Year")
+        streeteafact = sys_descr.getAttribute("EAFact")
+        streetqty = sys_descr.getAttribute("Qty")
+        streetimpT = sys_descr.getAttribute("ImpT")
+        currentimpT = sys_descr.getAttribute("CurImpT")
         
         print streettype, streetdeg, streetsysarea, streetsysstatus, streetsysbuildyr
         
@@ -465,24 +472,23 @@ class techimplement(Module):
             
             #else implement the system
             tot_street_treated = streetdeg * street_neigh_imp_area
-            #streetimpT = tot_street_treated
+            currentimpT = tot_street_treated
             print "Street Area treated: ", str(tot_street_treated)
             
         techimpl_attr = Attribute()
         techimpl_attr.setAttribute("Location", ID)
-        techimpl_attr.setAttribute("Scale", self.scale_matrix.index("S"))
-        techimpl_attr.setAttribute("TotSystems", streetcount)
-        for j in range(int(streetcount)):
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Type", streettype)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"TypeN", system_type_numeric[system_type_matrix.index(streettype)])
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", streetqty)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Area", streetsysarea)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", streetimpT)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Status", 1)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(streetsysbuildyr, currentyear))
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", streetdeg)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", streeteafact)
-            #techimpl_attr.setAttribute("Sys"+str(j+1)+"curImpT", tot_street_treated)
+        techimpl_attr.setAttribute("ScaleN", self.scale_matrix.index("S"))
+        techimpl_attr.setAttribute("Scale", "S")
+        techimpl_attr.setAttribute("Type", streettype)
+        techimpl_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(streettype)])
+        techimpl_attr.setAttribute("Qty", streetqty)
+        techimpl_attr.setAttribute("SysArea", streetsysarea)
+        techimpl_attr.setAttribute("ImpT", streetimpT)
+        techimpl_attr.setAttribute("Status", 1)
+        techimpl_attr.setAttribute("Year", min(streetsysbuildyr, currentyear))
+        techimpl_attr.setAttribute("Degree", streetdeg)
+        techimpl_attr.setAttribute("EAFact", streeteafact)
+        techimpl_attr.setAttribute("CurImpT", currentimpT)
             
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "S", techimpl_attr)
         return True
@@ -498,19 +504,19 @@ class techimplement(Module):
         #   lot_details = [total lot impervious treated, lot % implementation]
         blockcityin, blockcityout = self.getBlockCityVectors()
         currentAttList = blockcityin.getAttributes("BlockID"+str(ID))
-        neighcount = sys_descr.getAttribute("TotSystems")
         system_type_matrix = ['BF', 'SW', 'WSUR', 'PB', 'IS']               
         system_type_numeric = [2463, 7925, 9787, 7663, 4635]                #Think Telephone Buttons :) ('Biof', 'Swal', 'WSUR', 'Pond', 'Infl')
             
         #Grab Data
-        neightype = sys_descr.getStringAttribute("Type1")
-        neighdeg = sys_descr.getAttribute("Service1")
-        neighsysarea = sys_descr.getAttribute("Area1")
-        neighsysstatus = sys_descr.getAttribute("Status1")
-        neighsysbuildyr = sys_descr.getAttribute("YearConst1")
-        neigheafact = sys_descr.getAttribute("AreaFactor1")
-        neighqty = sys_descr.getAttribute("Quantity1")
-        neighimpT = sys_descr.getAttribute("ImpTreated1")
+        neightype = sys_descr.getStringAttribute("Type")
+        neighdeg = sys_descr.getAttribute("Degree")
+        neighsysarea = sys_descr.getAttribute("SysArea")
+        neighsysstatus = sys_descr.getAttribute("Status")
+        neighsysbuildyr = sys_descr.getAttribute("Year")
+        neigheafact = sys_descr.getAttribute("EAFact")
+        neighqty = sys_descr.getAttribute("Qty")
+        neighimpT = sys_descr.getAttribute("ImpT")
+        currentimpT = sys_descr.getAttribute("CurImpT")
         
         print neightype, neighdeg, neighsysarea, neighsysstatus, neighsysbuildyr
         #Follow the same as street, but check the open space first
@@ -537,24 +543,23 @@ class techimplement(Module):
             
             #else implement the system
             tot_neigh_treated = neighdeg * street_neigh_imp_area
-            #neighimpT = tot_neigh_treated
+            currentimpT = tot_neigh_treated
             print "Neigh Area treated: ", str(tot_neigh_treated)
         
         techimpl_attr = Attribute()
         techimpl_attr.setAttribute("Location", ID)
-        techimpl_attr.setAttribute("Scale", self.scale_matrix.index("N"))
-        techimpl_attr.setAttribute("TotSystems", neighcount)
-        for j in range(int(neighcount)):
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Type", neightype)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"TypeN", system_type_numeric[system_type_matrix.index(neightype)])
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", neighqty)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Area", neighsysarea)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", neighimpT)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Status", 1)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(neighsysbuildyr, currentyear))
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", neighdeg) 
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", neigheafact)
-            #techimpl_attr.setAttribute("Sys"+str(j+1)+"curImpT", tot_neigh_treated)
+        techimpl_attr.setAttribute("ScaleN", self.scale_matrix.index("N"))
+        techimpl_attr.setAttribute("Scale", "N")
+        techimpl_attr.setAttribute("Type", neightype)
+        techimpl_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(neightype)])
+        techimpl_attr.setAttribute("Qty", neighqty)
+        techimpl_attr.setAttribute("SysArea", neighsysarea)
+        techimpl_attr.setAttribute("ImpT", neighimpT)
+        techimpl_attr.setAttribute("Status", 1)
+        techimpl_attr.setAttribute("Year", min(neighsysbuildyr, currentyear))
+        techimpl_attr.setAttribute("Degree", neighdeg) 
+        techimpl_attr.setAttribute("EAFact", neigheafact)
+        techimpl_attr.setAttribute("CurImpT", currentimpT)
             
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "N", techimpl_attr)
         return True
@@ -620,7 +625,7 @@ class techimplement(Module):
         #   currentyear = current building year to be added to implemented system
         blockcityin, blockcityout = self.getBlockCityVectors()
         currentAttList = blockcityin.getAttributes("BlockID"+str(ID))
-        preccount = sys_descr.getAttribute("TotSystems")
+        
         system_type_matrix = ['BF', 'SW', 'WSUR', 'PB', 'IS']               
         system_type_numeric = [2463, 7925, 9787, 7663, 4635]                #Think Telephone Buttons :) ('Biof', 'Swal', 'WSUR', 'Pond', 'Infl')
             
@@ -636,14 +641,15 @@ class techimplement(Module):
         #Otherwise force implement precinct systems
         
         #Grab Data    
-        prectype = sys_descr.getStringAttribute("Type1")
-        precdeg = sys_descr.getAttribute("Service1")
-        precsysarea = sys_descr.getAttribute("Area1")
-        precsysstatus = sys_descr.getAttribute("Status1")
-        precsysbuildyr = sys_descr.getAttribute("YearConst1")
-        preceafact = sys_descr.getAttribute("AreaFactor1")
-        precqty = sys_descr.getAttribute("Quantity1")
-        precimpT = sys_descr.getAttribute("ImpTreated1")
+        prectype = sys_descr.getStringAttribute("Type")
+        precdeg = sys_descr.getAttribute("Degree")
+        precsysarea = sys_descr.getAttribute("SysArea")
+        precsysstatus = sys_descr.getAttribute("Status")
+        precsysbuildyr = sys_descr.getAttribute("Year")
+        preceafact = sys_descr.getAttribute("EAFact")
+        precqty = sys_descr.getAttribute("Qty")
+        precimpT = sys_descr.getAttribute("ImpT")
+        currentimpT = sys_descr.getAttribute("CurImpT")
         
         print prectype, precdeg, precsysarea, precsysstatus, precsysbuildyr
         #Follow the same as street, but check the open space first
@@ -658,23 +664,22 @@ class techimplement(Module):
             
             imp_area_tot = self.getUpstreamImpArea(ID, upstreamIDs)
             tot_prec_treated = precdeg * imp_area_tot
-            #precimpT = tot_prec_treated
+            currentimpT= tot_prec_treated
             
         techimpl_attr = Attribute()
         techimpl_attr.setAttribute("Location", ID)
         techimpl_attr.setAttribute("Scale", self.scale_matrix.index("P"))
-        techimpl_attr.setAttribute("TotSystems", preccount)
-        for j in range(int(preccount)):
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Type", prectype)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"TypeN", system_type_numeric[system_type_matrix.index(prectype)])
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Qty", precqty)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Area", precsysarea)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"ImpT", precimpT)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Status", 1)
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Year", min(precsysbuildyr, currentyear))
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"Degree", precdeg) 
-            techimpl_attr.setAttribute("Sys"+str(j+1)+"EAFact", preceafact)
-            #techimpl_attr.setAttribute("Sys"+str(j+1)+"curImpT", tot_prec_treated)
+        techimpl_attr.setAttribute("ScaleN", "P")
+        techimpl_attr.setAttribute("Type", prectype)
+        techimpl_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(prectype)])
+        techimpl_attr.setAttribute("Qty", precqty)
+        techimpl_attr.setAttribute("SysArea", precsysarea)
+        techimpl_attr.setAttribute("ImpT", precimpT)
+        techimpl_attr.setAttribute("Status", 1)
+        techimpl_attr.setAttribute("Year", min(precsysbuildyr, currentyear))
+        techimpl_attr.setAttribute("Degree", precdeg) 
+        techimpl_attr.setAttribute("EAFact", preceafact)
+        techimpl_attr.setAttribute("CurImpT", currentimpT)
             
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "P", techimpl_attr)
         return True

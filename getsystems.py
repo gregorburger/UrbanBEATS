@@ -103,48 +103,47 @@ class GetSystems(Module):
             feature = layer.GetFeature(i)
             sys_attr = Attribute()
             
-            #Get total number of systems in the feature
-            syscount = feature.GetFieldAsInteger("TotSystems")
-            sys_attr.setAttribute("TotSystems", syscount)
-            
             #System Location and scale (BlockID)
             sys_attr.setAttribute("Location", feature.GetFieldAsInteger("Location"))
-            scale_code = feature.GetFieldAsInteger("Scale")
+            scale_code = feature.GetFieldAsInteger("ScaleN")
             scale = scale_matrix[scale_code]
+            sys_attr.setAttribute("ScaleN", scale_code)
             sys_attr.setAttribute("Scale", str(scale))
             
             #Loop through all systems and grab the attributes
-            for j in range(int(syscount)):
-                #System TypeN (Type Numeric, translates the code into string)
-                type_code = feature.GetFieldAsInteger("Sys"+str(j+1)+"TypeN")
-                sys_attr.setAttribute("TypeN"+str(j+1), type_code)
-                print type_code
-                
-                type = system_type_matrix[system_type_numeric.index(type_code)]
-                sys_attr.setAttribute("Type"+str(j+1), type)
-                
-                #Design Details
-                Asystem = feature.GetField("Sys"+str(j+1)+"Area")
-                sys_attr.setAttribute("Area"+str(j+1), Asystem)
-                
-                deg = feature.GetField("Sys"+str(j+1)+"Degree")
-                sys_attr.setAttribute("Service"+str(j+1), deg)
-                
-                sysstatus = feature.GetField("Sys"+str(j+1)+"Status")
-                sys_attr.setAttribute("Status"+str(j+1), sysstatus)
-                
-                yearbuilt = feature.GetField("Sys"+str(j+1)+"Year")
-                sys_attr.setAttribute("YearConst"+str(j+1), yearbuilt)
-                
-                sys_qty = feature.GetField("Sys"+str(j+1)+"Qty")
-                sys_attr.setAttribute("Quantity"+str(j+1), sys_qty)
-                
-                sys_eafact = feature.GetField("Sys"+str(j+1)+"EAFact")
-                sys_attr.setAttribute("AreaFactor"+str(j+1), sys_eafact)
-                
-                sys_imptreated = feature.GetField("Sys"+str(j+1)+"ImpT")
-                sys_attr.setAttribute("ImpTreated"+str(j+1), sys_imptreated)
-                
+            #System TypeN (Type Numeric, translates the code into string)
+            type_code = feature.GetFieldAsInteger("TypeN")
+            sys_attr.setAttribute("TypeN", type_code)
+            print type_code
+            
+            type = system_type_matrix[system_type_numeric.index(type_code)]
+            sys_attr.setAttribute("Type", type)
+            
+            #Design Details
+            Asystem = feature.GetField("SysArea")
+            sys_attr.setAttribute("SysArea", Asystem)
+            
+            deg = feature.GetField("Degree")
+            sys_attr.setAttribute("Degree", deg)
+            
+            sysstatus = feature.GetField("Status")
+            sys_attr.setAttribute("Status", sysstatus)
+            
+            yearbuilt = feature.GetField("Year")
+            sys_attr.setAttribute("Year", yearbuilt)
+            
+            sys_qty = feature.GetField("Qty")
+            sys_attr.setAttribute("Qty", sys_qty)
+            
+            sys_eafact = feature.GetField("EAFact")
+            sys_attr.setAttribute("EAFact", sys_eafact)
+            
+            sys_imptreated = feature.GetField("ImpT")
+            sys_attr.setAttribute("ImpT", sys_imptreated)
+            
+            sys_impcurrent = feature.GetField("CurImpT")
+            sys_attr.setAttribute("CurImpT", sys_impcurrent)
+            
             #Save the Attributes List & Destroy the feature to free up memory
             system_list.setAttributes("System"+str(i), sys_attr)
             feature.Destroy()

@@ -1292,20 +1292,19 @@ class techstrategy_eval(Module):
                     #....
                     
                     wsud_attr = Attribute()
-                    wsud_attr.setAttribute("Scale", j)                          #0 = LOT, 1 = STREET, 2 = NEIGHBOURHOOD, 3 = PRECINCT
-                    wsud_attr.setAttribute("TotSystems", 1)
+                    wsud_attr.setAttribute("ScaleN", j)                          #0 = LOT, 1 = STREET, 2 = NEIGHBOURHOOD, 3 = PRECINCT
+                    wsud_attr.setAttribute("Scale", scale)
                     wsud_attr.setAttribute("Location", currentBlockID)
-                    print "CurrentWSUD Type"
-                    print current_wsud.getType()
-                    wsud_attr.setAttribute("Sys"+str(1)+"Type", current_wsud.getType())
-                    wsud_attr.setAttribute("Sys"+str(1)+"TypeN", system_type_numeric[system_type_matrix.index(current_wsud.getType())]) 
-                    wsud_attr.setAttribute("Sys"+str(1)+"Qty", 1)
-                    wsud_attr.setAttribute("Sys"+str(1)+"Degree", inblock_degs[j])
-                    wsud_attr.setAttribute("Sys"+str(1)+"Area", current_wsud.getSize())
-                    wsud_attr.setAttribute("Sys"+str(1)+"Status", 0)            #0 = Planned, 1 = constructed
-                    wsud_attr.setAttribute("Sys"+str(1)+"Year", 9999)           #Year constructed
-                    wsud_attr.setAttribute("Sys"+str(1)+"EAFact", current_wsud.getAreaFactor())
-                    wsud_attr.setAttribute("Sys"+str(1)+"ImpT", current_wsud.getAreaServed())
+                    wsud_attr.setAttribute("Type", current_wsud.getType())
+                    wsud_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(current_wsud.getType())]) 
+                    wsud_attr.setAttribute("Qty", 1)
+                    wsud_attr.setAttribute("Degree", inblock_degs[j])
+                    wsud_attr.setAttribute("SysArea", current_wsud.getSize())
+                    wsud_attr.setAttribute("Status", 0)            #0 = Planned, 1 = constructed
+                    wsud_attr.setAttribute("Year", 9999)           #Year constructed
+                    wsud_attr.setAttribute("EAFact", current_wsud.getAreaFactor())
+                    wsud_attr.setAttribute("ImpT", current_wsud.getAreaServed())
+                    wsud_attr.setAttribute("CurImpT", 0)    #current impervious area treated
                     
                     systemsout.setPoints("BlockID"+str(currentBlockID)+str(scale), plist)
                     systemsout.setAttributes("BlockID"+str(currentBlockID)+str(scale), wsud_attr)
@@ -1323,18 +1322,19 @@ class techstrategy_eval(Module):
                     plist.append(Point(coordinates[0],coordinates[1],0))
                     
                     wsud_attr = Attribute()
-                    wsud_attr.setAttribute("Scale", 3)                          #0 = LOT, 1 = STREET, 2 = NEIGHBOURHOOD, 3 = PRECINCT
-                    wsud_attr.setAttribute("TotSystems", 1)
+                    wsud_attr.setAttribute("ScaleN", 3)                          #0 = LOT, 1 = STREET, 2 = NEIGHBOURHOOD, 3 = PRECINCT
+                    wsud_attr.setAttribute("Scale", "P")
                     wsud_attr.setAttribute("Location", currentBlockID)
-                    wsud_attr.setAttribute("Sys"+str(1)+"Type", outblock_strat.getType())
-                    wsud_attr.setAttribute("Sys"+str(1)+"TypeN", system_type_numeric[system_type_matrix.index(outblock_strat.getType())])
-                    wsud_attr.setAttribute("Sys"+str(1)+"Qty", 1)
-                    wsud_attr.setAttribute("Sys"+str(1)+"Degree", outblock_strat_deg)
-                    wsud_attr.setAttribute("Sys"+str(1)+"Area", outblock_strat.getSize())
-                    wsud_attr.setAttribute("Sys"+str(1)+"Status", 0)            #0 = Planned, 1 = constructed
-                    wsud_attr.setAttribute("Sys"+str(1)+"Year", 9999)           #Year constructed
-                    wsud_attr.setAttribute("Sys"+str(1)+"EAFact", outblock_strat.getAreaFactor())
-                    wsud_attr.setAttribute("Sys"+str(1)+"ImpT", outblock_strat.getAreaServed())
+                    wsud_attr.setAttribute("Type", outblock_strat.getType())
+                    wsud_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(outblock_strat.getType())])
+                    wsud_attr.setAttribute("Qty", 1)
+                    wsud_attr.setAttribute("Degree", outblock_strat_deg)
+                    wsud_attr.setAttribute("SysArea", outblock_strat.getSize())
+                    wsud_attr.setAttribute("Status", 0)            #0 = Planned, 1 = constructed
+                    wsud_attr.setAttribute("Year", 9999)           #Year constructed
+                    wsud_attr.setAttribute("EAFact", outblock_strat.getAreaFactor())
+                    wsud_attr.setAttribute("ImpT", outblock_strat.getAreaServed())
+                    wsud_attr.setAttribute("CurImpT", 0)    #current impervious area treated
                     
                     systemsout.setPoints("BlockID"+str(currentBlockID)+str(scale), plist)
                     systemsout.setAttributes("BlockID"+str(currentBlockID)+str(scale), wsud_attr)
@@ -1345,16 +1345,15 @@ class techstrategy_eval(Module):
                 loopscales = ["L", "S", "N", "P"]
                 for lpsc in loopscales:
                     wsud_attr = techconfigin.getAttributes("BlockID"+str(currentBlockID)+str(lpsc))
-                    print wsud_attr.getAttribute("TotSystems")
-                    if wsud_attr.getAttribute("TotSystems") > 0:
-                        print wsud_attr.getStringAttribute("Sys1Type")
+                    print wsud_attr.getAttribute("Location")
+                    if wsud_attr.getAttribute("Location") > 0:
+                        print wsud_attr.getStringAttribute("Type")
                         print wsud_attr.getStringAttribute("Scale")
-                        print wsud_attr.getAttribute("Location")
                         print "Transfer the system"
                         plist = pyvibe.PointList()
                         coordinates = offsets_matrix[loopscales.index(lpsc)]
                         plist.append(Point(coordinates[0], coordinates[1], 0))
-                        wsud_attr.setAttribute("Scale", loopscales.index(lpsc))
+                        wsud_attr.setAttribute("ScaleN", loopscales.index(lpsc))
                         systemsout.setPoints("BlockID"+str(currentBlockID)+str(lpsc), plist)
                         systemsout.setAttributes("BlockID"+str(currentBlockID)+str(lpsc), wsud_attr)
             

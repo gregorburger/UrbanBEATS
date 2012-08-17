@@ -200,7 +200,7 @@ class techretrofit(Module):
             currentAttList.setAttribute("HasLotS", 0)
         else:
             currentAttList.setAttribute("HasLotS", 1)    #mark the system as having been taken
-            print "Lot Count: ", str(sys_descr.getAttribute("TotSystems"))
+            print "Lot Location: ", str(sys_descr.getAttribute("Location"))
             imptreated = self.retrieveNewAimpTreated(ID, "L", sys_descr)
             inblock_imp_treated += imptreated
                                   
@@ -210,7 +210,7 @@ class techretrofit(Module):
             currentAttList.setAttribute("HasStreetS", 0)
         else:
             currentAttList.setAttribute("HasStreetS", 1) #mark the system as having been taken
-            print "Street Count: ", str(sys_descr.getAttribute("TotSystems"))
+            print "Street Location: ", str(sys_descr.getAttribute("Location"))
             imptreated = self.retrieveNewAimpTreated(ID, "S", sys_descr)
             inblock_imp_treated += imptreated
             
@@ -220,7 +220,7 @@ class techretrofit(Module):
             currentAttList.setAttribute("HasNeighS", 0)
         else:
             currentAttList.setAttribute("HasNeighS", 1)
-            print "Neigh Count: ", str(sys_descr.getAttribute("TotSystems"))
+            print "Neigh Location: ", str(sys_descr.getAttribute("Location"))
             imptreated = self.retrieveNewAimpTreated(ID, "N", sys_descr)
             inblock_imp_treated += imptreated
         
@@ -245,10 +245,9 @@ class techretrofit(Module):
         else:
             currentAttList.setAttribute("HasPrecS", 1)
             precimptreated = self.retrieveNewAimpTreated(ID, "P", sys_descr)
-            print "Prec Count: ", str(sys_descr.getAttribute("TotSystems"))
+            print "Prec Location: ", str(sys_descr.getAttribute("Location"))
             currentAttList.setAttribute("UpstrImpTreat", precimptreated)
             
-        
         blockcityout.setAttributes("BlockID"+str(ID), currentAttList)
         print "---------------------------------------------"
         
@@ -285,7 +284,6 @@ class techretrofit(Module):
             if decision == 1:       #keep
                 print "Keeping the System, Lot-scale forced retrofit not possible anyway!"
                 currentAttList.setAttribute("HasLotS", 1)
-                print "Lot Count: ", str(sys_descr.getAttribute("TotSystems"))
                 inblock_imp_treated += newImpT
             #elif decision == 2:     #renewal
             #    #REDESIGN THE SYSTEM
@@ -309,7 +307,6 @@ class techretrofit(Module):
             if decision == 1:       #keep
                 print "Keeping the System"
                 currentAttList.setAttribute("HasStreetS", 1)
-                print "Street Count: ", str(sys_descr.getAttribute("TotSystems"))
                 inblock_imp_treated += newImpT
             elif decision == 2:     #renewal
                 print "Renewing the System"
@@ -334,7 +331,6 @@ class techretrofit(Module):
             if decision == 1:       #keep
                 print "Keeping the System"
                 currentAttList.setAttribute("HasNeighS", 1)
-                print "Neigh Count: ", str(sys_descr.getAttribute("TotSystems"))
                 inblock_imp_treated += newImpT
             elif decision == 2:     #renewal
                 print "Renewing the System"
@@ -370,7 +366,6 @@ class techretrofit(Module):
             if decision == 1:       #keep
                 print "Keeping the System"
                 currentAttList.setAttribute("HasPrecS", 1)
-                print "Prec Count: ", str(sys_descr.getAttribute("TotSystems"))
                 currentAttList.setAttribute("UpstrImpTreat", newImpT)
             elif decision == 2:     #renewal
                 print "Renewing the System"
@@ -400,6 +395,7 @@ class techretrofit(Module):
         #           scale in said block is marked as 'available'
         blockcityin, blockcityou = self.getBlockCityVectors()
         des_attr = self.design_details.getItem().getAttributes("DesignAttributes")
+        renewal_alternative = des_attr.getStringAttribute("renewal_alternative")
         
         currentyear = self.currentyear
         startyear = self.startyear
@@ -431,6 +427,7 @@ class techretrofit(Module):
             #DO SOMETHING TO DETERMINE IF YES/NO RETROFIT, then check the decision
             if time_passed - (time_passed // lot_years)*lot_years == 0:
                 go_retrofit = 1     #then it's time for renewal
+                #modify the current sys_descr attribute to take into account lot systems that have disappeared.
             else:
                 go_retrofit = 0
                 
@@ -442,7 +439,6 @@ class techretrofit(Module):
             if decision == 1:       #keep
                 print "Keeping the System"
                 currentAttList.setAttribute("HasLotS", 1)
-                print "Lot Count: ", str(sys_descr.getAttribute("TotSystems"))
                 inblock_imp_treated += newImpT
             elif decision == 2:     #renewal
                 print "Renewing the System"
@@ -475,11 +471,20 @@ class techretrofit(Module):
             if decision == 1:       #keep
                 print "Keeping the System"
                 currentAttList.setAttribute("HasStreetS", 1)
-                print "Street Count: ", str(sys_descr.getAttribute("TotSystems"))
                 inblock_imp_treated += newImpT
             elif decision == 2:     #renewal
                 print "Renewing the System"
                 #REDESIGN THE SYSTEM
+                #newAsys = self.redesignSystem(self, ID, sys_descr, "S")
+                #avlSpace = currentAttList.getAttribute("AvlStreet")
+                #if newAsys > avlSpace and renewal_alternative == "K":
+                    #keep old system size
+                #elif newAsys > avlSpace and renewal_alternative == "D":
+                    #decommission system
+                #else:
+                    #transfer new information across
+                    #sys_descr.setAttribute("SysArea", newAsys)
+                    #and more...
                 pass
             elif decision == 3:     #decom
                 print "Decommissioning the system"
@@ -507,7 +512,6 @@ class techretrofit(Module):
             if decision == 1:       #keep
                 print "Keeping the System"
                 currentAttList.setAttribute("HasNeighS", 1)
-                print "Neigh Count: ", str(sys_descr.getAttribute("TotSystems"))
                 inblock_imp_treated += newImpT
             elif decision == 2:     #renewal
                 print "Renewing the System"
@@ -550,7 +554,6 @@ class techretrofit(Module):
             if decision == 1:       #keep
                 print "Keeping the System"
                 currentAttList.setAttribute("HasPrecS", 1)
-                print "Prec Count: ", str(sys_descr.getAttribute("TotSystems"))
                 currentAttList.setAttribute("UpstrImpTreat", newImpT)
             elif decision == 2:     #renewal
                 print "Renewing the System"
@@ -584,7 +587,6 @@ class techretrofit(Module):
         prec_decom = des_attr.getAttribute("prec_decom")
         decom_thresh = float(des_attr.getAttribute("decom_thresh"))/100
         renewal_thresh = float(des_attr.getAttribute("renewal_thresh"))/100
-        renewal_alternative = des_attr.getStringAttribute("renewal_alternative")
         
         scalecheck = [[lot_renew, lot_decom], [street_renew, street_decom], [neigh_renew, neigh_decom], [prec_renew, prec_decom]]
         scalematrix = ["L", "S", "N", "P"]
@@ -597,10 +599,10 @@ class techretrofit(Module):
         ### DECISION FACTOR 1: SYSTEM AGE
         ###         Determine where the system age lies
         ###-------------------------------------------------------
-        sys_age = sys_descr.getAttribute("YearConst1")
-        sys_type = sys_descr.getStringAttribute("Type1")
+        sys_yearbuilt = sys_descr.getAttribute("Year")
+        sys_type = sys_descr.getStringAttribute("Type")
         avglife = des_attr.getAttribute(sys_type+"avglife")
-        age = currentyear - sys_age
+        age = currentyear - sys_yearbuilt
         print "System Age: "+str(age)
         
         if scaleconditions[1] == 1 and age > avglife:             #decom
@@ -614,7 +616,7 @@ class techretrofit(Module):
         ### DECISION FACTOR 2: DROP IN PERFORMANCE
         ###         Determine where the system performance lies
         ###-------------------------------------------------------
-        old_imp = sys_descr.getAttribute("ImpTreated1")
+        old_imp = sys_descr.getAttribute("ImpT")
         new_imp = self.retrieveNewAimpTreated(ID, scale, sys_descr)
         perfdeficit = abs(old_imp - new_imp)/old_imp
         print "Old Imp: "+str(old_imp)
@@ -654,90 +656,91 @@ class techretrofit(Module):
         ksat = currentAttList.getAttribute("Soil_k")
         
         #Grab the current WSUD information
-        totsystems = sys_descr.getAttribute("TotSystems")
         imptreated = 0      #initialize to tally up
         
-        #Write to outputs
+        #Get WSUD attributes and set for output...
         techimpl_attr = Attribute()
         techimpl_attr.setAttribute("Location", ID)
         techimpl_attr.setAttribute("Scale", scale)
-        techimpl_attr.setAttribute("TotSystems", totsystems)
         
-        for i in range(int(totsystems)):         #loop through systems and grab all info
-            #Get WSUD attributes and set for output...
-            typeN = sys_descr.getAttribute("TypeN"+str(i+1))
-            techimpl_attr.setAttribute("Sys"+str(i+1)+"TypeN", typeN)
+        scaleN = sys_descr.getAttribute("ScaleN")
+        techimpl_attr.setAttribute("ScaleN", scaleN)
+        
+        typeN = sys_descr.getAttribute("TypeN")
+        techimpl_attr.setAttribute("TypeN", typeN)
+        
+        type = sys_descr.getStringAttribute("Type")
+        techimpl_attr.setAttribute("Type", type)
+        
+        Asys = sys_descr.getAttribute("SysArea")
+        techimpl_attr.setAttribute("SysArea", Asys)
+         
+        deg = sys_descr.getAttribute("Degree")
+        techimpl_attr.setAttribute("Degree", deg)
+                    
+        status_sys = sys_descr.getAttribute("Status")
+        techimpl_attr.setAttribute("Status", status_sys)
+                    
+        yearbuilt = sys_descr.getAttribute("Year")
+        techimpl_attr.setAttribute("Year", yearbuilt)
+        
+        qty = sys_descr.getAttribute("Qty")
+        techimpl_attr.setAttribute("Qty", qty)
+        
+        areafactor = sys_descr.getAttribute("EAFact")
+        techimpl_attr.setAttribute("EAFact", areafactor)
+        
+        currentimpT = sys_descr.getAttribute("CurImpT")
+        techimpl_attr.setAttribute("CurImpT", currentimpT)
+        
+        Asyseffectivetotal = (Asys * qty)/areafactor                        #need to be using the effective area, not the planning area!
 
-            type = sys_descr.getStringAttribute("Type"+str(i+1))
-            techimpl_attr.setAttribute("Sys"+str(i+1)+"Type", type)
-            
-            Asys = sys_descr.getAttribute("Area"+str(i+1))
-            techimpl_attr.setAttribute("Sys"+str(i+1)+"Area", Asys)
-             
-            deg = sys_descr.getAttribute("Service"+str(i+1))
-            techimpl_attr.setAttribute("Sys"+str(i+1)+"Degree", deg)
-                        
-            status_sys = sys_descr.getAttribute("Status"+str(i+1))
-            techimpl_attr.setAttribute("Sys"+str(i+1)+"Status", status_sys)
-                        
-            yearbuilt = sys_descr.getAttribute("YearConst"+str(i+1))
-            techimpl_attr.setAttribute("Sys"+str(i+1)+"Year", yearbuilt)
-            
-            qty = sys_descr.getAttribute("Quantity"+str(i+1))
-            techimpl_attr.setAttribute("Sys"+str(i+1)+"Qty", qty)
-            
-            areafactor = sys_descr.getAttribute("AreaFactor"+str(i+1))
-            techimpl_attr.setAttribute("Sys"+str(i+1)+"EAFact", areafactor)
-                        
-            Asyseffectivetotal = (Asys * qty)/areafactor                        #need to be using the effective area, not the planning area!
+        print "System of Type: ", type
+        print "treats: "+str(deg)+" degree"
+        print "Residential Imp area: "+str(currentAttList.getAttribute("ResTIArea"))
+        print "System size = "+str(Asys)
+        print "Total System Size = "+str(Asyseffectivetotal)
+        
+        ### EXCEPTION FOR SWALES AT THE MOMENT WHILE THERE ARE NO DESIGN CURVE FILES ###
+        if type == "SW":
+            return 0
+        ### END OF EXCEPTION ###
+        
+        #Grab targets and adjust for particular system type
+        tarQ = design_attr.getAttribute(type+"flow")*design_attr.getAttribute("targets_runoff")
+        tarTSS = design_attr.getAttribute(type+"pollute")*design_attr.getAttribute("targets_TSS")
+        tarTP = design_attr.getAttribute(type+"pollute")*design_attr.getAttribute("targets_TP")
+        tarTN = design_attr.getAttribute(type+"pollute")*design_attr.getAttribute("targets_TN")
+        targets = [tarQ, tarTSS, tarTP, tarTN, 100]
+        
+        print targets
+        
+        #Piece together the pathname from current system information: FUTURE
+        #pathname = self.findDCVpath(type, sys_descr)
 
-            print "System of Type: ", type
-            print "treats: "+str(deg)+" degree"
-            print "Residential Imp area: "+str(currentAttList.getAttribute("ResTIArea"))
-            print "System size = "+str(Asys)
-            print "Total System Size = "+str(Asyseffectivetotal)
+        #NOTE: CURRENT TECH DESIGNS WILL NOT BE CHANGED! THEREFORE PATHNAME WE RETRIEVE FROM
+        #DESIGN DETAILS VECTOR LIST
+        pathname = design_attr.getStringAttribute(type+"descur_path")
+        print pathname
+        
+        sys_perc = dcv.retrieveDesign(pathname, type, ksat, targets)
+        if sys_perc == np.inf:
+            #release the imp area, but mark the space as taken!
+            print "Results - new targets cannot be met, system will not be considered"
+            imptreatedbysystem = 0
+            imptreated += imptreatedbysystem
+            techimpl_attr.setAttribute("ImpT", imptreatedbysystem)
+        else:
+            #calculate the system's current Atreated
+            print "Results"
+            print "percentage of catchment: ", str(sys_perc)
+            imptreatedbysystem = Asyseffectivetotal/sys_perc
+            imptreated += imptreatedbysystem
+            print "impervious area treated by system: "+str(imptreatedbysystem)
+            techimpl_attr.setAttribute("ImpT", imptreatedbysystem)
+        
+        techconfigout.setAttributes("BlockID"+str(int(ID))+scale, techimpl_attr)    
             
-            ### EXCEPTION FOR SWALES AT THE MOMENT WHILE THERE ARE NO DESIGN CURVE FILES ###
-            if type == "SW":
-                return 0
-            ### END OF EXCEPTION ###
-            
-            #Grab targets and adjust for particular system type
-            tarQ = design_attr.getAttribute(type+"flow")*design_attr.getAttribute("targets_runoff")
-            tarTSS = design_attr.getAttribute(type+"pollute")*design_attr.getAttribute("targets_TSS")
-            tarTP = design_attr.getAttribute(type+"pollute")*design_attr.getAttribute("targets_TP")
-            tarTN = design_attr.getAttribute(type+"pollute")*design_attr.getAttribute("targets_TN")
-            targets = [tarQ, tarTSS, tarTP, tarTN, 100]
-            
-            print targets
-            
-            #Piece together the pathname from current system information: FUTURE
-            #pathname = self.findDCVpath(type, sys_descr)
-    
-            #NOTE: CURRENT TECH DESIGNS WILL NOT BE CHANGED! THEREFORE PATHNAME WE RETRIEVE FROM
-            #DESIGN DETAILS VECTOR LIST
-            pathname = design_attr.getStringAttribute(type+"descur_path")
-            print pathname
-            
-            sys_perc = dcv.retrieveDesign(pathname, type, ksat, targets)
-            if sys_perc == np.inf:
-                #release the imp area, but mark the space as taken!
-                print "Results - new targets cannot be met, system will not be considered"
-                imptreatedbysystem = 0
-                imptreated += imptreatedbysystem
-                
-                techimpl_attr.setAttribute("Sys"+str(i+1)+"ImpT", imptreatedbysystem)
-            else:
-                #calculate the system's current Atreated
-                print "Results"
-                print "percentage of catchment: ", str(sys_perc)
-                imptreatedbysystem = Asyseffectivetotal/sys_perc
-                imptreated += imptreatedbysystem
-                print "impervious area treated by system: "+str(imptreatedbysystem)
-                techimpl_attr.setAttribute("Sys"+str(i+1)+"ImpT", imptreatedbysystem)
-            
-            techconfigout.setAttributes("BlockID"+str(int(ID))+scale, techimpl_attr)    
-                
         return imptreated
     
     
@@ -813,7 +816,7 @@ class techretrofit(Module):
         #module.
         blockcityin = self.blockcityin.getItem()
         currentAttList = blockcityin.getAttributes("BlockID"+str(ID))
-        Aimptotal = currentAttList.getAttribute("ResTIArea")   #tally for total upstream impervious area
+        Aimptotal = currentAttList.getAttribute("ResTIArea")   #tally for total upstream impervious area including the block itself
         for i in upstreamIDs:
             Aimptotal += blockcityin.getAttributes("BlockID"+str(i)).getAttribute("ResTIArea")
         return Aimptotal        #in sqm units
