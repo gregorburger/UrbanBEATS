@@ -253,7 +253,9 @@ class ubp_residential(Module):
             #--------------------------------------------------------------------------------#
             
             block_status = currentAttList.getAttribute("Status").getDouble()
-	    tot_res_area = currentAttList.getAttribute("ALUC_Res").getDouble()
+	    landclassvec = currentAttList.getAttribute("Area_Landclass").getDoubleVector()
+  	    tot_res_area = landclassvec[0]
+	    #tot_res_area = currentAttList.getAttribute("ALUC_Res").getDouble()
             if block_status == 0 or tot_res_area == 0:          #2 conditions to skip: (1) block status = 0, (2) area of residential = 0
                 print "BlockID"+str(currentID)+" is not active or has no residential area"
                 continue
@@ -267,11 +269,13 @@ class ubp_residential(Module):
             #GET AREAS AND POPULATION
             #Total Residential Area - planning MUST balance with this area by the end of the module!
             
-	    res_area_tot = currentAttList.getAttribute("ALUC_Res").getDouble()
+	    res_area_tot = tot_res_area
             print "Total Residential Area for Block "+str(currentID)+"= "+str(res_area_tot)+"sqm"
             
-            res_pop_dens = currentAttList.getAttribute("POP_Res").getDouble()
-            
+
+            #res_pop_dens = currentAttList.getAttribute("POP_Res").getDouble()
+            landclassvec = currentAttList.getAttribute("PopulationDensity_Landclass").getDoubleVector()
+  	    res_pop_dens = landclassvec[0]
             ### RANDOM SAMPLING FOR FRONTAGE WIDTHS ###
             footpath_w = random.randint(w_resfootpath_min, w_resfootpath_max)
             naturestrip_w = random.randint(w_resnaturestrip_min, w_resnaturestrip_max)
@@ -345,7 +349,7 @@ class ubp_residential(Module):
                 res_public_dw_area = (naturestrip_w + collectlane_w)*w_driveway_min        #PER HOUSE
                 
                 res_parking_area = carports_max * 2.6 * 4.9     ########NOTE! LOOK UP VALUE FOR CARPORTS!
-                if garage_incl == True:                         ########FUTURE VERSION: PUT IN PROPER GARAGE DIMENSIONS
+                if garage_incl == False:    #normally True but there is a bug with the carports var                     ########FUTURE VERSION: PUT IN PROPER GARAGE DIMENSIONS
                     res_garage_area = carports * 2.6 * 4.9
                     res_parking_area = 0.5*res_parking_area
                 else:
