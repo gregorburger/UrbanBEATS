@@ -112,7 +112,7 @@ class ubp_facilities(Module):
 	self.planSpaces.getAttribute("collect_crossfall")
 
 
-	self.facilitiesAttr = View("FacilitiesAttribute",COMPONENT,WRITE)
+	self.facilitiesAttr = View("Facilities",COMPONENT,WRITE)
 	self.facilitiesAttr.addAttribute("BlockID")
 	self.facilitiesAttr.addAttribute("HasFacilities")
 	self.facilitiesAttr.addAttribute("MunATot")
@@ -263,8 +263,10 @@ class ubp_facilities(Module):
             #            CONDITIONAL CHECK TO SEE IF CURRENT BLOCK IS RELEVANT               #
             #--------------------------------------------------------------------------------#
             block_status = currentAttList.getAttribute("Status").getDouble()
-            tot_facilities_area = currentAttList.getAttribute("ALUC_Edu").getDouble() + currentAttList.getAttribute("ALUC_HnC").getDouble() \
-                + currentAttList.getAttribute("ALUC_SnU").getDouble() + currentAttList.getAttribute("ALUC_Tr").getDouble()
+	    landclassvec = currentAttList.getAttribute("Area_Landclass").getDoubleVector()
+ 
+            tot_facilities_area = landclassvec[5] + landclassvec[6] \
+                + landclassvec[7] + landclassvec[9]
             if block_status == 0 or tot_facilities_area == 0:           #2 conditions to skip: (1) status = 0, (2) no facilities
                 print "BlockID"+str(currentID)+" is not active or has no relevant facilities area"
                 continue
@@ -274,13 +276,13 @@ class ubp_facilities(Module):
             #            SETUP DATA - RETRIEVE FROM BLOCKCITY AND SAMPLE VALUES              #
             #--------------------------------------------------------------------------------#
             
-            Edu_area_tot = float(currentAttList.getAttribute("ALUC_Edu").getDouble())       #Area of Education facilities
-            HnC_area_tot = float(currentAttList.getAttribute("ALUC_HnC").getDouble())       #Area of Health & Community
-            SnU_area_tot = float(currentAttList.getAttribute("ALUC_SnU").getDouble())       #Area of Services & Utilities
+            Edu_area_tot = float(landclassvec[5])       #Area of Education facilities
+            HnC_area_tot = float(landclassvec[6])       #Area of Health & Community
+            SnU_area_tot = float(landclassvec[7])       #Area of Services & Utilities
             
             mun_Atotal = Edu_area_tot + HnC_area_tot + SnU_area_tot             #Total Municipal Area
             
-            tr_area_tot = float(currentAttList.getAttribute("ALUC_Tr").getDouble())         #Area of other transport facilities
+            tr_area_tot = float(landclassvec[9])         #Area of other transport facilities
             
             
             #--------------------------------------------------------------------------------#
