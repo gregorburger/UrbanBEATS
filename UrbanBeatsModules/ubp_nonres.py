@@ -125,7 +125,7 @@ class ubp_nonres(Module):
 	self.nonResidential.addAttribute("AIndustry")
 	self.nonResidential.addAttribute("ACommercial")
 	self.nonResidential.addAttribute("AImp_Com")
-
+	self.nonResidential.addAttribute("AImp_Ind")
 
 	#Datastream
 	datastream = []
@@ -259,8 +259,10 @@ class ubp_nonres(Module):
             #--------------------------------------------------------------------------------#
             #2 conditions to skip: (1) status = 0, (2) no industrial/trade area
 	    block_status = currentAttList.getAttribute("Status").getDouble()
-            tot_nonres_area = currentAttList.getAttribute("ALUC_Trad").getDouble() + currentAttList.getAttribute("ALUC_ORC").getDouble() \
-		+ currentAttList.getAttribute("ALUC_LI").getDouble() + currentAttList.getAttribute("ALUC_HI").getDouble()
+	    landclassvec = currentAttList.getAttribute("Area_Landclass").getDoubleVector()
+
+            tot_nonres_area = landclassvec[1] + landclassvec[2] \
+		+ landclassvec[3] + landclassvec[4]
             if block_status == 0 or tot_nonres_area == 0:
                 print "BlockID"+str(currentID)+" not active or no relevant non-res area"
                 continue
@@ -271,10 +273,10 @@ class ubp_nonres(Module):
             #            SETUP DATA - RETRIEVE FROM BLOCKCITY AND SAMPLE VALUES              #
             #--------------------------------------------------------------------------------#
             
-            trad_area_tot = float(currentAttList.getAttribute("ALUC_Trad").getDouble())     #Total Trade Area
-            ORC_area_tot = float(currentAttList.getAttribute("ALUC_ORC").getDouble())       #Total ORC Area
-            LI_area_tot = float(currentAttList.getAttribute("ALUC_LI").getDouble())         #Total Light Industry Area
-            HI_area_tot = float(currentAttList.getAttribute("ALUC_HI").getDouble())         #Total Heavy Industry Area
+            trad_area_tot = float(landclassvec[1])     #Total Trade Area
+            ORC_area_tot = float(landclassvec[2])       #Total ORC Area
+            LI_area_tot = float(landclassvec[3])         #Total Light Industry Area
+            HI_area_tot = float(landclassvec[4])         #Total Heavy Industry Area
             total_industrial_area = LI_area_tot + HI_area_tot
             total_commercial_area = trad_area_tot + ORC_area_tot
             if total_industrial_area != 0:
