@@ -264,6 +264,8 @@ class techplacement(Module):
         self.addParameter(self, "BFspec_FD", VIBe2.DOUBLE)
         self.BFmaxsize = 5000           #maximum surface area of system in sqm
         self.addParameter(self, "BFmaxsize", VIBe2.DOUBLE)
+        self.BFavglife = 20             #average life span of a biofilter
+        self.addParameter(self, "BFavglife", VIBe2.DOUBLE)
         
         self.BFlined = True
         self.addParameter(self, "BFlined", VIBe2.BOOL)
@@ -312,6 +314,8 @@ class techplacement(Module):
         self.addParameter(self, "ISspec_FD", VIBe2.DOUBLE)
         self.ISmaxsize = 5000          #maximum surface area of system in sqm
         self.addParameter(self, "ISmaxsize", VIBe2.DOUBLE)
+        self.ISavglife = 20             #average life span of an infiltration system
+        self.addParameter(self, "ISavglife", VIBe2.DOUBLE)
 
         self.IS_2Dmodel = True
         self.addParameter(self, "IS_2Dmodel", VIBe2.BOOL)
@@ -378,7 +382,8 @@ class techplacement(Module):
         self.addParameter(self, "PBspec_MD", VIBe2.STRING)
         self.PBmaxsize = 10000           #maximum surface area of system in sqm
         self.addParameter(self, "PBmaxsize", VIBe2.DOUBLE)
-
+        self.PBavglife = 20             #average life span of a pond/basin
+        self.addParameter(self, "PBavglife", VIBe2.DOUBLE)
         
         #---POROUS/PERVIOUS PAVEMENT [PP]---###TBA###---------------------------
         self.PPstatus = 0
@@ -421,6 +426,8 @@ class techplacement(Module):
         self.addParameter(self, "RT_sbmodel", VIBe2.STRING)
         self.addParameter(self, "RTdesignD4W", VIBe2.BOOL)
         self.addParameter(self, "RTdescur_path", VIBe2.STRING)
+        self.RTavglife = 20             #average life span of a raintank
+        self.addParameter(self, "RTavglife", VIBe2.DOUBLE)
         
         #---SAND/PEAT/GRAVEL FILTER [SF]----------------------------------------
         self.SFstatus = 0
@@ -485,7 +492,8 @@ class techplacement(Module):
         self.addParameter(self, "WSURspec_EDD", VIBe2.STRING)
         self.WSURmaxsize = 10000           #maximum surface area of system in sqm
         self.addParameter(self, "WSURmaxsize", VIBe2.DOUBLE)
-
+        self.WSURavglife = 20             #average life span of a wetland
+        self.addParameter(self, "WSURavglife", VIBe2.DOUBLE)
         
         #---SWALES & BUFFER STRIPS [SW]-----------------------------------------
         self.SWstatus = 0
@@ -516,7 +524,8 @@ class techplacement(Module):
         self.addParameter(self, "SWspec", VIBe2.DOUBLE)
         self.SWmaxsize = 600           #maximum surface area of system in sqm
         self.addParameter(self, "SWmaxsize", VIBe2.DOUBLE)
-
+        self.SWavglife = 20             #average life span of a swale
+        self.addParameter(self, "SWavglife", VIBe2.DOUBLE)
 
         #---TREE PITS [TPS]---###TBA###-----------------------------------------
         self.TPSstatus = 0
@@ -779,6 +788,7 @@ class techplacement(Module):
         des_attr.setAttribute("BFspec_FD", self.BFspec_FD)
         des_attr.setAttribute("BFmaxsize", self.BFmaxsize)
         des_attr.setAttribute("BFlined", self.BFlined)
+        des_attr.setAttribute("BFavglife", self.BFavglife)
         
         #Designcurve
         #str(dcvdirectory)+BF-EDDx.xm-FDx.xm-DC.dcv
@@ -817,6 +827,7 @@ class techplacement(Module):
         des_attr.setAttribute("ISspec_FD", self.ISspec_FD)
         des_attr.setAttribute("ISmaxsize", self.ISmaxsize)
         des_attr.setAttribute("IS_2Dmodel", self.IS_2Dmodel)
+        des_attr.setAttribute("ISavglife", self.ISavglife)
         
         ISdcvpath = str(dcvdirectory)+"IS-EDD"+str(self.BFspec_EDD)+"m-FD"+str(self.BFspec_FD)+"m-DC.dcv"
         print ISdcvpath
@@ -842,6 +853,7 @@ class techplacement(Module):
         des_attr.setAttribute("PBpollute", self.PBpollute)
         des_attr.setAttribute("PBspec_MD", self.PBspec_MD)
         des_attr.setAttribute("PBmaxsize", self.PBmaxsize)
+        des_attr.setAttribute("PBavglife", self.PBavglife)
         
         PBdcvpath = str(dcvdirectory)+"PB-MD"+str(self.PBspec_MD)+"m-DC.dcv"
         print PBdcvpath
@@ -887,6 +899,7 @@ class techplacement(Module):
         des_attr.setAttribute("WSURpollute", self.WSURpollute)
         des_attr.setAttribute("WSURspec_EDD", self.WSURspec_EDD)
         des_attr.setAttribute("WSURmaxsize", self.WSURmaxsize)
+        des_attr.setAttribute("WSURavglife", self.WSURavglife)
         
         WSURdcvpath = str(dcvdirectory)+"WSUR-EDD"+str(self.WSURspec_EDD)+"m-DC.dcv"
         print WSURdcvpath
@@ -907,6 +920,7 @@ class techplacement(Module):
         des_attr.setAttribute("SWdescur_path", self.SWdescur_path)
         des_attr.setAttribute("SWspec", self.SWspec)
         des_attr.setAttribute("SWmaxsize", self.SWmaxsize)
+        des_attr.setAttribute("SWavglife", self.SWavglife)
         
         #Design curves coming soon
         

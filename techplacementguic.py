@@ -412,6 +412,7 @@ class activatetechplacementGUI(QtGui.QDialog):
             self.ui.BFspecs_FD_combo.setCurrentIndex(3)
         
         self.ui.BFmaxsize_box.setText(self.module.getParameterAsString("BFmaxsize"))
+        self.ui.BFavglifespin.setValue(float(self.module.getParameterAsString("BFavglife")))
         
         if self.module.getParameterAsString("BFlined") == "1":
             self.ui.BFlined_check.setChecked(1)
@@ -526,7 +527,8 @@ class activatetechplacementGUI(QtGui.QDialog):
             self.ui.ISspecs_FD_combo.setCurrentIndex(3)
         
         self.ui.ISmaxsize_box.setText(self.module.getParameterAsString("ISmaxsize"))
-        
+        self.ui.ISavglifespin.setValue(float(self.module.getParameterAsString("ISavglife")))
+
         if self.module.getParameterAsString("IS_2Dmodel") == "1":
             self.ui.IS_2Dmodel_box.setChecked(1)
         else:
@@ -611,7 +613,8 @@ class activatetechplacementGUI(QtGui.QDialog):
             self.ui.PBspecs_combo.setCurrentIndex(4)    
         
         self.ui.PBmaxsize_box.setText(self.module.getParameterAsString("PBmaxsize"))
-        
+        self.ui.PBavglifespin.setValue(float(self.module.getParameterAsString("PBavglife")))
+
         #futher design info coming soon
         
         #----------------------------------------------------------------------#
@@ -683,6 +686,8 @@ class activatetechplacementGUI(QtGui.QDialog):
             self.ui.RTdesignD4W_box.setChecked(0)
             self.ui.RTdesigncurve_browse.setEnabled(1)
             self.ui.RTdesigncurve_pathbox.setText(self.module.getParameterAsString("RTdescur_path"))
+        
+        self.ui.RTavglifespin.setValue(float(self.module.getParameterAsString("RTavglife")))
         
         QtCore.QObject.connect(self.ui.RTdesigncurve_browse, QtCore.SIGNAL("clicked()"), self.openFileDialog_RT)
         QtCore.QObject.connect(self.ui.RTdesignD4W_box, QtCore.SIGNAL("clicked()"), self.RTdesign_enable)
@@ -799,7 +804,8 @@ class activatetechplacementGUI(QtGui.QDialog):
             self.ui.WSURspecs_combo.setCurrentIndex(5)
         
         self.ui.WSURmaxsize_box.setText(self.module.getParameterAsString("WSURmaxsize"))
-        
+        self.ui.WSURavglifespin.setValue(float(self.module.getParameterAsString("WSURavglife")))
+
         #futher design info coming soon
         
         #----------------------------------------------------------------------#
@@ -852,7 +858,8 @@ class activatetechplacementGUI(QtGui.QDialog):
         
         #combo box with specs
         self.ui.SWmaxsize_box.setText(self.module.getParameterAsString("SWmaxsize"))
-        
+        self.ui.SWavglifespin.setValue(float(self.module.getParameterAsString("SWavglife")))
+
         #futher design info coming soon
         
         #----------------------------------------------------------------------#
@@ -1669,6 +1676,9 @@ class activatetechplacementGUI(QtGui.QDialog):
         BFmaxsize = str(self.ui.BFmaxsize_box.text())
         self.module.setParameterValue("BFmaxsize", BFmaxsize)
         
+        BFavglife = str(self.ui.BFavglifespin.value())
+        self.module.setParameterValue("BFavglife", BFavglife)
+        
         if self.ui.BFlined_check.isChecked() == 1:
             BFlined = 1
         else:
@@ -1796,6 +1806,9 @@ class activatetechplacementGUI(QtGui.QDialog):
         ISmaxsize = str(self.ui.ISmaxsize_box.text())
         self.module.setParameterValue("ISmaxsize", ISmaxsize)
         
+        ISavglife = str(self.ui.ISavglifespin.value())
+        self.module.setParameterValue("ISavglife", ISavglife)
+        
         if self.ui.IS_2Dmodel_box.isChecked() == 1:
             IS_2Dmodel = 1
         else:
@@ -1884,6 +1897,9 @@ class activatetechplacementGUI(QtGui.QDialog):
         self.module.setParameterValue("PBmaxsize", PBmaxsize)
         #further design parameters coming soon...
         
+        PBavglife = str(self.ui.PBavglifespin.value())
+        self.module.setParameterValue("PBavglife", PBavglife)
+        
         #----------------------------------------------------------------------#
         #---------- Porous/Pervious Pavements ---------------------------------#
         #----------------------------------------------------------------------#
@@ -1967,6 +1983,9 @@ class activatetechplacementGUI(QtGui.QDialog):
         
         RTdescur_path = str(self.ui.RTdesigncurve_pathbox.text())
         self.module.setParameterValue("RTdescur_path", RTdescur_path)
+        
+        RTavglife = str(self.ui.RTavglifespin.value())
+        self.module.setParameterValue("RTavglife", RTavglife)
         
         if self.ui.RT_sbmodel_ybs_radio.isChecked() == True:
             RT_sbmodel = "ybs"
@@ -2099,6 +2118,9 @@ class activatetechplacementGUI(QtGui.QDialog):
         
         WSURmaxsize = str(self.ui.WSURmaxsize_box.text())
         self.module.setParameterValue("WSURmaxsize", WSURmaxsize)
+        
+        WSURavglife = str(self.ui.WSURavglifespin.value())
+        self.module.setParameterValue("WSURavglife", WSURavglife)
         #further design parameters coming soon...
         
         
@@ -2152,6 +2174,9 @@ class activatetechplacementGUI(QtGui.QDialog):
         #combo box
         SWmaxsize = str(self.ui.SWmaxsize_box.text())
         self.module.setParameterValue("SWmaxsize", SWmaxsize)
+        
+        SWavglife = str(self.ui.SWavglifespin.value())
+        self.module.setParameterValue("SWavglife", SWavglife)
         #further design parameters coming soon...
         
         #----------------------------------------------------------------------#
