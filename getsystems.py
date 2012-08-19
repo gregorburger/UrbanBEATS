@@ -135,6 +135,9 @@ class GetSystems(Module):
             sys_qty = feature.GetField("Qty")
             sys_attr.setAttribute("Qty", sys_qty)
             
+            sys_goalqty = feature.GetField("GoalQty")
+            sys_attr.setAttribute("GoalQty", sys_goalqty)
+            
             sys_eafact = feature.GetField("EAFact")
             sys_attr.setAttribute("EAFact", sys_eafact)
             
@@ -143,6 +146,19 @@ class GetSystems(Module):
             
             sys_impcurrent = feature.GetField("CurImpT")
             sys_attr.setAttribute("CurImpT", sys_impcurrent)
+            
+            sys_upgrades = feature.GetField("Upgrades")
+            sys_attr.setAttribute("Upgrades", sys_upgrades)
+            
+            sys_wdepth = feature.GetField("WDepth")
+            if sys_wdepth == None:
+                sys_wdepth = 0
+            sys_attr.setAttribute("WDepth", sys_wdepth)
+            
+            sys_fdepth = feature.GetField("FDepth")
+            if sys_fdepth == None:
+                sys_fdepth = 0
+            sys_attr.setAttribute("FDepth", sys_fdepth)
             
             #Save the Attributes List & Destroy the feature to free up memory
             system_list.setAttributes("System"+str(i), sys_attr)

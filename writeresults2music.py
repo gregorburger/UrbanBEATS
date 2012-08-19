@@ -48,20 +48,30 @@ class WriteResults2MUSIC(Module):
         self.blockcityin = VectorDataIn
         self.patchcityin = VectorDataIn
         self.techconfigin = VectorDataIn
-        self.designparameters = VectorDataIn
+        #self.designparameters = VectorDataIn
         self.addParameter(self, "blockcityin", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "patchcityin", VIBe2.VECTORDATA_IN)
         self.addParameter(self, "techconfigin", VIBe2.VECTORDATA_IN)
-        self.addParameter(self, "designparameters", VIBe2.VECTORDATA_IN)
+        #self.addParameter(self, "designparameters", VIBe2.VECTORDATA_IN)
         
+        self.pathname = "C:\\"
+        self.filename = "ubeatsMUSIC"
+        self.addParameter(self, "pathname", VIBe2.STRING)
+        self.addParameter(self, "filename", VIBe2.STRING)
+        self.currentyear = 1960
+        self.addParameter(self, "currentyear", VIBe2.DOUBLEDATA_IN)
+        self.masterplanmodel = 1
+        self.addParameter(self, "masterplanmodel", VIBe2.BOOL)
+        self.include_secondary_links = 0
+        self.addParameter(self, "include_secondary_links", VIBe2.BOOL)
     
     def run(self):
         blockcityin = self.blockcityin.getItem()
         patchcityin = self.patchcityin.getItem()
         techconfigin = self.techconfigin.getItem()
-        designparameters = self.designparameters.getItem()
+        #designparameters = self.designparameters.getItem()
         
-        des_attr = designparameters.getAttributes("DesignAttributes")
+        #des_attr = designparameters.getAttributes("DesignAttributes")
         map_attr = blockcityin.getAttributes("MapAttributes")
         #get data needed to being for loop analysis
         blocks_num = map_attr.getAttribute("NumBlocks")     #number of blocks to loop through
@@ -83,15 +93,27 @@ class WriteResults2MUSIC(Module):
             
         system_list = []
         for i in range(int(blocks_num)):
-            lot_count = techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("TotSystems")
-            street_count = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("TotSystems")
-            neigh_count = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("TotSystems")
-            prec_count = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("TotSystems")
+            lot_count = 0
+            street_count = 0
+            neigh_count = 0
+            prec_count = 0
+            if techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("Location") != 0:        #if systems HAS a location, then
+                lot_count = 1                                                                           #system exists!
+            if techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("Location") != 0:
+                street_count = 1
+            if techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("Location") != 0:
+                neigh_count = 1
+            if techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("Location") != 0:
+                prec_count = 1
             total_systems = lot_count + street_count + neigh_count + prec_count
             system_list.append([lot_count, street_count, neigh_count, prec_count])
         print system_list
         
-        ufile = umusic.createMUSICmsf("C://","urbanbeatsMUSIC")
+        if self.masterplanmodel == 1:
+            filesuffix = "PC"
+        else:
+            filesuffix = "IC"
+        ufile = umusic.createMUSICmsf(self.pathname,self.filename+"-"+str(self.currentyear)+filesuffix)
         umusic.writeMUSICheader(ufile, "melbourne")      #write the header line
         scalar = 10
         ncount = 1
@@ -147,24 +169,33 @@ class WriteResults2MUSIC(Module):
             
             #Find lot-scale system, write the node
             if system_list[i][0] != 0:
-                lottype = techconfigin.getAttributes("BlockID"+str(i+1)+"L").getStringAttribute("Sys1Type") #inblock_sys[0].getType()
+                lottype = techconfigin.getAttributes("BlockID"+str(i+1)+"L").getStringAttribute("Type")
                 print lottype
                 parameter_list = [1,1]
                 ncount_list.append(ncount)
                 if lottype == "BF":
                     #setup parameter list: 
                     #parameter_list = [EDD, surface area, filter area, unlined perimeter, satk, filterdepth, exfiltration]
-                    sysedd = float(des_attr.getStringAttribute("BFspec_EDD"))
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("Sys1EAFact")
-                    sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
+                    
+                    #sysedd = float(des_attr.getStringAttribute("BFspec_EDD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("WDepth")
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("EAFact")
+                    
+                    #sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
+                    sysfd = techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("FDepth")
+                    
                     parameter_list = [sysedd, sysarea, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), 180, sysfd, current_soilK]             #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
                     umusic.writeMUSICnodeBF(ufile, currentID, "L", ncount, blockX*scalar, (blockY+blocks_size/4)*scalar, parameter_list)
                 elif lottype == "IS":
                     #setup parameter list
                     #parameter_list = [surface area, EDD, filter area, unlined perimeter, filterdepth, exfiltration]
-                    sysedd = float(des_attr.getStringAttribute("ISspec_EDD"))
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("Sys1EAFact")
-                    sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
+                    
+                    #sysedd = float(des_attr.getStringAttribute("ISspec_EDD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("WDepth")
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("EAFact")
+                    #sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
+                    sysfd = techconfigin.getAttributes("BlockID"+str(i+1)+"L").getAttribute("FDepth")
+                    
                     parameter_list = [sysarea, sysedd, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), sysfd, current_soilK]             #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
                     
                     umusic.writeMUSICnodeIS(ufile, currentID, "L", ncount, blockX*scalar, (blockY+blocks_size/4)*scalar, parameter_list)
@@ -175,31 +206,41 @@ class WriteResults2MUSIC(Module):
                 
                 #Find the street-scale system, write the node
             if system_list[i][1] != 0:
-                streettype = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getStringAttribute("Sys1Type")
+                streettype = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getStringAttribute("Type")
                 parameter_list = [1,1]
                 ncount_list.append(ncount)
                 if streettype == "BF":
                     #setup parameter list:
                     #parameter_list = [EDD, surface area, filter area, unlined perimeter, satk, filterdepth, exfiltration]
-                    sysedd = float(des_attr.getStringAttribute("BFspec_EDD"))
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("Sys1EAFact")
-                    sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
+                    
+                    #sysedd = float(des_attr.getStringAttribute("BFspec_EDD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("WDepth")
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("EAFact")
+                    
+                    #sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
+                    sysfd = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("FDepth")
+                    
                     parameter_list = [sysedd, sysarea, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), 180, sysfd, current_soilK]
                     umusic.writeMUSICnodeBF(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
                     pass
                 elif streettype == "IS":
                     #setup parameter list:
                     #parameter_list = [surface area, EDD, filter area, unlined perimeter, filterdepth, exfiltration]
-                    sysedd = float(des_attr.getStringAttribute("ISspec_EDD"))
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("Sys1EAFact")
-                    sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
+                    
+                    #sysedd = float(des_attr.getStringAttribute("ISspec_EDD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("WDepth")
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("EAFact")
+                    
+                    #sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
+                    sysfd = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("FDepth")
+                    
                     parameter_list = [sysarea, sysedd, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), sysfd, current_soilK] 
                     umusic.writeMUSICnodeIS(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
                     pass
                 elif streettype == "SW":
                     #setup parameter list
                     #parameter_list = [length, bedslope, Wbase, Wtop, depth, veg.height, exfilrate]
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("Sys1EAFact")
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"S").getAttribute("EAFact")
                     parameter_list = [sysarea/4, 5, 2, 6, float(1.0/3.0),0.05, current_soilK]                     #[length, bedslope, Wbase, Wtop, depth, veg.height, exfilrate]
                     umusic.writeMUSICnodeSW(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
                     pass
@@ -210,24 +251,34 @@ class WriteResults2MUSIC(Module):
                 
             #Find the neigh-scale system, write the node
             if system_list[i][2] != 0:
-                neightype = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getStringAttribute("Sys1Type")
+                neightype = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getStringAttribute("Type")
                 parameter_list = [1,1]
                 ncount_list.append(ncount)
                 if neightype == "BF":
                     #setup parameter list:
                     #parameter_list = [EDD, surface area, filter area, unlined perimeter, satk, filterdepth, exfiltration]
-                    sysedd = float(des_attr.getStringAttribute("BFspec_EDD"))
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("Sys1EAFact")
-                    sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
+                    
+                    #sysedd = float(des_attr.getStringAttribute("BFspec_EDD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("WDepth")
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("EAFact")
+                    
+                    #sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
+                    sysfd = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("FDepth")
+                    
                     parameter_list = [sysedd, sysarea, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), 180, sysfd, current_soilK] 
                     umusic.writeMUSICnodeBF(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
                     pass
                 elif neightype == "IS":
                     #setup parameter list:
                     #parameter_list = [surface area, EDD, filter area, unlined perimeter, filterdepth, exfiltration]
-                    sysedd = float(des_attr.getStringAttribute("ISspec_EDD"))
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("Sys1EAFact")
-                    sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
+                    
+                    #sysedd = float(des_attr.getStringAttribute("ISspec_EDD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("WDepth")
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("EAFact")
+                    
+                    #sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
+                    sysfd = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("FDepth")
+                    
                     parameter_list = [sysarea, sysedd, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), sysfd, current_soilK] 
                     
                     parameter_list = [10, 0.2, 10, 14, 1, 100]                  #[pond_area, EDD, filter area, unlined filter perimeter, depth, exfil rate]
@@ -236,16 +287,22 @@ class WriteResults2MUSIC(Module):
                 elif neightype == "WSUR":
                     #setup parameter list:
                     #parameter_list = [surface area, EDD, permanent pool, exfil, eq pipe diam, det time]
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("Sys1EAFact")
-                    sysedd = float(des_attr.getStringAttribute("WSURspec_EDD"))
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("EAFact")
+                    
+                    #sysedd = float(des_attr.getStringAttribute("WSURspec_EDD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("WDepth")
+                    
                     parameter_list = [sysarea, sysedd, sysarea*0.2, current_soilK, 1000*numpy.sqrt(((0.895*sysarea*sysedd)/(72*3600*0.6*0.25*numpy.pi*numpy.sqrt(2*9.81*sysedd)))), 72.0]
                     umusic.writeMUSICnodeWSUR(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
                     pass
                 elif neightype == "PB":
                     #setup parameter list:
                     #parameter_list = [surface area, mean depth, permanent pool, exfil, eq pipe diam, det time]
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("Sys1EAFact")
-                    sysedd = float(des_attr.getStringAttribute("PBspec_MD"))
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("EAFact")
+                    
+                    #sysedd = float(des_attr.getStringAttribute("PBspec_MD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"N").getAttribute("WDepth")
+                    
                     parameter_list = [sysarea, sysedd, sysarea*0.2, current_soilK, 1000*numpy.sqrt(((0.895*sysarea*sysedd)/(72*3600*0.6*0.25*numpy.pi*numpy.sqrt(2*9.81*sysedd)))), 72.0]
                     
                     umusic.writeMUSICnodePB(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
@@ -298,40 +355,58 @@ class WriteResults2MUSIC(Module):
             if system_list[i][3] == 0:
                 ncount_list.append(0)
             else:
-                prectype = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getStringAttribute("Sys1Type")
+                prectype = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getStringAttribute("Type")
                 parameter_list = [1,1]
                 ncount_list.append(ncount)
                 if prectype == "BF":
                     #setup parameter list:
                     #parameter_list = [EDD, surface area, filter area, unlined perimeter, satk, filterdepth, exfiltration]
-                    sysedd = float(des_attr.getStringAttribute("BFspec_EDD"))
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("Sys1EAFact")
-                    sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
+                    
+                    #sysedd = float(des_attr.getStringAttribute("BFspec_EDD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("WDepth")
+                    
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("EAFact")
+                    
+                    #sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
+                    sysfd = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("FDepth")
+                    
                     parameter_list = [sysedd, sysarea, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), 180, sysfd, current_soilK]
                     umusic.writeMUSICnodeBF(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
                     pass
                 elif prectype == "IS":
                     #setup parameter list:
                     #parameter_list = [surface area, EDD, filter area, unlined perimeter, filterdepth, exfiltration]
-                    sysedd = float(des_attr.getStringAttribute("ISspec_EDD"))
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("Sys1EAFact")
-                    sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
+                    
+                    #sysedd = float(des_attr.getStringAttribute("ISspec_EDD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("WDepth")
+                    
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("EAFact")
+                    
+                    #sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
+                    sysfd = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("FDepth")
+                    
                     parameter_list = [sysarea, sysedd, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), sysfd, current_soilK]
                     umusic.writeMUSICnodeIS(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
                     pass
                 elif prectype == "WSUR":
                     #setup parameter list
                     #parameter_list = [surface area, EDD, permanent pool, exfil, eq pipe diam, det time]
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("Sys1EAFact")
-                    sysedd = float(des_attr.getStringAttribute("WSURspec_EDD"))
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("EAFact")
+                    
+                    #sysedd = float(des_attr.getStringAttribute("WSURspec_EDD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("WDepth")
+                    
                     parameter_list = [sysarea, sysedd, sysarea*0.2, current_soilK, 1000*numpy.sqrt(((0.895*sysarea*sysedd)/(72*3600*0.6*0.25*numpy.pi*numpy.sqrt(2*9.81*sysedd)))), 72.0]
                     umusic.writeMUSICnodeWSUR(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
                     pass
                 elif prectype == "PB":
                     #setup parameter list:
                     #parameter_list = [surface area, mean depth, permanent pool, exfil, eq pipe diam, det time]
-                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("Sys1Area")/techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("Sys1EAFact")
-                    sysedd = float(des_attr.getStringAttribute("PBspec_MD"))
+                    sysarea = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("SysArea")/techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("EAFact")
+                    
+                    #sysedd = float(des_attr.getStringAttribute("PBspec_MD"))
+                    sysedd = techconfigin.getAttributes("BlockID"+str(i+1)+"P").getAttribute("WDepth")
+                    
                     parameter_list = [sysarea, sysedd, sysarea*0.2, current_soilK, 1000*numpy.sqrt(((0.895*sysarea*sysedd)/(72*3600*0.6*0.25*numpy.pi*numpy.sqrt(2*9.81*sysedd)))), 72.0]
                     
                     umusic.writeMUSICnodePB(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)

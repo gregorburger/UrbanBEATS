@@ -364,35 +364,44 @@ class techimplement(Module):
         lotsysbuildyr = sys_descr.getAttribute("Year")
         loteafact = sys_descr.getAttribute("EAFact")
         lotqty = sys_descr.getAttribute("Qty")
-        lotimpT = sys_descr.getAttribute("ImpT")
+        goalqty = sys_descr.getAttribute("GoalQty")             #THIS IS RELEVANT HERE!
+        lotimpT = sys_descr.getAttribute("ImpT")                #How much the lot system will treat in terms of TOTAL IMP AREA
         currentimpT = sys_descr.getAttribute("CurImpT")
+        upgrades = sys_descr.getAttribute("Upgrades")
+        
+        wdepth = sys_descr.getAttribute("WDepth")
+        fdepth = sys_descr.getAttribute("FDepth")
         
         print lottype, lotdeg, lotsysarea, lotsysstatus, lotsysbuildyr
-        goallots = int(lotdeg*mpdata[0])        #final number of houses with systems (masterplan)
-        print "Goal Lots: ", str(goallots)
+        
         
         if lotsysbuildyr == 9999:               #if the system is already implemented, then check if it has been fully implemented
+            goallots = int(lotdeg*mpdata[0])        #final number of houses with systems (masterplan)
+            print "Goal Lots: ", str(goallots)
             #calculate how many to implement based on allotment rules
             if self.bb_lot_rule == "AMAP":
-                #AMAP = as many as possible
-                #lesser of: how many we ultimately want or how many have been built
+                #AMAP = as many as possible, i.e. lesser of: how many we ultimately want or how many have been built
+                goalqty = goallots                              #AT THE TIME OF IMPLEMENTATION, WHAT IS OUT DESIRED NUMBER OF ALLOTMENTS, define goalqty
                 num_systems_impl = min(goallots, allotments)
+                lotqty = num_systems_impl
                 print num_systems_impl
             elif self.bb_lot_rule == "STRICT":
-                #STRICT = strictly follow %
-                #number of allotments built * %
+                #STRICT = strictly follow %, i.e. number of allotments built * %
+                goalqty = goallots
                 num_systems_impl = int(allotments * lotdeg)
-                print num_systems_impl
                 lotqty = num_systems_impl
-            tot_system_area = num_systems_impl * lotsysarea
-            tot_lot_treated = num_systems_impl * lotimparea
-            currentimpT = tot_lot_treated
+                print num_systems_impl
+                
+            tot_system_area = num_systems_impl * lotsysarea     #total area currently = how many were implemented
+            tot_lot_treated_current = lotimparea * num_systems_impl
+            tot_lot_treated = lotimparea * goalqty              #total treated are = how many are planned * impervious area treated by one
+            lotimpT = tot_lot_treated                           #This value is updated once the system has been implemented
+            currentimpT = tot_lot_treated_current               #current treated Aimp
             print tot_system_area
-            #print tot_lot_treated
         elif lotsysbuildyr != 9999:
             #how many in the original plan? -- goallots
             #how many already in?
-            remaining_lotqty = goallots - lotqty
+            remaining_lotqty = goalqty - lotqty         #At any future implementation stage, we check the very first goal allotments!
             if self.bb_lot_rule == "AMAP" and remaining_lotqty > 0:
                 #implement more lot systems
                 pass
@@ -408,7 +417,7 @@ class techimplement(Module):
         techimpl_attr.setAttribute("Type", lottype)
         techimpl_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(lottype)])
         techimpl_attr.setAttribute("Qty", lotqty)
-        #techimpl_attr.setAttribute("Sys"+str(j+1)+"TotA", tot_system_area)
+        techimpl_attr.setAttribute("GoalQty", goalqty)
         techimpl_attr.setAttribute("ImpT", lotimpT)
         techimpl_attr.setAttribute("SysArea", lotsysarea)
         techimpl_attr.setAttribute("Status", 1)
@@ -416,7 +425,10 @@ class techimplement(Module):
         techimpl_attr.setAttribute("Degree", lotdeg)
         techimpl_attr.setAttribute("EAFact", loteafact)
         techimpl_attr.setAttribute("CurImpT", currentimpT)
-            
+        techimpl_attr.setAttribute("Upgrades", upgrades)
+        techimpl_attr.setAttribute("WDepth", wdepth)
+        techimpl_attr.setAttribute("FDepth", fdepth)
+             
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "L", techimpl_attr)
         if lotsysbuildyr < currentyear:               #if the system is already implemented, then skip
             return [lotimpT, lotdeg]
@@ -447,6 +459,11 @@ class techimplement(Module):
         streetqty = sys_descr.getAttribute("Qty")
         streetimpT = sys_descr.getAttribute("ImpT")
         currentimpT = sys_descr.getAttribute("CurImpT")
+        goalqty = sys_descr.getAttribute("GoalQty")
+        upgrades = sys_descr.getAttribute("Upgrades")
+        
+        wdepth = sys_descr.getAttribute("WDepth")
+        fdepth = sys_descr.getAttribute("FDepth")
         
         print streettype, streetdeg, streetsysarea, streetsysstatus, streetsysbuildyr
         
@@ -482,6 +499,7 @@ class techimplement(Module):
         techimpl_attr.setAttribute("Type", streettype)
         techimpl_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(streettype)])
         techimpl_attr.setAttribute("Qty", streetqty)
+        techimpl_attr.setAttribute("GoalQty", goalqty)
         techimpl_attr.setAttribute("SysArea", streetsysarea)
         techimpl_attr.setAttribute("ImpT", streetimpT)
         techimpl_attr.setAttribute("Status", 1)
@@ -489,7 +507,10 @@ class techimplement(Module):
         techimpl_attr.setAttribute("Degree", streetdeg)
         techimpl_attr.setAttribute("EAFact", streeteafact)
         techimpl_attr.setAttribute("CurImpT", currentimpT)
-            
+        techimpl_attr.setAttribute("Upgrades", upgrades)
+        techimpl_attr.setAttribute("WDepth", wdepth)
+        techimpl_attr.setAttribute("FDepth", fdepth)
+             
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "S", techimpl_attr)
         return True
     
@@ -517,6 +538,11 @@ class techimplement(Module):
         neighqty = sys_descr.getAttribute("Qty")
         neighimpT = sys_descr.getAttribute("ImpT")
         currentimpT = sys_descr.getAttribute("CurImpT")
+        goalqty = sys_descr.getAttribute("GoalQty")
+        upgrades = sys_descr.getAttribute("Upgrades")
+        
+        wdepth = sys_descr.getAttribute("WDepth")
+        fdepth = sys_descr.getAttribute("FDepth")
         
         print neightype, neighdeg, neighsysarea, neighsysstatus, neighsysbuildyr
         #Follow the same as street, but check the open space first
@@ -553,6 +579,7 @@ class techimplement(Module):
         techimpl_attr.setAttribute("Type", neightype)
         techimpl_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(neightype)])
         techimpl_attr.setAttribute("Qty", neighqty)
+        techimpl_attr.setAttribute("GoalQty", goalqty)
         techimpl_attr.setAttribute("SysArea", neighsysarea)
         techimpl_attr.setAttribute("ImpT", neighimpT)
         techimpl_attr.setAttribute("Status", 1)
@@ -560,6 +587,9 @@ class techimplement(Module):
         techimpl_attr.setAttribute("Degree", neighdeg) 
         techimpl_attr.setAttribute("EAFact", neigheafact)
         techimpl_attr.setAttribute("CurImpT", currentimpT)
+        techimpl_attr.setAttribute("Upgrades", upgrades)
+        techimpl_attr.setAttribute("WDepth", wdepth)
+        techimpl_attr.setAttribute("FDepth", fdepth)
             
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "N", techimpl_attr)
         return True
@@ -650,6 +680,11 @@ class techimplement(Module):
         precqty = sys_descr.getAttribute("Qty")
         precimpT = sys_descr.getAttribute("ImpT")
         currentimpT = sys_descr.getAttribute("CurImpT")
+        goalqty = sys_descr.getAttribute("GoalQty")
+        upgrades = sys_descr.getAttribute("Upgrades")
+        
+        wdepth = sys_descr.getAttribute("WDepth")
+        fdepth = sys_descr.getAttribute("FDepth")
         
         print prectype, precdeg, precsysarea, precsysstatus, precsysbuildyr
         #Follow the same as street, but check the open space first
@@ -673,6 +708,7 @@ class techimplement(Module):
         techimpl_attr.setAttribute("Type", prectype)
         techimpl_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(prectype)])
         techimpl_attr.setAttribute("Qty", precqty)
+        techimpl_attr.setAttribute("GoalQty", goalqty)
         techimpl_attr.setAttribute("SysArea", precsysarea)
         techimpl_attr.setAttribute("ImpT", precimpT)
         techimpl_attr.setAttribute("Status", 1)
@@ -680,7 +716,10 @@ class techimplement(Module):
         techimpl_attr.setAttribute("Degree", precdeg) 
         techimpl_attr.setAttribute("EAFact", preceafact)
         techimpl_attr.setAttribute("CurImpT", currentimpT)
-            
+        techimpl_attr.setAttribute("Upgrades", upgrades)
+        techimpl_attr.setAttribute("WDepth", wdepth)
+        techimpl_attr.setAttribute("FDepth", fdepth)    
+        
         self.drawTechnologyDataPoint(ID, centrePoints[0], centrePoints[1], "P", techimpl_attr)
         return True
     

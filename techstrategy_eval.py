@@ -1298,6 +1298,7 @@ class techstrategy_eval(Module):
                     wsud_attr.setAttribute("Type", current_wsud.getType())
                     wsud_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(current_wsud.getType())]) 
                     wsud_attr.setAttribute("Qty", 1)
+                    wsud_attr.setAttribute("GoalQty", 1)        #set as 1 for lot now and update in the implement algorithm
                     wsud_attr.setAttribute("Degree", inblock_degs[j])
                     wsud_attr.setAttribute("SysArea", current_wsud.getSize())
                     wsud_attr.setAttribute("Status", 0)            #0 = Planned, 1 = constructed
@@ -1305,6 +1306,16 @@ class techstrategy_eval(Module):
                     wsud_attr.setAttribute("EAFact", current_wsud.getAreaFactor())
                     wsud_attr.setAttribute("ImpT", current_wsud.getAreaServed())
                     wsud_attr.setAttribute("CurImpT", 0)    #current impervious area treated
+                    wsud_attr.setAttribute("Upgrades", 0)
+                    
+                    #Transfer the key system specs:
+                    if current_wsud.getType() in ["BF", "IS", "WSUR"]:
+                        wsud_attr.setAttribute("WDepth", float(des_attr.getStringAttribute(current_wsud.getType()+"spec_EDD")))
+                    if current_wsud.getType() in ["PB"]:
+                        wsud_attr.setAttribute("WDepth", float(des_attr.getStringAttribute(current_wsud.getType()+"spec_MD")))
+                    if current_wsud.getType() in ["BF", "IS"]:
+                        wsud_attr.setAttribute("FDepth", float(des_attr.getStringAttribute(current_wsud.getType()+"spec_FD")))
+                    #More system parameters in future depending on system type
                     
                     systemsout.setPoints("BlockID"+str(currentBlockID)+str(scale), plist)
                     systemsout.setAttributes("BlockID"+str(currentBlockID)+str(scale), wsud_attr)
@@ -1328,6 +1339,7 @@ class techstrategy_eval(Module):
                     wsud_attr.setAttribute("Type", outblock_strat.getType())
                     wsud_attr.setAttribute("TypeN", system_type_numeric[system_type_matrix.index(outblock_strat.getType())])
                     wsud_attr.setAttribute("Qty", 1)
+                    wsud_attr.setAttribute("GoalQty", 1)        #set as 1 for lot now and update in the implement algorithm
                     wsud_attr.setAttribute("Degree", outblock_strat_deg)
                     wsud_attr.setAttribute("SysArea", outblock_strat.getSize())
                     wsud_attr.setAttribute("Status", 0)            #0 = Planned, 1 = constructed
@@ -1335,6 +1347,16 @@ class techstrategy_eval(Module):
                     wsud_attr.setAttribute("EAFact", outblock_strat.getAreaFactor())
                     wsud_attr.setAttribute("ImpT", outblock_strat.getAreaServed())
                     wsud_attr.setAttribute("CurImpT", 0)    #current impervious area treated
+                    wsud_attr.setAttribute("Upgrades", 0)
+                    
+                    #Transfer the key system specs:
+                    if outblock_strat.getType() in ["BF", "IS", "WSUR"]:
+                        wsud_attr.setAttribute("WDepth", float(des_attr.getStringAttribute(outblock_strat.getType()+"spec_EDD")))
+                    if outblock_strat.getType() in ["PB"]:
+                        wsud_attr.setAttribute("WDepth", float(des_attr.getStringAttribute(outblock_strat.getType()+"spec_MD")))
+                    if outblock_strat.getType() in ["BF", "IS"]:
+                        wsud_attr.setAttribute("FDepth", float(des_attr.getStringAttribute(outblock_strat.getType()+"spec_FD")))
+                    #More system parameters in future depending on system type
                     
                     systemsout.setPoints("BlockID"+str(currentBlockID)+str(scale), plist)
                     systemsout.setAttributes("BlockID"+str(currentBlockID)+str(scale), wsud_attr)

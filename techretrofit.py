@@ -27,6 +27,7 @@ import math as mat
 import numpy as np
 from pyvibe import *
 import designbydcv as dcv
+import techdesign as td
 
 class techretrofit(Module):
     """description of this module
@@ -300,6 +301,7 @@ class techretrofit(Module):
         if sys_descr == None:
             currentAttList.setAttribute("HasStreetS", 0)
         else:
+            oldImp = sys_descr.getAttribute("ImpT")
             decision, newImpT = self.dealWithSystem(ID, sys_descr, "S")
             if fstreet == 0:    #if we do not force retrofit on street, just keep the system
                 decision = 1
@@ -308,15 +310,33 @@ class techretrofit(Module):
                 print "Keeping the System"
                 currentAttList.setAttribute("HasStreetS", 1)
                 inblock_imp_treated += newImpT
+            
             elif decision == 2:     #renewal
-                print "Renewing the System"
-                #REDESIGN THE SYSTEM
-                pass
+                print "Renewing the System - Redesigning and Assessing Space Requirements"
+                newAsys, newEAFact = self.redesignSystem(ID, sys_descr, "S", oldImp)      #get new system size & EA
+                avlSpace = currentAttList.getAttribute("AvlStreet")                     #get available space
+                if newAsys > avlSpace and renewal_alternative == "K":                   #if system does not fit and alternative is 'Keep'
+                    print "Cannot fit new system design, keeping old design instead"
+                    currentAttList.setAttribute("HasStreetS", 1)
+                    inblock_imp_treated += newImpT
+                elif newAsys > avlSpace and renewal_alternative == "D":                 #if system does not fit and alternative is 'Decommission'
+                    print "Cannot fit new system design, decommissioning instead"
+                    inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
+                    currentAttList.setAttribute("HasStreetS", 0)    #Remove system placeholder
+                    techimpl_attr = Attribute()                     #Remove all attributes
+                    techconfigout.setAttributes("BlockID"+str(ID)+"S", techimpl_attr)
+                else:                                                                   #otherwise it'll fit, transfer new information
+                    print "New System Upgrades fit, transferring this information to output"
+                    currentAttList.setAttribute("HasStreetS", 1)
+                    self.defineUpgradedSystemAttributes(ID, sys_descr, "S", newAsys, newEAFact, oldImp)
+                    inblock_imp_treated += oldImp
+                
             elif decision == 3:     #decom
                 print "Decommissioning the system"
                 inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
                 #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
-                techimpl_attr = Attribute()
+                currentAttList.setAttribute("HasStreetS", 0)    #Remove system placeholder
+                techimpl_attr = Attribute()                     #Remove all attributes
                 techconfigout.setAttributes("BlockID"+str(ID)+"S", techimpl_attr)
             
         #NEIGH
@@ -324,6 +344,7 @@ class techretrofit(Module):
         if sys_descr == None:
             currentAttList.setAttribute("HasNeighS", 0)
         else:
+            oldImp = sys_descr.getAttribute("ImpT")
             decision, newImpT = self.dealWithSystem(ID, sys_descr, "N")
             if fneigh == 0:     #if we do not force retrofit on neighbourhood, just keep the system
                 decision = 1
@@ -332,14 +353,32 @@ class techretrofit(Module):
                 print "Keeping the System"
                 currentAttList.setAttribute("HasNeighS", 1)
                 inblock_imp_treated += newImpT
+                
             elif decision == 2:     #renewal
-                print "Renewing the System"
-                #REDESIGN THE SYSTEM
-                pass
+                print "Renewing the System - Redesigning and Assessing Space Requirements"
+                newAsys, newEAFact = self.redesignSystem(ID, sys_descr, "N", oldImp)      #get new system size & EA
+                avlSpace = currentAttList.getAttribute("ALUC_PG")                     #get available space
+                if newAsys > avlSpace and renewal_alternative == "K":                   #if system does not fit and alternative is 'Keep'
+                    print "Cannot fit new system design, keeping old design instead"
+                    currentAttList.setAttribute("HasNeighS", 1)
+                    inblock_imp_treated += newImpT
+                elif newAsys > avlSpace and renewal_alternative == "D":                 #if system does not fit and alternative is 'Decommission'
+                    print "Cannot fit new system design, decommissioning instead"
+                    inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
+                    currentAttList.setAttribute("HasNeighS", 0)    #Remove system placeholder
+                    techimpl_attr = Attribute()                     #Remove all attributes
+                    techconfigout.setAttributes("BlockID"+str(ID)+"N", techimpl_attr)
+                else:                                                                   #otherwise it'll fit, transfer new information
+                    print "New System Upgrades fit, transferring this information to output"
+                    currentAttList.setAttribute("HasNeighS", 1)
+                    self.defineUpgradedSystemAttributes(ID, sys_descr, "N", newAsys, newEAFact, oldImp)
+                    inblock_imp_treated += oldImp
+                    
             elif decision == 3:     #decom
                 print "Decommissioning the system"
                 inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
                 #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                currentAttList.setAttribute("HasNeighS", 0)
                 techimpl_attr = Attribute()
                 techconfigout.setAttributes("BlockID"+str(ID)+"N", techimpl_attr)
         
@@ -359,6 +398,7 @@ class techretrofit(Module):
         if sys_descr == None:
             currentAttList.setAttribute("HasPrecS", 0)
         else:
+            oldImp = sys_descr.getAttribute("ImpT")
             decision, newImpT = self.dealWithSystem(ID, sys_descr, "P")
             if fprec == 0:      #if we do not force retrofit on precinct, just keep the system
                 decision = 1
@@ -368,13 +408,30 @@ class techretrofit(Module):
                 currentAttList.setAttribute("HasPrecS", 1)
                 currentAttList.setAttribute("UpstrImpTreat", newImpT)
             elif decision == 2:     #renewal
-                print "Renewing the System"
-                #REDESIGN THE SYSTEM
-                pass
+                print "Renewing the System - Redesigning and Assessing Space Requirements"
+                newAsys, newEAFact = self.redesignSystem(ID, sys_descr, "P", oldImp)      #get new system size & EA
+                avlSpace = currentAttList.getAttribute("ALUC_PG")                     #get available space
+                if newAsys > avlSpace and renewal_alternative == "K":                   #if system does not fit and alternative is 'Keep'
+                    print "Cannot fit new system design, keeping old design instead"
+                    currentAttList.setAttribute("HasPrecS", 1)
+                    currentAttList.setAttribute("UpstrImpTreat", newImpT)
+                elif newAsys > avlSpace and renewal_alternative == "D":                 #if system does not fit and alternative is 'Decommission'
+                    print "Cannot fit new system design, decommissioning instead"
+                    currentAttList.setAttribute("UpstrImpTreat", 0)
+                    currentAttList.setAttribute("HasPrecS", 0)    #Remove system placeholder
+                    techimpl_attr = Attribute()                     #Remove all attributes
+                    techconfigout.setAttributes("BlockID"+str(ID)+"P", techimpl_attr)
+                else:                                                                   #otherwise it'll fit, transfer new information
+                    print "New System Upgrades fit, transferring this information to output"
+                    currentAttList.setAttribute("HasPrecS", 1)
+                    self.defineUpgradedSystemAttributes(ID, sys_descr, "P", newAsys, newEAFact, oldImp)
+                    currentAttList.setAttribute("UpstrImpTreat", oldImp)
+                    
             elif decision == 3:     #decom
                 print "Decommissioning the system"
-                currentAttList.setAttribute("UpstrImpTreat", 0)     #if system removed: imp treated = 0
+                currentAttList.setAttribute("UpstrImpTreat", 0)
                 #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                currentAttList.setAttribute("HasPrecS", 0)
                 techimpl_attr = Attribute()
                 techconfigout.setAttributes("BlockID"+str(ID)+"P", techimpl_attr)
         
@@ -393,9 +450,10 @@ class techretrofit(Module):
         #           carried out with the new design
         #   - Decommission: technology is removed from the area, impervious area is freed up
         #           scale in said block is marked as 'available'
-        blockcityin, blockcityou = self.getBlockCityVectors()
+        blockcityin, blockcityout = self.getBlockCityVectors()
         des_attr = self.design_details.getItem().getAttributes("DesignAttributes")
         renewal_alternative = des_attr.getStringAttribute("renewal_alternative")
+        techconfigout = self.techconfigout.getItem()
         
         currentyear = self.currentyear
         startyear = self.startyear
@@ -427,12 +485,17 @@ class techretrofit(Module):
             #DO SOMETHING TO DETERMINE IF YES/NO RETROFIT, then check the decision
             if time_passed - (time_passed // lot_years)*lot_years == 0:
                 go_retrofit = 1     #then it's time for renewal
+                print "Before: "+str(sys_descr.getAttribute("GoalQty"))
                 #modify the current sys_descr attribute to take into account lot systems that have disappeared.
+                #If systems have disappeared the final quantity of lot implementation (i.e. goalqty) will drop
+                sys_descr = self.updateForBuildingStockRenewal(ID, sys_descr, lot_perc)
+                print "After: "+str(sys_descr.getAttribute("GoalQty"))
             else:
                 go_retrofit = 0
                 
             #NOW DETERMINE IF ARE RETROFITTING OR NOT: IF NOT READY FOR RETROFIT, KEEP, ELSE GO INTO CYCLE        
-            decision, newImpT = self.dealWithSystem(ID, sys_descr, "L")
+            oldImp = sys_descr.getAttribute("ImpT")             #Old ImpT using the old GoalQty value
+            decision, newImpT = self.dealWithSystem(ID, sys_descr, "L") #gets the new ImpT using new GoalQty value (if it changed)
             if go_retrofit == 0:
                 decision = 1
                 
@@ -440,15 +503,18 @@ class techretrofit(Module):
                 print "Keeping the System"
                 currentAttList.setAttribute("HasLotS", 1)
                 inblock_imp_treated += newImpT
+                
             elif decision == 2:     #renewal
-                print "Renewing the System"
-                #REDESIGN THE SYSTEM
-                pass
+                print "Lot-scale systems will not allow renewal, instead the systems will be kept as is until plan is abandoned"
+                currentAttList.setAttribute("HasLotS", 1)
+                inblock_imp_treated += newImpT
+                #FUTURE DYNAMICS TO BE INTRODUCED
+                
             elif decision == 3:     #decom
                 print "Decommissioning the system"
-                currentAttList.setAttribute("HasLotS", 0)   #remove the system
                 inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
                 #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                currentAttList.setAttribute("HasLotS", 0)   #remove the system
                 techimpl_attr = Attribute()
                 techconfigout.setAttributes("BlockID"+str(ID)+"L", techimpl_attr)
             
@@ -464,6 +530,7 @@ class techretrofit(Module):
                 go_retrofit = 0
             
             #NOW DETERMINE IF ARE RETROFITTING OR NOT: IF NOT READY FOR RETROFIT, KEEP, ELSE GO INTO CYCLE   
+            oldImp = sys_descr.getAttribute("ImpT")
             decision, newImpT = self.dealWithSystem(ID, sys_descr, "S")
             if go_retrofit == 0:
                 decision = 1
@@ -472,24 +539,32 @@ class techretrofit(Module):
                 print "Keeping the System"
                 currentAttList.setAttribute("HasStreetS", 1)
                 inblock_imp_treated += newImpT
+                
             elif decision == 2:     #renewal
-                print "Renewing the System"
-                #REDESIGN THE SYSTEM
-                #newAsys = self.redesignSystem(self, ID, sys_descr, "S")
-                #avlSpace = currentAttList.getAttribute("AvlStreet")
-                #if newAsys > avlSpace and renewal_alternative == "K":
-                    #keep old system size
-                #elif newAsys > avlSpace and renewal_alternative == "D":
-                    #decommission system
-                #else:
-                    #transfer new information across
-                    #sys_descr.setAttribute("SysArea", newAsys)
-                    #and more...
-                pass
+                print "Renewing the System - Redesigning and Assessing Space Requirements"
+                newAsys, newEAFact = self.redesignSystem(ID, sys_descr, "S", oldImp)      #get new system size & EA
+                avlSpace = currentAttList.getAttribute("AvlStreet")                     #get available space
+                if newAsys > avlSpace and renewal_alternative == "K":                   #if system does not fit and alternative is 'Keep'
+                    print "Cannot fit new system design, keeping old design instead"
+                    currentAttList.setAttribute("HasStreetS", 1)
+                    inblock_imp_treated += newImpT
+                elif newAsys > avlSpace and renewal_alternative == "D":                 #if system does not fit and alternative is 'Decommission'
+                    print "Cannot fit new system design, decommissioning instead"
+                    inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
+                    currentAttList.setAttribute("HasStreetS", 0)    #Remove system placeholder
+                    techimpl_attr = Attribute()                     #Remove all attributes
+                    techconfigout.setAttributes("BlockID"+str(ID)+"S", techimpl_attr)
+                else:                                                                   #otherwise it'll fit, transfer new information
+                    print "New System Upgrades fit, transferring this information to output"
+                    currentAttList.setAttribute("HasStreetS", 1)
+                    self.defineUpgradedSystemAttributes(ID, sys_descr, "S", newAsys, newEAFact, oldImp)
+                    inblock_imp_treated += oldImp
+                    
             elif decision == 3:     #decom
                 print "Decommissioning the system"
                 inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
                 #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                currentAttList.setAttribute("HasStreetS", 0)   #remove the system
                 techimpl_attr = Attribute()
                 techconfigout.setAttributes("BlockID"+str(ID)+"S", techimpl_attr)
         
@@ -505,6 +580,7 @@ class techretrofit(Module):
                 go_retrofit = 0
                 
             #NOW DETERMINE IF ARE RETROFITTING OR NOT: IF NOT READY FOR RETROFIT, KEEP, ELSE GO INTO CYCLE   
+            oldImp = sys_descr.getAttribute("ImpT")
             decision, newImpT = self.dealWithSystem(ID, sys_descr, "N")
             if go_retrofit == 0:    #if not 1 then keep the system
                 decision = 1
@@ -513,14 +589,32 @@ class techretrofit(Module):
                 print "Keeping the System"
                 currentAttList.setAttribute("HasNeighS", 1)
                 inblock_imp_treated += newImpT
+                
             elif decision == 2:     #renewal
-                print "Renewing the System"
-                #REDESIGN THE SYSTEM
-                pass
+                print "Renewing the System - Redesigning and Assessing Space Requirements"
+                newAsys, newEAFact = self.redesignSystem(ID, sys_descr, "N", oldImp)      #get new system size & EA
+                avlSpace = currentAttList.getAttribute("ALUC_PG")                     #get available space
+                if newAsys > avlSpace and renewal_alternative == "K":                   #if system does not fit and alternative is 'Keep'
+                    print "Cannot fit new system design, keeping old design instead"
+                    currentAttList.setAttribute("HasNeighS", 1)
+                    inblock_imp_treated += newImpT
+                elif newAsys > avlSpace and renewal_alternative == "D":                 #if system does not fit and alternative is 'Decommission'
+                    print "Cannot fit new system design, decommissioning instead"
+                    inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
+                    currentAttList.setAttribute("HasNeighS", 0)    #Remove system placeholder
+                    techimpl_attr = Attribute()                     #Remove all attributes
+                    techconfigout.setAttributes("BlockID"+str(ID)+"N", techimpl_attr)
+                else:                                                                   #otherwise it'll fit, transfer new information
+                    print "New System Upgrades fit, transferring this information to output"
+                    currentAttList.setAttribute("HasNeighS", 1)
+                    self.defineUpgradedSystemAttributes(ID, sys_descr, "N", newAsys, newEAFact, oldImp)
+                    inblock_imp_treated += oldImp
+                    
             elif decision == 3:     #decom
                 print "Decommissioning the system"
                 inblock_imp_treated += 0    #quite self-explanatory but is added here for clarity
                 #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                currentAttList.setAttribute("HasNeighS", 0)
                 techimpl_attr = Attribute()
                 techconfigout.setAttributes("BlockID"+str(ID)+"N", techimpl_attr)
         
@@ -547,6 +641,7 @@ class techretrofit(Module):
                 go_retrofit = 0     #otherwise do not do anything
                 
             #NOW DETERMINE IF ARE RETROFITTING OR NOT: IF NOT READY FOR RETROFIT, KEEP, ELSE GO INTO CYCLE   
+            oldImp = sys_descr.getAttribute("ImpT")
             decision, newImpT = self.dealWithSystem(ID, sys_descr, "P")
             if go_retrofit == 0:
                 decision = 1
@@ -555,16 +650,34 @@ class techretrofit(Module):
                 print "Keeping the System"
                 currentAttList.setAttribute("HasPrecS", 1)
                 currentAttList.setAttribute("UpstrImpTreat", newImpT)
+                
             elif decision == 2:     #renewal
-                print "Renewing the System"
-                #REDESIGN THE SYSTEM
-                pass
+                print "Renewing the System - Redesigning and Assessing Space Requirements"
+                newAsys, newEAFact = self.redesignSystem(ID, sys_descr, "P", oldImp)      #get new system size & EA
+                avlSpace = currentAttList.getAttribute("ALUC_PG")                     #get available space
+                if newAsys > avlSpace and renewal_alternative == "K":                   #if system does not fit and alternative is 'Keep'
+                    print "Cannot fit new system design, keeping old design instead"
+                    currentAttList.setAttribute("HasPrecS", 1)
+                    currentAttList.setAttribute("UpstrImpTreat", newImpT)
+                elif newAsys > avlSpace and renewal_alternative == "D":                 #if system does not fit and alternative is 'Decommission'
+                    print "Cannot fit new system design, decommissioning instead"
+                    currentAttList.setAttribute("UpstrImpTreat", 0)
+                    currentAttList.setAttribute("HasPrecS", 0)    #Remove system placeholder
+                    techimpl_attr = Attribute()                     #Remove all attributes
+                    techconfigout.setAttributes("BlockID"+str(ID)+"P", techimpl_attr)
+                else:                                                                   #otherwise it'll fit, transfer new information
+                    print "New System Upgrades fit, transferring this information to output"
+                    currentAttList.setAttribute("HasPrecS", 1)
+                    self.defineUpgradedSystemAttributes(ID, sys_descr, "P", newAsys, newEAFact, oldImp)
+                    currentAttList.setAttribute("UpstrImpTreat", oldImp)
+                    
             elif decision == 3:     #decom
                 print "Decommissioning the system"
                 currentAttList.setAttribute("UpstrImpTreat", 0)     #if system removed: imp treated = 0
                 #remove all attributes, wipe the attributes entry in techconfigout with a blank attribute object
+                currentAttList.setAttribute("HasPrecS", 0)
                 techimpl_attr = Attribute()
-                techconfigout.setAttributes("BlocKID"+str(ID)+"P", techimpl_attr)
+                techconfigout.setAttributes("BlockID"+str(ID)+"P", techimpl_attr)
         
         blockcityout.setAttributes("BlockID"+str(ID), currentAttList)
         return True
@@ -635,7 +748,6 @@ class techretrofit(Module):
         ###         ... description
         ###-------------------------------------------------------
         
-        
         ### MAKE FINAL DECISION ###
         print decision_matrix
         final_decision = max(decision_matrix)       #1st pass: the worst-case chosen, i.e. maximum
@@ -687,13 +799,25 @@ class techretrofit(Module):
         qty = sys_descr.getAttribute("Qty")
         techimpl_attr.setAttribute("Qty", qty)
         
+        goalqty = sys_descr.getAttribute("GoalQty")
+        techimpl_attr.setAttribute("GoalQty", goalqty)
+        
         areafactor = sys_descr.getAttribute("EAFact")
         techimpl_attr.setAttribute("EAFact", areafactor)
         
         currentimpT = sys_descr.getAttribute("CurImpT")
         techimpl_attr.setAttribute("CurImpT", currentimpT)
         
-        Asyseffectivetotal = (Asys * qty)/areafactor                        #need to be using the effective area, not the planning area!
+        upgrades = sys_descr.getAttribute("Upgrades")
+        techimpl_attr.setAttribute("Upgrades", upgrades)
+        
+        wdepth = sys_descr.getAttribute("WDepth")
+        techimpl_attr.setAttribute("WDepth", wdepth)
+        
+        fdepth = sys_descr.getAttribute("FDepth")
+        techimpl_attr.setAttribute("FDepth", fdepth)
+        
+        Asyseffectivetotal = (Asys)/areafactor                        #need to be using the effective area, not the planning area!
 
         print "System of Type: ", type
         print "treats: "+str(deg)+" degree"
@@ -707,12 +831,7 @@ class techretrofit(Module):
         ### END OF EXCEPTION ###
         
         #Grab targets and adjust for particular system type
-        tarQ = design_attr.getAttribute(type+"flow")*design_attr.getAttribute("targets_runoff")
-        tarTSS = design_attr.getAttribute(type+"pollute")*design_attr.getAttribute("targets_TSS")
-        tarTP = design_attr.getAttribute(type+"pollute")*design_attr.getAttribute("targets_TP")
-        tarTN = design_attr.getAttribute(type+"pollute")*design_attr.getAttribute("targets_TN")
-        targets = [tarQ, tarTSS, tarTP, tarTN, 100]
-        
+        targets = self.getCurrentTargets(type)
         print targets
         
         #Piece together the pathname from current system information: FUTURE
@@ -735,14 +854,87 @@ class techretrofit(Module):
             print "Results"
             print "percentage of catchment: ", str(sys_perc)
             imptreatedbysystem = Asyseffectivetotal/sys_perc
-            imptreated += imptreatedbysystem
+            
+            #Account for Lot Scale as exception
+            if scale == "L":
+                imptreated += imptreatedbysystem * goalqty      #imp treated by ONE lot system * the desired qty that can be implemented
+            else:
+                imptreated += imptreatedbysystem
             print "impervious area treated by system: "+str(imptreatedbysystem)
             techimpl_attr.setAttribute("ImpT", imptreatedbysystem)
         
         techconfigout.setAttributes("BlockID"+str(int(ID))+scale, techimpl_attr)    
             
         return imptreated
+
+    def redesignSystem(self, ID, sys_descr, scale, originalAimpTreated):
+        #Redesigns the system for BlockID at the given 'scale' for the original Impervious
+        #Area that it was supposed to treat, but now according to new targets.
+        #   - ID: BlockID, i.e. the system's location
+        #   - sys_descr: the original vector of the system
+        #   - scale: the letter denoting system scale
+        #   - originalAimpTreated: the old impervious area the system was meant to treat
+        
+        #Grab information
+        currentAttList = self.blockcityin.getItem().getAttributes("BlockID"+str(ID))
+        design_attr = self.design_details.getItem().getAttributes("DesignAttributes")
+        type = sys_descr.getStringAttribute("Type")
+        
+        #TO BE CHANGED LATER ON, BUT FOR NOW WE ASSUME THIS IS THE SAME PATH
+        dcvpath = design_attr.getStringAttribute(type+"descur_path")
+        #GET THE DCV FILENAME
+        #dcvpath = self.findDCVpath(type, sys_descr)
+        
+        #Some additional arguments for the design function
+        maxsize = design_attr.getAttribute(type+"maxsize")
+        soilK = currentAttList.getAttribute("Soil_k")
+        
+        #Current targets
+        targets = self.getCurrentTargets(type)
+        
+        #Call the design function using eval, due to different system Types
+        newdesign = eval('td.design_'+str(type)+'('+str(originalAimpTreated)+',"'+str(dcvpath)+'",'+str(targets[0])+','+str(targets[1])+','+str(targets[2])+','+str(targets[3])+','+str(soilK)+','+str(maxsize)+')')
+        Anewsystem = newdesign[0]
+        newEAFactor = newdesign[1]
+        
+        return Anewsystem, newEAFactor
+
+    def defineUpgradedSystemAttributes(self, ID, sys_descr, scale, newAsys, newEAFact, impT):
+        techconfigout = self.techconfigout.getItem()
+        techimpl_attr = Attribute()
+        techimpl_attr.setAttribute("Location", ID)
+        techimpl_attr.setAttribute("Scale", scale)
+        techimpl_attr.setAttribute("ScaleN", sys_descr.getAttribute("ScaleN"))
+        techimpl_attr.setAttribute("TypeN", sys_descr.getAttribute("TypeN"))
+        techimpl_attr.setAttribute("Type", sys_descr.getStringAttribute("Type"))
+        techimpl_attr.setAttribute("SysArea", newAsys)              #New System Area
+        techimpl_attr.setAttribute("Degree", sys_descr.getAttribute("Degree"))
+        techimpl_attr.setAttribute("Status", sys_descr.getAttribute("Status"))
+        techimpl_attr.setAttribute("Year", sys_descr.getAttribute("Year"))
+        techimpl_attr.setAttribute("Qty", sys_descr.getAttribute("Qty"))
+        techimpl_attr.setAttribute("EAFact", newEAFact)             #NEW Effective Area Factor
+        techimpl_attr.setAttribute("CurImpT", sys_descr.getAttribute("CurImpT"))
+        techimpl_attr.setAttribute("ImpT", impT)                  #Still treats the same imperviousness
+        techimpl_attr.setAttribute("WDepth", sys_descr.getAttribute("WDepth"))
+        techimpl_attr.setAttribute("FDepth", sys_descr.getAttribute("FDepth"))
+        #System was upgraded, add one to the upgrade count
+        upgrades = sys_descr.getAttribute("Upgrades") + 1
+        techimpl_attr.setAttribute("Upgrades", upgrades)
+        
+        techconfigout.setAttributes("BlockID"+str(int(ID))+"S", techimpl_attr)
+        return True
     
+    def updateForBuildingStockRenewal(self, ID, sys_descr, lot_perc):
+        #Number of houses removed from area = total currently there * lot_perc
+        #evenly distribute this across those that have lot system and those that don't
+        #we therefore end up calculate how many systems lost as lot-perc * how many in place
+        num_lots_lost = float(sys_descr.getAttribute("Qty"))*lot_perc/100
+        goalquantity = sys_descr.getAttribute("GoalQty")
+        
+        adjustedgoalQty = goalquantity - num_lots_lost
+        #Update goal quantity: This is how many we can only reach now because we lost some
+        sys_descr.setAttribute("GoalQty", int(adjustedgoalQty))
+        return sys_descr
     
     def skipIfNoSystems(self, ID, sys_implement, plist, flist, pnetlist, enetlist, network_attr):
         blockcityin, blockcityout = self.getBlockCityVectors()
@@ -799,6 +991,17 @@ class techretrofit(Module):
             if str(techconfigin.getAttributes("System"+str(i)).getStringAttribute("Scale")) == scale:
                 system_object = techconfigin.getAttributes("System"+str(i))
         return system_object
+
+    def getCurrentTargets(self, systype):
+        #Grab targets and adjust for particular system type
+        design_details = self.design_details.getItem()
+        design_attr = design_details.getAttributes("DesignAttributes")
+        tarQ = design_attr.getAttribute(systype+"flow")*design_attr.getAttribute("targets_runoff")
+        tarTSS = design_attr.getAttribute(systype+"pollute")*design_attr.getAttribute("targets_TSS")
+        tarTP = design_attr.getAttribute(systype+"pollute")*design_attr.getAttribute("targets_TP")
+        tarTN = design_attr.getAttribute(systype+"pollute")*design_attr.getAttribute("targets_TN")
+        targets = [tarQ, tarTSS, tarTP, tarTN, 100]
+        return targets
 
     def getUpstreamIDs(self, ID):
         blockcityin = self.blockcityin.getItem()

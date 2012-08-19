@@ -69,7 +69,8 @@ class ExportGISShapeFile(Module):
             self.CoordinateSystem = "+proj=utm +zone=55 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0"
             self.offsetX = 0
             self.offsetY = 0
-            
+            self.pathname = "C://"
+            self.addParameter(self, "pathname", VIBe2.STRING)
             
             self.addParameter(self, "Name", VIBe2.STRING, "Name that is Exported e.g. Path_ all elements that start with Path_ are exported")
             self.addParameter(self, "FileName", VIBe2.STRING, "Filename the Filename is extended by the type e.g. Filename_points")
@@ -83,6 +84,7 @@ class ExportGISShapeFile(Module):
             
             
     def run(self):
+            os.chdir(self.pathname)
             if self.Points:
                     self.exportPoints()  
             if self.Faces:                       
