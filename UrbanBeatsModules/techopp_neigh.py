@@ -221,7 +221,7 @@ class techopp_neigh(Module):
                 for neigh_deg in neigh_alts:    #looping over e.g. [0.25, 0.5, 0.75, 1.0]
                     neigh_strats_combo = Component()
 		    city.addComponent(neigh_strats_combo,self.neighStratsCombo)
-                    neigh_name = str(currentID)+"_Ne_"+str(lot_deg)+"_"+str(neigh_deg)
+                    neigh_name = str(currentID)+"_Neigh_"+str(lot_deg)+"_"+str(neigh_deg)
                     neigh_strats_combo.addAttribute("Name", neigh_name)
                     
                     Aimpneigh = Aimpremain * neigh_deg
