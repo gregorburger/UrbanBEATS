@@ -149,7 +149,8 @@ class techopp_lot(Module):
             lot_strats = Component()
 	    city.addComponent(lot_strats, self.lotStrats)                                          #will hold all strategies assessed at this stage
             lot_strats.addAttribute("BlockID", currentID)                       #each block ID will have a list of strategies
-            
+            #block.setAttribute("Link_lostst", lotstrats.getUUID())
+
             #--------------------------------------------------------------------------------#
             #            CONDITIONAL CHECK TO SEE IF CURRENT BLOCK IS RELEVANT               #
             #--------------------------------------------------------------------------------#
