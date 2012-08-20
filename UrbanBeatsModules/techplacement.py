@@ -89,7 +89,7 @@ class techplacement(Module):
         
         #WATER MANAGEMENT TARGETS
         self.targets_runoff = 80                 #Runoff reduction target [%]
-        self.targets_TSS = 80                      #TSS Load reduction target [%]
+        self.targets_TSS = 70                      #TSS Load reduction target [%]
         self.targets_TN = 30                       #TN Load reduction target [%]
         self.targets_TP = 30                       #TP Load reduction target [%]
         self.targets_harvest = 50                #required reliability of harvesting systems
@@ -118,7 +118,7 @@ class techplacement(Module):
         self.street_increment = 4
         self.neigh_increment = 4
         self.prec_increment = 4
-        self.basin_target_min = 50
+        self.basin_target_min = 20
         self.basin_target_max = 100
         self.createParameter( "strategy_lot_check", BOOL,"")
         self.createParameter( "strategy_street_check", BOOL,"")
@@ -220,7 +220,7 @@ class techplacement(Module):
         
         
         #---BIOFILTRATION SYSTEM/RAINGARDEN [BF]--------------------------------
-        self.BFstatus = 0
+        self.BFstatus = 1
         self.createParameter( "BFstatus", BOOL,"")
         self.BFlevel = 0
         self.createParameter( "BFlevel", DOUBLE,"")
@@ -252,7 +252,7 @@ class techplacement(Module):
         self.BFspec_FD = 0.6
         self.createParameter( "BFspec_EDD", DOUBLE,"")
         self.createParameter( "BFspec_FD", DOUBLE,"")
-        self.BFmaxsize = 5000           #maximum surface area of system in sqm
+        self.BFmaxsize = 999999         #maximum surface area of system in sqm
         self.createParameter( "BFmaxsize", DOUBLE,"")
 	self.BFavglife = 20             #average life span of a biofilter
         self.createParameter("BFavglife", DOUBLE,"")
@@ -345,7 +345,7 @@ class techplacement(Module):
         self.createParameter( "PPLgroup", DOUBLE,"")
         
         #---PONDS & SEDIMENTATION BASIN [PB]------------------------------------
-        self.PBstatus = 0
+        self.PBstatus = 1
         self.createParameter( "PBstatus", BOOL,"")
         self.PBlevel = 0
         self.createParameter( "PBlevel", DOUBLE,"")
@@ -373,7 +373,7 @@ class techplacement(Module):
         #Design Information
         self.PBspec_MD = "1.25" 	#need a string for the combo box
         self.createParameter( "PBspec_MD", STRING,"")
-        self.PBmaxsize = 10000           #maximum surface area of system in sqm
+        self.PBmaxsize = 9999999           #maximum surface area of system in sqm
         self.createParameter( "PBmaxsize", DOUBLE,"")
 	self.PBavglife = 20             #average life span of a pond/basin
 	self.createParameter( "PBavglife", DOUBLE,"")
@@ -456,7 +456,7 @@ class techplacement(Module):
         self.createParameter( "WSUBgroup", DOUBLE,"")
         
         #---SURFACE WETLAND [WSUR]----------------------------------------------
-        self.WSURstatus = 0
+        self.WSURstatus = 1
         self.createParameter( "WSURstatus", BOOL,"")
         self.WSURlevel = 0
         self.createParameter( "WSURlevel", DOUBLE,"")
@@ -484,14 +484,14 @@ class techplacement(Module):
         #Design Information
         self.WSURspec_EDD = 0.75
         self.createParameter( "WSURspec_EDD", DOUBLE,"")
-        self.WSURmaxsize = 10000           #maximum surface area of system in sqm
+        self.WSURmaxsize = 9999999           #maximum surface area of system in sqm
         self.createParameter( "WSURmaxsize", DOUBLE,"")
 	self.WSURavglife = 20             #average life span of a wetland
 	self.createParameter( "WSURavglife", DOUBLE,"")
 
         
         #---SWALES & BUFFER STRIPS [SW]-----------------------------------------
-        self.SWstatus = 0
+        self.SWstatus = 1
         self.createParameter( "SWstatus", BOOL,"")
         self.SWlevel = 0
         self.createParameter( "SWlevel", DOUBLE,"")
@@ -517,7 +517,7 @@ class techplacement(Module):
         #Design Information
         self.SWspec = 0
         self.createParameter( "SWspec", DOUBLE,"")
-        self.SWmaxsize = 600           #maximum surface area of system in sqm
+        self.SWmaxsize = 9999           #maximum surface area of system in sqm
         self.createParameter( "SWmaxsize", DOUBLE,"")
 	self.SWavglife = 20             #average life span of a swale
 	self.createParameter( "SWavglife", DOUBLE,"")
@@ -610,7 +610,7 @@ class techplacement(Module):
         
         #---MULTI-CRITERIA INPUTS-----------------------------------------------
         #SELECT EVALUATION METRICS
-        self.scoringmatrix_path = "None"
+        self.scoringmatrix_path = "DaywaterMCA.csv"
         self.scoringmatrix_default = False
         self.scoring_include_all = True
         self.createParameter( "scoringmatrix_path", STRING,"")
@@ -618,24 +618,24 @@ class techplacement(Module):
         self.createParameter( "scoring_include_all", BOOL,"")
         
         #CUSTOMIZE EVALUATION CRITERIA
-        self.bottomlines_tech = False   #Include criteria? Yes/No
-        self.bottomlines_env = False
-        self.bottomlines_ecn = False
-        self.bottomlines_soc = False
-        self.bottomlines_tech_n = 0     #Metric numbers
-        self.bottomlines_env_n = 0
-        self.bottomlines_ecn_n = 0
-        self.bottomlines_soc_n = 0
+        self.bottomlines_tech = True   #Include criteria? Yes/No
+        self.bottomlines_env = True
+        self.bottomlines_ecn = True
+        self.bottomlines_soc = True
+        self.bottomlines_tech_n = 4     #Metric numbers
+        self.bottomlines_env_n = 5
+        self.bottomlines_ecn_n = 2
+        self.bottomlines_soc_n = 4
         
         self.eval_mode = "W"            #Evaluation Mode: W = Single weightings, P = Pareto Exploration (refer to parameter suffix)
         self.bottomlines_tech_p = 0     #Pareto Exploration increments
         self.bottomlines_env_p = 0
         self.bottomlines_ecn_p = 0
         self.bottomlines_soc_p = 0
-        self.bottomlines_tech_w = 0     #Single weighting weights
-        self.bottomlines_env_w = 0
-        self.bottomlines_ecn_w = 0
-        self.bottomlines_soc_w = 0
+        self.bottomlines_tech_w = 1     #Single weighting weights
+        self.bottomlines_env_w = 1
+        self.bottomlines_ecn_w = 1
+        self.bottomlines_soc_w = 1
         self.createParameter( "bottomlines_tech", BOOL,"")
         self.createParameter( "bottomlines_env", BOOL,"")
         self.createParameter( "bottomlines_ecn",BOOL,"")
@@ -663,7 +663,7 @@ class techplacement(Module):
         self.createParameter( "tech2strat_method", STRING,"")
         
         #RANKING OF STRATEGIES
-        self.ranktype = "CI"            #CI = Confidence Interval, RK = ranking
+        self.ranktype = "RK"            #CI = Confidence Interval, RK = ranking
         self.topranklimit = 10
         self.conf_int = 95
         self.ingroup_scoring = "Avg"
