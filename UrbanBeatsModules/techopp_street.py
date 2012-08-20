@@ -215,7 +215,7 @@ class techopp_street(Module):
                 for street_deg in street_alts:   #looping over e.g. [0.25, 0.5, 0.75, 1.0]
                     street_strats_combo = Component()                   #Holds the Options for current combinations
                     city.addComponent(street_strats_combo,self.streetStratsCombo)
-		    street_name = str(currentID)+"_St_"+str(lot_deg)+"_"+str(street_deg)
+		    street_name = str(currentID)+"_Street_"+str(lot_deg)+"_"+str(street_deg)
                     street_strats_combo.addAttribute("Name", street_name)
                     
                     Aimpstreet = Aimpremain * street_deg        #impervious area to be treated by a street scale system
