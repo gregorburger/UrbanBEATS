@@ -230,7 +230,7 @@ class techopp_precinct(Module):
                 Aimpprec = Aimptot * prec_deg * basin_target_min  #how much of the total upstream basin imperviousness to treat?
                 prec_strats_combo = Component()
 		city.addComponent(prec_strats_combo,self.precStratsCombo)
-                prec_name = str(currentID)+"_Pr_"+str(prec_deg)
+                prec_name = str(currentID)+"_Prec_"+str(prec_deg)
                 prec_strats_combo.addAttribute("Name", prec_name)
             
                 #--------------------------------------------------------------------------------#
