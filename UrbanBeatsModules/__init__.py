@@ -71,7 +71,7 @@ from techopp_lot import *				#finds opportunities for lot-scale techs in each bl
 from techopp_street import *			#finds opportunities for street techs in each block
 from techopp_neigh import *				#finds opportunities for neighbourhood techs in each block
 from techopp_precinct import *			#finds opportunities for precinct tech in groups of blocks
-#from techstrategy_eval import *		#collates the three scales into strategies and evaluates these
+from techstrategy_eval import *		#collates the three scales into strategies and evaluates these
 
 #from techimplement import *             #implements technology configurations into existing urban environments depending on chosen design
 
