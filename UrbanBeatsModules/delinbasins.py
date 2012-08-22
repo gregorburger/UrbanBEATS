@@ -47,7 +47,7 @@ class delinbasin(Module):
     def __init__(self):
         Module.__init__(self)  
 
-	self.mapattributes = View("Mapattributes", COMPONENT, READ)
+	self.mapattributes = View("Mapattributes", COMPONENT, WRITE)
 	self.mapattributes.getAttribute("NumBlocks")
 	self.mapattributes.getAttribute("BlockSize")
 	self.mapattributes.getAttribute("WidthBlocks")
@@ -55,13 +55,14 @@ class delinbasin(Module):
 	self.mapattributes.getAttribute("InputReso")
 	self.mapattributes.addAttribute("TotalBasins")
 
-	self.blocks = View("Block", FACE, READ)
+	self.blocks = View("Block", FACE, WRITE)
 	self.blocks.addAttribute("BasinBlocks")
 	self.blocks.addAttribute("BasinDownBlocks")
 	self.blocks.addAttribute("BasinArea")
 	self.blocks.addAttribute("BasinCount")
 	self.blocks.addAttribute("BasinMaxDisp")
 	self.blocks.addAttribute("BasinID")
+	self.blocks.addAttribute("BasinUUID")
   
 	self.basin = View("Basin", COMPONENT, WRITE)
 	self.basin.addAttribute("BasinID")
@@ -226,7 +227,7 @@ class delinbasin(Module):
 	    upstream_attr.setString(str(upstream_string))
             currentAttList.addAttribute(upstream_attr)
             print "Upstream: "+upstream_string
-            
+            print "ACHTUNG"
             #Get current Basin Vector and determine downstream blocks
             currentBasin = 0                    #FIND THE BASIN THIS BLOCK IS SITUATED IN
             for j in range(int(basin_count)):
@@ -280,6 +281,7 @@ class delinbasin(Module):
 	    city.addComponent(basinAttList, self.basin)
             basinAttList.addAttribute("BasinID", currentID)
             basinAttList.addAttribute("Blocks", len(basins[i]))
+	    block.addAttribute("BasinUUID", basinAttList.getUUID())
             
             catchment = 0
             currentBlock = 0
