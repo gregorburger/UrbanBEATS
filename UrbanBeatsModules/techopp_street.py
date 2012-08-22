@@ -51,7 +51,7 @@ class techopp_street(Module):
 	self.blocks = View("Block",FACE,READ)
 	self.blocks.getAttribute("BlockID")
 	self.blocks.getAttribute("Status")
-	self.blocks.getAttribute("HasLotS")
+	self.blocks.getAttribute("HasStreetS")
 	self.blocks.getAttribute("AvlResLot")
 	self.blocks.getAttribute("Soil_k")
 	self.blocks.getAttribute("ResLotConImpA")
