@@ -93,6 +93,7 @@ class urbplansummary(Module):
 	self.blocks.addAttribute("TrAroof")
 	self.blocks.addAttribute("TrTIF")
 	self.blocks.addAttribute("TrEIF")
+	self.blocks.getAttribute("ResidentialID")
 
 
 	self.mapattributes = View("Mapattributes",COMPONENT,READ)
@@ -234,8 +235,10 @@ class urbplansummary(Module):
             #   - Keep the names consistent!                                                 #
             #                                                                                #
             #--------------------------------------------------------------------------------#
-            strvec = city.getUUIDsOfComponentsInView(self.residential)
-            res_list = city.getComponent(strvec[0])
+            res_uuid = currentAttList.getAttribute("ResidentialID").getString()
+	    res_list = city.getComponent( res_uuid)
+	    
+	    #if str(ress_uuid).empty() 
             if res_list.getAttribute("HasResidential").getDouble() == 0:
                 pass
             else:
@@ -264,14 +267,14 @@ class urbplansummary(Module):
                 currentAttList.addAttribute("AvlResLot", res_list.getAttribute("AvlResLot").getDouble())                   #available space on lot
                 currentAttList.addAttribute("TotStreetA", res_list.getAttribute("TotStreetA").getDouble())     #total street Area
                 currentAttList.addAttribute("AvlStreet", res_list.getAttribute("AvlStreet").getDouble())    #available street space
-                
+
             #--------------------------------------------------------------------------------#
             #            WRITE NON-RESIDENTIAL ATTRIBUTES INTO THE MAP                       #
             #--------------------------------------------------------------------------------#
             
             #Temporary version of planning algorithm, future version to come
-	    strvec = city.getUUIDsOfComponentsInView(self.nonResidential)
-            nonres_list = city.getComponent(strvec[0])
+            nonres_uuid = currentAttList.getAttribute("NonResidentialID").getString()
+	    nonres_list = city.getComponent( nonres_uuid)
             if nonres_list.getAttribute("HasNonRes").getDouble() == 0:
                 pass
             else:
@@ -287,8 +290,8 @@ class urbplansummary(Module):
             #--------------------------------------------------------------------------------#
             
             #Temporary version of planning algorithm, future version to come
-	    strvec = city.getUUIDsOfComponentsInView(self.facilitiesAttr)
-            facilities_list = city.getComponent(strvec[0])
+            fac_uuid = currentAttList.getAttribute("FacilitiesID").getString()
+	    facilities_list = city.getComponent( fac_uuid)
             if facilities_list.getAttribute("HasFacilities").getDouble() == 0:
                 pass
             else:
