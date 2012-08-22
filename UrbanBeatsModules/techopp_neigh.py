@@ -177,7 +177,8 @@ class techopp_neigh(Module):
             
             block_status = currentAttList.getAttribute("Status").getDouble()
             if currentAttList.getAttribute("HasNeighS").getDouble() == 0:
-                neigh_avail_sp = currentAttList.getAttribute("ALUC_PG").getDouble()
+		landclassvec = currentAttList.getAttribute("Area_Landclass").getDoubleVector()
+                neigh_avail_sp = landclassvec[10]#currentAttList.getAttribute("ALUC_PG").getDouble()
             else:
                 neigh_avail_sp = 0
                 
