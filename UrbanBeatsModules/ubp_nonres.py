@@ -52,6 +52,7 @@ class ubp_nonres(Module):
 
 	self.blocks = View("Block",FACE,READ)
 	self.blocks.getAttribute("BlockID")
+	self.blocks.addAttribute("NonResidentialID")
 
 	self.mapattributes = View("Mapattributes", COMPONENT,READ)
     	self.mapattributes.getAttribute("NumBlocks")
@@ -252,6 +253,7 @@ class ubp_nonres(Module):
             nonres_attr = Component()
 	    city.addComponent(nonres_attr,self.nonResidential)
             nonres_attr.addAttribute("BlockID", currentID)
+	    currentAttList.addAttribute("NonResidentialID", nonres_attr.getUUID())
             block_AActive = blocks_size * blocks_size * (currentAttList.getAttribute("Activity").getDouble()/100)
 
             #--------------------------------------------------------------------------------#
