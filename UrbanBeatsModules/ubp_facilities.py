@@ -50,6 +50,7 @@ class ubp_facilities(Module):
         #                  - PATCHES are passed on from UrbplanBB straight through (not modified)
 	self.blocks = View("Block",FACE,READ)
 	self.blocks.getAttribute("BlockID")
+	self.blocks.addAttribute("FacilitiesID")
 
 	self.mapattributes = View("Mapattributes",COMPONENT,READ)
     	self.mapattributes.getAttribute("NumBlocks")
@@ -252,11 +253,11 @@ class ubp_facilities(Module):
         
         for i in range(int(blocks_num)):
             currentID = i + 1
-            currentAttList = self.getBlockUUID(currentID,city)#blockcityin.getAttributes("BlockID"+str(currentID))        #attribute list of current block structure
-            #currentPatchList = patchcityin.getAttributes("PatchDataID"+str(currentID))
-            facilities_attr = Component()
+	    currentAttList = self.getBlockUUID(currentID,city)        #attribute list of current block structure
+	    facilities_attr = Component()
 	    city.addComponent(facilities_attr,self.facilitiesAttr)
             facilities_attr.addAttribute("BlockID", currentID)
+	    currentAttList.addAttribute("FacilitiesID", facilities_attr.getUUID())
             block_AActive = blocks_size * blocks_size * (currentAttList.getAttribute("Activity").getDouble()/100)
 
             #--------------------------------------------------------------------------------#
