@@ -730,8 +730,13 @@ class techretrofit(Module):
         ###         Determine where the system performance lies
         ###-------------------------------------------------------
         old_imp = sys_descr.getAttribute("ImpT")
-        new_imp = self.retrieveNewAimpTreated(ID, scale, sys_descr)
-        perfdeficit = abs(old_imp - new_imp)/old_imp
+        if old_imp == 0:                        #This can happen if for example it was found previously that 
+            perfdeficit = 1.0                   #the system can no longer meet new targets, but is not retrofitted because of renewal cycles.
+            new_imp = 0
+        else:                                   #Need to catch this happening or else there will be a float division error!
+            new_imp = self.retrieveNewAimpTreated(ID, scale, sys_descr)
+            perfdeficit = abs(old_imp - new_imp)/old_imp
+            
         print "Old Imp: "+str(old_imp)
         print "New Imp: "+str(new_imp)
         print "Performance Deficit of System: "+str(perfdeficit)
