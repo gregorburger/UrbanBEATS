@@ -51,6 +51,7 @@ class ubp_residential(Module):
 	
 	self.blocks = View("Block",FACE,READ)
 	self.blocks.getAttribute("BlockID")
+	self.blocks.addAttribute("ResidentialID")
 
 	self.mapattributes = View("Mapattributes", COMPONENT,READ)
     	self.mapattributes.getAttribute("NumBlocks")
@@ -246,6 +247,7 @@ class ubp_residential(Module):
             res_attr = Component()
 	    city.addComponent(res_attr,self.residential)
             res_attr.addAttribute("BlockID", currentID)
+	    currentAttList.addAttribute("ResidentialID", res_attr.getUUID())
             block_AActive = blocks_size * blocks_size * (currentAttList.getAttribute("Activity").getDouble()/100)
     
             #--------------------------------------------------------------------------------#
@@ -258,6 +260,7 @@ class ubp_residential(Module):
 	    #tot_res_area = currentAttList.getAttribute("ALUC_Res").getDouble()
             if block_status == 0 or tot_res_area == 0:          #2 conditions to skip: (1) block status = 0, (2) area of residential = 0
                 print "BlockID"+str(currentID)+" is not active or has no residential area"
+		res_attr.addAttribute("HasResidential", 0)
                 continue
             #IF NOT SKIPPED, PLAN URBAN FORM
             res_attr.addAttribute("HasResidential", 1)
@@ -413,9 +416,9 @@ class ubp_residential(Module):
                 #--------------------------------------------------------------------------------#
                 #       WRITE OUTPUTS TO VECTOR DATA TO BE TRANSFERRED INTO SUMMARY MODULE       #
                 #--------------------------------------------------------------------------------#
-                
+		
                 res_attr.addAttribute("ResAllots", res_allotments)
-                res_attr.addAttribute("ResType", res_type)
+                res_attr.addAttribute("ResType", str(res_type))
                 res_attr.addAttribute("ResLotOccup", occupancy)
                 res_attr.addAttribute("AvgAllot_A", res_lot_area)
                 res_attr.addAttribute("AvgAllot_W", res_lot_width)
@@ -429,7 +432,7 @@ class ubp_residential(Module):
                 res_attr.addAttribute("ResLotImpA", res_totimparea)
                 res_attr.addAttribute("ResLotConImpA", imp_connected)
                 res_attr.addAttribute("ResLotDscImpA", imp_disconnected)
-                res_attr.addAttribute("ResLotRoofConnect", roof_connected)
+                res_attr.addAttribute("ResLotRoofConnect", str(roof_connected))
                 res_attr.addAttribute("ResTIArea", res_district_imparea)
                 res_attr.addAttribute("ResEIArea", res_district_impareaconnected)
                 res_attr.addAttribute("ResTIF", res_district_impprop)
@@ -439,7 +442,6 @@ class ubp_residential(Module):
                 res_attr.addAttribute("AvlResLot", (res_lot_area - res_totimparea))                   #available space on lot
                 res_attr.addAttribute("TotStreetA", (res_area_tot - res_allotments*res_lot_area))     #total street Area
                 res_attr.addAttribute("AvlStreet", (res_district_pervarea - res_allotments*(res_lot_area-res_totimparea)))    #available street space
-                    
             #-----------------------------------------------------------------#
             #        Write all updated Attribute Lists to the output          #
             #-----------------------------------------------------------------#
