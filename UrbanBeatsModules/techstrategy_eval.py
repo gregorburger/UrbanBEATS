@@ -64,6 +64,7 @@ class techstrategy_eval(Module):
 	self.blocks.getAttribute("BasinDownBlocks")
 	self.blocks.getAttribute("Centre_x")
 	self.blocks.getAttribute("Centre_y")
+	self.blocks.getAttribute("BasinUUID")
 
 	self.mapattributes = View("Mapattributes", COMPONENT,READ)
 	self.mapattributes.getAttribute("NumBlocks")
@@ -251,17 +252,14 @@ class techstrategy_eval(Module):
         for precuuid in precuuids:
             prec = city.getComponent(precuuid)
             ID = int(round(prec.getAttribute("BlockID").getDouble()))
-	    self.PrecIDtoUUID[ID] = precuuid 
+	    self.PrecIDtoUUID[ID] = precuuid
 
     def getComboComponentOfName(self, city,view,name):
 	uuids = city.getUUIDsOfComponentsInView(view)
         for uuid in uuids:
             comp = city.getComponent(uuid)
-	    #print comp.getAttribute("Name").getString()
             if name == comp.getAttribute("Name").getString(): 
-		#print "yes"	
-		return comp 
-	#print "no"	
+		return comp 	
 	return ""
  
   
@@ -469,32 +467,19 @@ class techstrategy_eval(Module):
             enetlist = blockcityin.getEdges("NetworkID"+str(currentID))
             network_attr = blockcityin.getAttributes("NetworkID"+str(currentID))
             currentPatchList = patchcityin.getAttributes("PatchDataID"+str(currentID))
-            
+            '''
             #-----------------------------------------------------------------#
             #        DETERMINE WHETHER TO UPDATE CURRENT BLOCK AT ALL         #
             #-----------------------------------------------------------------#
             
-            block_status = currentAttList.getAttribute("Status")
-            if block_status == 0 or currentAttList.getAttribute("ResTIArea") == 0:
+            block_status = currentAttList.getAttribute("Status").getDouble()
+            if block_status == 0 or currentAttList.getAttribute("ResTIArea").getDouble() == 0:
                 print "BlockID"+str(currentID)+" is not active in simulation or has no residential area"
-                #even if block isn't active at all, attributes from previous module are passed on
-                blockcityout.setPoints("BlockID"+str(currentID),plist)
-                blockcityout.setFaces("BlockID"+str(currentID),flist)
-                blockcityout.setAttributes("BlockID"+str(currentID),currentAttList)
-                blockcityout.setPoints("NetworkID"+str(currentID), pnetlist)
-                blockcityout.setEdges("NetworkID"+str(currentID), enetlist)
-                blockcityout.setAttributes("NetworkID"+str(currentID), network_attr)
-                
-                patchcityout.setPoints("PatchDataID"+str(currentID), plist)
-                patchcityout.setFaces("PatchDataID"+str(currentID),flist)
-                patchcityout.setAttributes("PatchDataID"+str(currentID), currentPatchList)
-                
-                block_strategies_matrix.append([])      #if block Status = 0, then no strategies, but need the empty array in the index
-                region_bin_scores.append([])            #no score because no strategy
-                
                 #skips the for loop iteration to the next block, not more needs to be done
-                continue
-            '''
+		block_strategies_matrix.append([]) #if block Status = 0, then no strategies, but need the empty array in the index
+                region_bin_scores.append([]) #no score because no strategy                
+		continue
+            
             #--- GET SOME BLOCK INFORMATION -------#
             print "Block ID: "+str(currentID)
             allotments = currentAttList.getAttribute("ResAllots").getDouble()
@@ -869,11 +854,13 @@ class techstrategy_eval(Module):
             #basin_attr = blockcityin.getAttributes("BasinID"+str(currentID))
             
             #get basin blocks list
-	    strvec = city.getUUIDsOfComponentsInView(self.basin)
-	    basin_Attr = city.getComponent(strvec[0])
+	    basin_uuid = self.getBlockUUID(currentID,city).getAttribute("BasinUUID").getString()
+	    basin_Attr = city.getComponent(basin_uuid)
             upstr = basin_Attr.getAttribute("UpStr").getString()
+
             basinblockIDs = upstr.split(',')
             basinblockIDs.remove('')
+
             for j in range(len(basinblockIDs)):
                 basinblockIDs[j] = int(basinblockIDs[j])
                 
@@ -883,13 +870,16 @@ class techstrategy_eval(Module):
 	    ## CALCULATE THE ALREADY TREATED IMPERVIOUS AREA IN THIS BASIN <<<<<<<<<<<<<<<<<< REFERENCE VARIABLES for total and already treated impervious areas
             btia = 0 #Acronym = BASIN TOTAL IMPERVIOUS AREA
             batia = 0 #Acronym = BASIN ALREADY TREATED IMPERVIOUS AREA
+	    
             for j in range(len(basinblockIDs)):
                 currentblockID = basinblockIDs[j]
+		print "BATIA: " + str(batia)
+		print "BTIA : " + str(btia)
                 batia += self.getBlockUUID(currentblockID,city).getAttribute("IAServiced").getDouble()#blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("IAServiced")
                 batia += self.getBlockUUID(currentblockID,city).getAttribute("UpstrImTreat").getDouble()#blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("UpstrImpTreat")
                 btia += self.getBlockUUID(currentblockID,city).getAttribute("ResTIArea").getDouble()#blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("ResTIArea")
             ### THIS HAS TO BE ADDED TO THE TOTAL BASIN STRATEGIES LIST LATER ON! ###
-
+		
 
 
             #LOOP OVER THE UPSTREAM IDs of the Basin first and see which of the IDs can accommodate precinct-scale technologies
@@ -901,7 +891,7 @@ class techstrategy_eval(Module):
                 print "Current Block ID"+str(currentBlockID)
                 
                 #SKIP CONDITION #1: no combinations for block, i.e. "TotalCombinations" == 0
-                if currentblock_opps.getAttribute("TotalCombinations") == 0:
+                if currentblock_opps.getAttribute("TotalCombinations").getDouble() == 0:
                     print "No precinct options available for Block ID"+str(currentBlockID)
                     continue
                 
@@ -935,12 +925,14 @@ class techstrategy_eval(Module):
             for currentBlockID in prec_blocks_partakeIDs:
                 #tech_array prec gets appended to prec_technologies_list[partake_index]
                 tech_array_prec = []        #holds one column for one degree = [ [options @0.25], [options @0.5], [options @0.75], [options @1.0] ]
-                currentAttList = self.getBlockUUID(currentID,city)        #get the Block's main info
-                prec_strats = prec_opps.getAttributes("BlockID"+str(currentBlockID)+"_Prec")
+                currentAttList = self.getBlockUUID(currentBlockID,city)        #get the Block's main info
+                prec_strats = self.getPrecUUID(currentBlockID,city)#prec_opps.getAttributes("BlockID"+str(currentBlockID)+"_Prec")
                 #prec_strats_combo will be gotten later
                 
                 #UPSTREAM IDs for block - get list and create array of integers
                 upstreamString = currentAttList.getAttribute("BasinBlocks").getString()
+		print upstreamString
+		#katze
                 upstreamIDs = upstreamString.split(',')
                 upstreamIDs.remove('')
                 for idnum in range(len(upstreamIDs)):
@@ -1007,8 +999,8 @@ class techstrategy_eval(Module):
 #                for b in range(len(block_strategies_matrix[a])):
 #                    for c in range(len(block_strategies_matrix[a][b])):
 #                        block_strategies_matrix[a][b][c] = block_strategies_matrix[a][b][c][1].reportStrategy()
-                        
-#            print block_strategies_matrix
+            print "BLOCK STRAT MATRIX ----------------------------------------------------------"            
+            #print block_strategies_matrix
 #            print "Block Strategies_score"
 #            print region_bin_scores
             
@@ -1379,7 +1371,10 @@ class techstrategy_eval(Module):
             #Grab all options within the desired minimum basin target
             #check if they are above the top-ten/number
             final_basin_strategies = []
+	    print batia
+	    print btia
             previous_basin_service = batia/btia #x(t-1)% = Atreated / Atotal
+	    print previous_basin_service
             delta_percent = (basin_target_min - previous_basin_service)/(1-previous_basin_service) #x(t)% = [target(t) - x(t-1)%]/[1 - x(t-1)%]
             
             print "Previous Treatment Efficiency: "+str(previous_basin_service)
@@ -1405,7 +1400,7 @@ class techstrategy_eval(Module):
             
             #Grab the top values
             ranking_cdf = []    #holds the scores of the MCA for later choosing
-            for i in range(min(len(final_basin_strategies), topthreshold)):
+            for i in range(int(min(len(final_basin_strategies), topthreshold))):
                 final_basin_strategies[i][2].writeReportFile()
                 ranking_cdf.append(final_basin_strategies[i][1])
             
@@ -1426,6 +1421,7 @@ class techstrategy_eval(Module):
             index = ranking_cdf.index(chosen_strategy_p)
             ranking_cdf.remove(chosen_strategy_p)
             print "The index in the CDF is: "+str(index)
+	    print len(ranking_cdf)
 #            for i in range(len(ranking_cdf)):
 #                if chosen_strategy_p >= ranking_cdf[i]:
 #                    index = i
@@ -1442,7 +1438,7 @@ class techstrategy_eval(Module):
             
             for i in range(len(basinblockIDs)):
                 currentBlockID = basinblockIDs[i]
-                currentAttList = self.getBlockUUID(currentblockID,city)        #attribute list of current block structure
+                currentAttList = self.getBlockUUID(currentBlockID,city)        #attribute list of current block structure
                 centreX = currentAttList.getAttribute("Centre_x").getDouble()
                 centreY = currentAttList.getAttribute("Centre_y").getDouble()
                 
@@ -1493,11 +1489,11 @@ class techstrategy_eval(Module):
                     
                     #Transfer the key system specs:
                     if current_wsud.getType() in ["BF", "IS", "WSUR"]:
-                        wsud_attr.addAttribute("WDepth", float(des_attr.getStringAttribute(current_wsud.getType()+"spec_EDD")))
+                        wsud_attr.addAttribute("WDepth", float(des_attr.getAttribute(current_wsud.getType()+"spec_EDD").getDouble()))
                     if current_wsud.getType() in ["PB"]:
-                        wsud_attr.addAttribute("WDepth", float(des_attr.getStringAttribute(current_wsud.getType()+"spec_MD")))
+                        wsud_attr.addAttribute("WDepth", float(des_attr.getAttribute(current_wsud.getType()+"spec_MD").getDouble()))
                     if current_wsud.getType() in ["BF", "IS"]:
-                        wsud_attr.addAttribute("FDepth", float(des_attr.getStringAttribute(current_wsud.getType()+"spec_FD")))
+                        wsud_attr.addAttribute("FDepth", float(des_attr.getAttribute(current_wsud.getType()+"spec_FD").getDouble()))
                     #More system parameters in future depending on system type
             
                 #PRECINCT
@@ -1530,11 +1526,11 @@ class techstrategy_eval(Module):
                     
                     #Transfer the key system specs:
                     if outblock_strat.getType() in ["BF", "IS", "WSUR"]:
-                        wsud_attr.addAttribute("WDepth", float(des_attr.getStringAttribute(outblock_strat.getType()+"spec_EDD")))
+                        wsud_attr.addAttribute("WDepth", float(des_attr.getAttribute(outblock_strat.getType()+"spec_EDD").getDouble()))
                     if outblock_strat.getType() in ["PB"]:
-                        wsud_attr.addAttribute("WDepth", float(des_attr.getStringAttribute(outblock_strat.getType()+"spec_MD")))
+                        wsud_attr.addAttribute("WDepth", float(des_attr.getAttribute(outblock_strat.getType()+"spec_MD").getDouble()))
                     if outblock_strat.getType() in ["BF", "IS"]:
-                        wsud_attr.addAttribute("FDepth", float(des_attr.getStringAttribute(outblock_strat.getType()+"spec_FD")))
+                        wsud_attr.addAttribute("FDepth", float(des_attr.getAttribute(outblock_strat.getType()+"spec_FD").getDouble()))
                     #More system parameters in future depending on system type
                                     
                 #ADD ALL EXISTING SYSTEMS TO THE VECTOR
@@ -1558,7 +1554,7 @@ class techstrategy_eval(Module):
         output_file.write("End of Basin Strategies tried Log\n\n") 
         output_file.close()
         print "log file saved"
-
+	'''
         #Run the garbage collector
         del basin_strategies_matrix             #delete the basin_strategies_matrix for gc
         del final_basin_strategies              #delete the final_basin_strategies for gc
@@ -1574,7 +1570,7 @@ class techstrategy_eval(Module):
         print "Done ..."
 
         #END OF MODULE
-
+	'''
     def getSamplingCDFLinear(self, N, sf, sd):
         #N = number of elements in the sample (including zero)
         #sf = slope factor
