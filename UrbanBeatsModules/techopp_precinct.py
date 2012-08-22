@@ -175,12 +175,16 @@ class techopp_precinct(Module):
             #            CONDITIONAL CHECK TO SEE IF CURRENT BLOCK IS RELEVANT               #
             #--------------------------------------------------------------------------------#
             
-            block_status = currentAttList.getAttribute("Status").getDouble() 
-            if currentAttList.getAttribute("HasPrecS").getDouble()  != 0:
-                neigh_avail_sp = currentAttList.getAttribute("ALUC_PG").getDouble()       #available lot space
-            else:
+            block_status = currentAttList.getAttribute("Status").getDouble()
+
+	    landclassvec = currentAttList.getAttribute("Area_Landclass").getDoubleVector()
+
+            if currentAttList.getAttribute("HasPrecS").getDouble()  == 0:
+		#10
+                neigh_avail_sp = landclassvec[10]#currentAttList.getAttribute("ALUC_PG").getDouble()       #available lot space
+	    else:
                 neigh_avail_sp = 0
-                
+   
             if block_status == 0 or neigh_avail_sp == 0:                                        #SKIP CONDITION #1: If Status = 0
                 print "BlockID"+str(currentID)+" is not active or has no available space"       #SKIP CONDITION #2: If no available space
                 continue
@@ -206,7 +210,7 @@ class techopp_precinct(Module):
             #            GET UPSTREAM IMPERVIOUS AREA                                        #
             #--------------------------------------------------------------------------------#
             #GET INFORMATION FROM VECTOR DATA
-            soilK = currentAttList.getAttribute("Soil_k")                       #soil infiltration rate on area
+            soilK = currentAttList.getAttribute("Soil_k").getDouble()                       #soil infiltration rate on area
             Aimpserviced = self.getUpstreamImpArea(currentID, upstreamIDs, "T",city) + currentAttList.getAttribute("IADeficit").getDouble()  + currentAttList.getAttribute("UpstrImpTreat").getDouble()        #total upstream treated impervious area
             Aimptotupstr = self.getUpstreamImpArea(currentID, upstreamIDs, "A",city) + currentAttList.getAttribute("ResTIArea").getDouble() 
             Aimptot = max(Aimptotupstr - Aimpserviced, 0)
@@ -239,7 +243,7 @@ class techopp_precinct(Module):
                 prectechs = []
                 for j in techcheckedprec:
                     maxsize = des_attr.getAttribute(str(j)+"maxsize").getDouble()            #gets the specific system's maximum size
-                    dcvpath = des_attr.getStringAttribute(str(j)+"descur_path").getDouble() 
+                    dcvpath = des_attr.getAttribute(str(j)+"descur_path").getString() 
                     system_tarQ = targets_runoff * float(des_attr.getAttribute(str(j)+"flow").getDouble() )
                     system_tarTSS = targets_TSS * float(des_attr.getAttribute(str(j)+"pollute").getDouble() )
                     system_tarTP = targets_TP * float(des_attr.getAttribute(str(j)+"pollute").getDouble() )
