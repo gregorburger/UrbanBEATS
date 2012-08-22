@@ -238,8 +238,10 @@ class techplacement(Module):
         self.createParameter( "BFprec", BOOL,"")
         
         #Available Applications
-        self.BFpollute = True
-        self.createParameter( "BFpollute", BOOL,"")
+        self.BFflow = False
+	self.BFpollute = True
+	self.createParameter( "BFflow", BOOL, "")        
+	self.createParameter( "BFpollute", BOOL,"")
         
         #Design Curves
         self.BFdesignUB = True          #use DAnCE4Water's default curves to design system?
@@ -734,7 +736,8 @@ class techplacement(Module):
         self.desAttr.addAttribute("BFstreet")
         self.desAttr.addAttribute("BFneigh")
         self.desAttr.addAttribute("BFprec")
-        self.desAttr.addAttribute("BFpollute")
+	self.desAttr.addAttribute("BFflow")        
+	self.desAttr.addAttribute("BFpollute")
         self.desAttr.addAttribute("BFdesignUB")
         self.desAttr.addAttribute("BFdescur_path")
         self.desAttr.addAttribute("BFspec_EDD")
@@ -983,7 +986,8 @@ class techplacement(Module):
         des_attr.addAttribute("BFstreet", self.BFstreet)
         des_attr.addAttribute("BFneigh", self.BFneigh)
         des_attr.addAttribute("BFprec", self.BFprec)
-        des_attr.addAttribute("BFpollute", self.BFpollute)
+        des_attr.addAttribute("BFflow", self.BFflow)
+	des_attr.addAttribute("BFpollute", self.BFpollute)
         des_attr.addAttribute("BFspec_EDD", self.BFspec_EDD)
         des_attr.addAttribute("BFspec_FD", self.BFspec_FD)
         des_attr.addAttribute("BFmaxsize", self.BFmaxsize)
