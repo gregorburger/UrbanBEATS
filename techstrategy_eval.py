@@ -875,7 +875,7 @@ class techstrategy_eval(Module):
             
             #BEGIN MONTE CARLO LOOP
             basin_strategies_matrix = []
-            for iterations in range(10):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
+            for iterations in range(1000):       #10 options, can be changed                                    <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SET THE ITERATIONS FOR STRATEGY CONSTRUCTION <<<<<<<<<<<<<<<<<<
                 print "Iteration No. ", iterations+1," -----------------------"
                 
                 #PART 1a - SETTING UP THE STORAGE CONTAINER OF INFORMATION

@@ -912,6 +912,7 @@ class techretrofit(Module):
         techimpl_attr.setAttribute("Status", sys_descr.getAttribute("Status"))
         techimpl_attr.setAttribute("Year", sys_descr.getAttribute("Year"))
         techimpl_attr.setAttribute("Qty", sys_descr.getAttribute("Qty"))
+        techimpl_attr.setAttribute("GoalQty", sys_descr.getAttribute("GoalQty"))
         techimpl_attr.setAttribute("EAFact", newEAFact)             #NEW Effective Area Factor
         techimpl_attr.setAttribute("CurImpT", sys_descr.getAttribute("CurImpT"))
         techimpl_attr.setAttribute("ImpT", impT)                  #Still treats the same imperviousness
