@@ -22,9 +22,9 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
-#import technology as tech
-#import techdesign as td
-#from techplacementguic import *
+import technology as tech
+import techdesign as td
+from techplacementguic import *
 import os
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
