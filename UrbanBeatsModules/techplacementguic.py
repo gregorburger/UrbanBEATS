@@ -25,7 +25,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 
 from PyQt4 import QtCore, QtGui
-from pyvibe import *
+#from pyvibe import *
+from pydynamind import *
 from techplacementgui import Ui_TechPlace_Dialog
 
 class activatetechplacementGUI(QtGui.QDialog):
