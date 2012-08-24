@@ -134,7 +134,7 @@ class urbplansummary(Module):
         self.residential.getAttribute("AvlStreet")
 
 	self.nonResidential = View("NonResidential",COMPONENT,READ)
-	self.nonResidential.getAttribute("BLockID")
+	self.nonResidential.getAttribute("BlockID")
 	self.nonResidential.getAttribute("HasNonRes")
 	self.nonResidential.getAttribute("HasIndustry")
 	self.nonResidential.getAttribute("HasCommerical")
