@@ -24,8 +24,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 ### --- Modules for importing existing shapefile data of systems and blocks and preparing these for later 
 ###     processes.
-#from getsystems import *
-#from getpreviousblocks import *
+from getsystems import *
+from getpreviousblocks import *
 
 
 
@@ -73,7 +73,7 @@ from techopp_neigh import *				#finds opportunities for neighbourhood techs in e
 from techopp_precinct import *			#finds opportunities for precinct tech in groups of blocks
 from techstrategy_eval import *		#collates the three scales into strategies and evaluates these
 
-#from techimplement import *             #implements technology configurations into existing urban environments depending on chosen design
+from techimplement import *             #implements technology configurations into existing urban environments depending on chosen design
 
 ### GUI Files that go with these modules include:
 ###		- techplacementgui.py - customize technologies
