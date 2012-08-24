@@ -149,11 +149,7 @@ class ubp_spaces(Module):
             ID = int(round(block.getAttribute("BlockID").getDouble()))
 	    self.BLOCKIDtoUUID[ID] = blockuuid
 
-    def run(self):
-        city = self.getData("City")
-	self.initBLOCKIDtoUUID(city)
-   
-    
+
     def run(self):
 	city = self.getData("City")
 	self.initBLOCKIDtoUUID(city)
