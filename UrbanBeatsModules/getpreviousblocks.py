@@ -54,7 +54,7 @@ class GetPreviousBlocks(Module):
     def __init__(self):
         Module.__init__(self)
         self.ongoing_sim = 0            #Is this module part of an ongoing simulation?
-	homeDir = os.environ['HOME']
+	homeDir = os.environ['HOME']	#works only in linux
 	self.path_name = homeDir + '/Documents/UrbanBEATS/UrbanBeatsModules/'
 
         #self.path_name = "C:/UBEATS/"          #specify C-drive as default value
@@ -68,13 +68,13 @@ class GetPreviousBlocks(Module):
 
 
 	#Views
-	self.blocks = View("PreviousBlock", COMPONENT, WRITE)
+	self.blocks = View("PreviousBlock", COMPONENT, WRITE)	#other because of datatransfer problem with other block view from delinblocks
 
 
         self.patch = View("PatchAttributes", COMPONENT, WRITE)
 
 
-	self.mapattributes = View("MasterMapattributes", COMPONENT, WRITE)
+	self.mapattributes = View("MasterMapattributes", COMPONENT, WRITE)	#same thing with the name as with the block
         self.mapattributes.addAttribute("Xmin")
         self.mapattributes.addAttribute("Ymin")
         self.mapattributes.addAttribute("Width")
