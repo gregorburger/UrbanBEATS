@@ -355,7 +355,7 @@ v0.80 (July 2012):
             
         #Output vector update
 
-    
+    #in a few methods the city variable is added because its needed to get the view components
     def skipIfStatusZero(self, ID, city):
         #Determines if the current BlockID's status is 1 or 0, if 0 transfers all its data
         #to the output vector and returns true. If main function receives true
@@ -688,7 +688,7 @@ v0.80 (July 2012):
         
         #Draw the point and assign attributes
 
-	techimpl_attr.setX(coordinates[0])
+	techimpl_attr.setX(coordinates[0])	# techimpl_attr is set as a node in the previous methods so we can set the point data here easier
 	techimpl_attr.setY(coordinates[1])
         return True
 
