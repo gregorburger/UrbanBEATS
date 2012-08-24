@@ -53,11 +53,11 @@ v0.80 (March 2012):
 	self.path_name = homeDir + '/Documents/UrbanBEATS/UrbanBeatsModules/data/0_screek-500msys-1970plan_points.shp'
         #self.path_name = "C:/UBEATS/Replicate100/0_SCreekTest1-500msys-1970_points.shp" #specify C-drive as default value
 
-	#Views
+	
         self.createParameter( "ubeats_file", BOOL,"")
         self.createParameter( "ongoing_sim", BOOL,"")
         self.createParameter( "path_name", STRING,"")
-
+	#Views
 	self.sysGlobal = View("SystemGlobal",COMPONENT,WRITE)
 	self.sysGlobal.addAttribute("TotalSystems")
 
