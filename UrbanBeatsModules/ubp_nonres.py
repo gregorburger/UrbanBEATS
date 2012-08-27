@@ -119,7 +119,7 @@ class ubp_nonres(Module):
         self.planSpaces.getAttribute("collect_crossfall")
      	
 	self.nonResidential = View("NonResidential",COMPONENT,WRITE)
-	self.nonResidential.addAttribute("BLockID")
+	self.nonResidential.addAttribute("BlockID")
 	self.nonResidential.addAttribute("HasNonRes")
 	self.nonResidential.addAttribute("HasIndustry")
 	self.nonResidential.addAttribute("HasCommerical")
