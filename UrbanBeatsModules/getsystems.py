@@ -50,7 +50,7 @@ v0.80 (March 2012):
         self.ubeats_file = 1 #Was this file created by UrbanBEATS or is it man-made?
         self.ongoing_sim = 0 #Is this module part of an ongoing simulation?
 	homeDir = os.environ['HOME']
-	self.path_name = homeDir + '/Documents/UrbanBEATS/UrbanBeatsModules/data/0_screek-500msys-1970plan_points.shp'
+	self.path_name = homeDir + '/Documents/UrbanBEATS/UrbanBeatsModules/data/0_screek-500msys-1970impl_points.shp'
         #self.path_name = "C:/UBEATS/Replicate100/0_SCreekTest1-500msys-1970_points.shp" #specify C-drive as default value
 
 	
