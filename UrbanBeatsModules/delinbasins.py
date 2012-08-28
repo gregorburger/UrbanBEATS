@@ -132,6 +132,7 @@ class delinbasin(Module):
             for j in range(int(blocks_num)):
 
 		block = self.getBlockUUID(j+1,city)
+
                 if int(round(currentAttList.getAttribute("Status").getDouble())) == 0:
                     continue
                 if int(round(block.getAttribute("downstrID").getDouble())) == currentID:
@@ -226,8 +227,7 @@ class delinbasin(Module):
 	    upstream_attr = Attribute("BasinBlocks")
 	    upstream_attr.setString(str(upstream_string))
             currentAttList.addAttribute(upstream_attr)
-            print "Upstream: "+upstream_string
-            print "ACHTUNG"
+
             #Get current Basin Vector and determine downstream blocks
             currentBasin = 0                    #FIND THE BASIN THIS BLOCK IS SITUATED IN
             for j in range(int(basin_count)):
