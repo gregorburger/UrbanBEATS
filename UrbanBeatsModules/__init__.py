@@ -75,6 +75,7 @@ from techstrategy_eval import *		#collates the three scales into strategies and 
 
 from techimplement import *             #implements technology configurations into existing urban environments depending on chosen design
 from techretrofit import * 
+from writeresults2music import * 
 ### GUI Files that go with these modules include:
 ###		- techplacementgui.py - customize technologies
 ###             - techimplementgui.py - set rules for implementation
