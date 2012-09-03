@@ -32,7 +32,7 @@ class techopp_lot(Module):
     """description of this module
         
     Describe the inputs and outputso f this module.
-	- <description of inputs/outputs>
+        - <description of inputs/outputs>
     
     Log of Updates made at each version:
     
@@ -42,77 +42,77 @@ class techopp_lot(Module):
             - 
             - 
     
-	@ingroup DAnCE4Water
-	@author Peter M Bach
-	"""
+        @ingroup DAnCE4Water
+        @author Peter M Bach
+        """
 
     def __init__(self):
         Module.__init__(self)
-	#Views
-	self.blocks = View("Block",FACE,READ)
-	self.blocks.getAttribute("BlockID")
-	self.blocks.getAttribute("Status")
-	self.blocks.getAttribute("HasLotS")
-	self.blocks.getAttribute("Soil_k")
-	self.blocks.getAttribute("ResLotConImpA")
-	self.blocks.getAttribute("MaxLotDeg")
-	self.blocks.getAttribute("ResAllots")
-	self.blocks.getAttribute("IADeficit")
+        #Views
+        self.blocks = View("Block",FACE,READ)
+        self.blocks.getAttribute("BlockID")
+        self.blocks.getAttribute("Status")
+        self.blocks.getAttribute("HasLotS")
+        self.blocks.getAttribute("Soil_k")
+        self.blocks.getAttribute("ResLotConImpA")
+        self.blocks.getAttribute("MaxLotDeg")
+        self.blocks.getAttribute("ResAllots")
+        self.blocks.getAttribute("IADeficit")
 
-	self.mapattributes = View("Mapattributes", COMPONENT,READ)
-	self.mapattributes.getAttribute("NumBlocks")
-	self.mapattributes.getAttribute("WidthBlocks")
-	self.mapattributes.getAttribute("HeightBlocks")
-	self.mapattributes.getAttribute("InputReso")
-	self.mapattributes.getAttribute("TotalBasins")
+        self.mapattributes = View("Mapattributes", COMPONENT,READ)
+        self.mapattributes.getAttribute("NumBlocks")
+        self.mapattributes.getAttribute("WidthBlocks")
+        self.mapattributes.getAttribute("HeightBlocks")
+        self.mapattributes.getAttribute("InputReso")
+        self.mapattributes.getAttribute("TotalBasins")
 
-	self.desAttr = View("DesAttr", COMPONENT,READ)
-	self.desAttr.getAttribute("strategy_lot_check")
-	self.desAttr.getAttribute("techcheckedlot")
-	self.desAttr.getAttribute("targets_runoff")
-	self.desAttr.getAttribute("targets_TSS")
-	self.desAttr.getAttribute("targets_TN")
-	self.desAttr.getAttribute("targets_TP")
+        self.desAttr = View("DesAttr", COMPONENT,READ)
+        self.desAttr.getAttribute("strategy_lot_check")
+        self.desAttr.getAttribute("techcheckedlot")
+        self.desAttr.getAttribute("targets_runoff")
+        self.desAttr.getAttribute("targets_TSS")
+        self.desAttr.getAttribute("targets_TN")
+        self.desAttr.getAttribute("targets_TP")
 
-	self.lotStrats = View("LotStrats",COMPONENT,WRITE)
-	self.lotStrats.addAttribute("BlockID")
-	self.lotStrats.addAttribute("TotalLotOptions")
-	#self.lotStrats.addAttribute("
+        self.lotStrats = View("LotStrats",COMPONENT,WRITE)
+        self.lotStrats.addAttribute("BlockID")
+        self.lotStrats.addAttribute("TotalLotOptions")
+        #self.lotStrats.addAttribute("
    
     
-	datastream = []
-	datastream.append(self.mapattributes)
-	datastream.append(self.blocks)
-	datastream.append(self.desAttr)
-	datastream.append(self.lotStrats)
+        datastream = []
+        datastream.append(self.mapattributes)
+        datastream.append(self.blocks)
+        datastream.append(self.desAttr)
+        datastream.append(self.lotStrats)
         self.addData("City", datastream)
-	self.BLOCKIDtoUUID = {}
+        self.BLOCKIDtoUUID = {}
 
     def getBlockUUID(self, blockid,city):
-	try:
-		key = self.BLOCKIDtoUUID[blockid]
-	except KeyError:
-		key = ""
-	return city.getFace(key)
+        try:
+                key = self.BLOCKIDtoUUID[blockid]
+        except KeyError:
+                key = ""
+        return city.getFace(key)
 
 
     def initBLOCKIDtoUUID(self, city):
-	blockuuids = city.getUUIDsOfComponentsInView(self.blocks)
+        blockuuids = city.getUUIDsOfComponentsInView(self.blocks)
         for blockuuid in blockuuids:
             block = city.getFace(blockuuid)
             ID = int(round(block.getAttribute("BlockID").getDouble()))
-	    self.BLOCKIDtoUUID[ID] = blockuuid
+            self.BLOCKIDtoUUID[ID] = blockuuid
 
-	
+        
     
     def run(self):
-	city = self.getData("City")
-	self.initBLOCKIDtoUUID(city)
+        city = self.getData("City")
+        self.initBLOCKIDtoUUID(city)
 
 
-	strvec = city.getUUIDsOfComponentsInView(self.mapattributes)
+        strvec = city.getUUIDsOfComponentsInView(self.mapattributes)
         map_attr = city.getComponent(strvec[0])
-	strvec = city.getUUIDsOfComponentsInView(self.desAttr)
+        strvec = city.getUUIDsOfComponentsInView(self.desAttr)
         des_attr = city.getComponent(strvec[0])
         
         #get data needed to being for loop analysis
@@ -147,7 +147,7 @@ class techopp_lot(Module):
             currentID = i + 1
             currentAttList = self.getBlockUUID(currentID,city)#attribute list of current block structure
             lot_strats = Component()
-	    city.addComponent(lot_strats, self.lotStrats)                                          #will hold all strategies assessed at this stage
+            city.addComponent(lot_strats, self.lotStrats)                                          #will hold all strategies assessed at this stage
             lot_strats.addAttribute("BlockID", currentID)                       #each block ID will have a list of strategies
             #block.setAttribute("Link_lostst", lotstrats.getUUID())
 

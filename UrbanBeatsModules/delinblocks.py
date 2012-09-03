@@ -549,7 +549,7 @@ class delinblocks(Module):
                     patchIDcounter = 0              #counts the number of non-data patches    
                     #END DEBUG STRING
                     finished_sign = 0       #variable that indicates when all data cells in the block have been accounted for
-                    patch_attr = Component()
+
                     while finished_sign == 0:
                         point_found = 0
                         
@@ -664,6 +664,7 @@ class delinblocks(Module):
                         
                         #finished ONE patch, write info to matrix before going on
                         #write patch information into matrix of land use patch information [ matrix of N land uses [ submatrix of M patches [ sub-submatrix of K properties ] [] [] ...] [] [] ...]
+                        patch_attr = Component()
                         if currentCALU != -9:
                             
                             patch_attr.addAttribute("Area", patch_area_current)
