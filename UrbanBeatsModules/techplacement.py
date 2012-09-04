@@ -900,10 +900,12 @@ class techplacement(Module):
 	
     
     def run(self):
-	homeDir = os.environ['HOME']
-	dcvdirectory = homeDir + '/Documents/UrbanBEATS/UrbanBeatsModules/wsuddcurves/'
-	print dcvdirectory
+#	homeDir = os.environ['HOME']
+#	dcvdirectory = homeDir + '/Documents/UrbanBEATS/UrbanBeatsModules/wsuddcurves/'
+#	print dcvdirectory
 	#dcvdirectory = "C:\\Users\\Peter M Bach\\Documents\\UrbanBEATS Development\\__urbanBEATS\\wsuddcurves\\"
+	dcvdirectory = "UrbanBEATS\UrbanBeatsModules\wsuddcurves\\"
+	#dcvdirectory = "C:\\Heiko\\WSC\\data\\wsuddcurves\\"
 	city = self.getData("City")
 	self.initBLOCKIDtoUUID(city)
 

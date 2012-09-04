@@ -105,18 +105,18 @@ class techopp_neigh(Module):
         for blockuuid in blockuuids:
             block = city.getFace(blockuuid)
             ID = int(round(block.getAttribute("BlockID").getDouble()))
-	    self.BLOCKIDtoUUID[ID] = blockuuid
-
-	
-    
+            self.BLOCKIDtoUUID[ID] = blockuuid
+            
+            
+            
     def run(self):
-	city = self.getData("City")
-	self.initBLOCKIDtoUUID(city)
+        city = self.getData("City")
+        self.initBLOCKIDtoUUID(city)
 
 
-	strvec = city.getUUIDsOfComponentsInView(self.mapattributes)
+        strvec = city.getUUIDsOfComponentsInView(self.mapattributes)
         map_attr = city.getComponent(strvec[0])
-	strvec = city.getUUIDsOfComponentsInView(self.desAttr)
+        strvec = city.getUUIDsOfComponentsInView(self.desAttr)
         des_attr = city.getComponent(strvec[0])
         
         #get data needed to being for loop analysis

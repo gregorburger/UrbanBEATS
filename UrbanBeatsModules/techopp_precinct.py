@@ -31,7 +31,7 @@ class techopp_precinct(Module):
     """description of this module
         
     Describe the inputs and outputso f this module.
-	- <description of inputs/outputs>
+        - <description of inputs/outputs>
     
     Log of Updates made at each version:
     
@@ -41,83 +41,83 @@ class techopp_precinct(Module):
             - 
             - 
     
-	@ingroup DAnCE4Water
-	@author Peter M Bach
-	"""
+        @ingroup DAnCE4Water
+        @author Peter M Bach
+        """
 
     def __init__(self):
         Module.__init__(self)
-	self.blocks = View("Block",FACE,READ)
-	self.blocks.getAttribute("BlockID")
-	self.blocks.getAttribute("Status")
-	self.blocks.getAttribute("HasPrecS")
-	self.blocks.getAttribute("BasinBlocks")
-	self.blocks.getAttribute("Soil_k")
-	self.blocks.getAttribute("IADeficit")
-	self.blocks.getAttribute("UpstrImpTreat")
-	self.blocks.getAttribute("ResTIArea")
-	self.blocks.getAttribute("IAServiced")
-	self.blocks.getAttribute("UpstrImpTreat")
+        self.blocks = View("Block",FACE,READ)
+        self.blocks.getAttribute("BlockID")
+        self.blocks.getAttribute("Status")
+        self.blocks.getAttribute("HasPrecS")
+        self.blocks.getAttribute("BasinBlocks")
+        self.blocks.getAttribute("Soil_k")
+        self.blocks.getAttribute("IADeficit")
+        self.blocks.getAttribute("UpstrImpTreat")
+        self.blocks.getAttribute("ResTIArea")
+        self.blocks.getAttribute("IAServiced")
+        self.blocks.getAttribute("UpstrImpTreat")
     
-	self.mapattributes = View("Mapattributes", COMPONENT,READ)
-	self.mapattributes.getAttribute("NumBlocks")
-	self.mapattributes.getAttribute("WidthBlocks")
-	self.mapattributes.getAttribute("HeightBlocks")
-	self.mapattributes.getAttribute("InputReso")
-	self.mapattributes.getAttribute("TotalBasins")    
+        self.mapattributes = View("Mapattributes", COMPONENT,READ)
+        self.mapattributes.getAttribute("NumBlocks")
+        self.mapattributes.getAttribute("WidthBlocks")
+        self.mapattributes.getAttribute("HeightBlocks")
+        self.mapattributes.getAttribute("InputReso")
+        self.mapattributes.getAttribute("TotalBasins")    
 
-	self.desAttr = View("DesAttr", COMPONENT,READ)
-	self.desAttr.getAttribute("strategy_prec_check")
-	self.desAttr.getAttribute("techcheckedprec")
-	self.desAttr.getAttribute("basin_target_min")
-	self.desAttr.getAttribute("basin_target_max")
-	self.desAttr.getAttribute("prec_increment")
-	self.desAttr.getAttribute("targets_runoff")
-	self.desAttr.getAttribute("targets_TSS")
-	self.desAttr.getAttribute("targets_TN")
-	self.desAttr.getAttribute("targets_TP")
+        self.desAttr = View("DesAttr", COMPONENT,READ)
+        self.desAttr.getAttribute("strategy_prec_check")
+        self.desAttr.getAttribute("techcheckedprec")
+        self.desAttr.getAttribute("basin_target_min")
+        self.desAttr.getAttribute("basin_target_max")
+        self.desAttr.getAttribute("prec_increment")
+        self.desAttr.getAttribute("targets_runoff")
+        self.desAttr.getAttribute("targets_TSS")
+        self.desAttr.getAttribute("targets_TN")
+        self.desAttr.getAttribute("targets_TP")
 
-	self.precStrats = View("PrecStrats",COMPONENT,WRITE)
-	self.precStrats.addAttribute("BlockID")
-	self.precStrats.addAttribute("TotalCombinations")
+        self.precStrats = View("PrecStrats",COMPONENT,WRITE)
+        self.precStrats.addAttribute("BlockID")
+        self.precStrats.addAttribute("TotalCombinations")
 
-	self.precStratsCombo = View("PrecStratsCombo",COMPONENT,WRITE)
-	self.precStratsCombo.addAttribute("Name")
-	self.precStratsCombo.addAttribute("TotalOptions")
+        self.precStratsCombo = View("PrecStratsCombo",COMPONENT,WRITE)
+        self.precStratsCombo.addAttribute("Name")
+        self.precStratsCombo.addAttribute("TotalOptions")
 
-	datastream = []
-	datastream.append(self.mapattributes)
-	datastream.append(self.blocks)
-	datastream.append(self.desAttr)
-	datastream.append(self.precStrats)
-	datastream.append(self.precStratsCombo)
+        datastream = []
+        datastream.append(self.mapattributes)
+        datastream.append(self.blocks)
+        datastream.append(self.desAttr)
+        datastream.append(self.precStrats)
+        datastream.append(self.precStratsCombo)
         self.addData("City", datastream)
-	self.BLOCKIDtoUUID = {}
+        self.BLOCKIDtoUUID = {}
 
     def getBlockUUID(self, blockid,city):
-	try:
-		key = self.BLOCKIDtoUUID[blockid]
-	except KeyError:
-		key = ""
-	return city.getFace(key)
+        try:
+                key = self.BLOCKIDtoUUID[blockid]
+        except KeyError:
+                key = ""
+        return city.getFace(key)
 
 
     def initBLOCKIDtoUUID(self, city):
-	blockuuids = city.getUUIDsOfComponentsInView(self.blocks)
+        blockuuids = city.getUUIDsOfComponentsInView(self.blocks)
         for blockuuid in blockuuids:
             block = city.getFace(blockuuid)
             ID = int(round(block.getAttribute("BlockID").getDouble()))
-	    self.BLOCKIDtoUUID[ID] = blockuuid
+            self.BLOCKIDtoUUID[ID] = blockuuid
 
-	
+        
     
     def run(self):
-	city = self.getData("City")
-	self.initBLOCKIDtoUUID(city)
+        city = self.getData("City")
+        self.initBLOCKIDtoUUID(city)
         
-	strvec = city.getUUIDsOfComponentsInView(self.mapattributes)
+        strvec = city.getUUIDsOfComponentsInView(self.mapattributes)
         map_attr = city.getComponent(strvec[0])
-	strvec = city.getUUIDsOfComponentsInView(self.desAttr)
+        strvec = city.getUUIDsOfComponentsInView(self.desAttr)
         des_attr = city.getComponent(strvec[0])
         
         #get data needed to being for loop analysis
@@ -168,7 +168,7 @@ class techopp_precinct(Module):
             currentID = i + 1
             currentAttList = self.getBlockUUID(currentID,city)#attribute list of current block structure
             prec_strats = Component()                                            #will hold all strategies assessed at this stage
-	    city.addComponent(prec_strats,self.precStrats)
+            city.addComponent(prec_strats,self.precStrats)
             prec_strats.addAttribute("BlockID", currentID)                       #each block ID will have a list of strategies
             
             #--------------------------------------------------------------------------------#
@@ -177,12 +177,12 @@ class techopp_precinct(Module):
             
             block_status = currentAttList.getAttribute("Status").getDouble()
 
-	    landclassvec = currentAttList.getAttribute("Area_Landclass").getDoubleVector()
+            landclassvec = currentAttList.getAttribute("Area_Landclass").getDoubleVector()
 
             if currentAttList.getAttribute("HasPrecS").getDouble()  == 0:
-		#10
+                #10
                 neigh_avail_sp = landclassvec[10]#currentAttList.getAttribute("ALUC_PG").getDouble()       #available lot space
-	    else:
+            else:
                 neigh_avail_sp = 0
    
             if block_status == 0 or neigh_avail_sp == 0:                                        #SKIP CONDITION #1: If Status = 0
@@ -233,7 +233,7 @@ class techopp_precinct(Module):
             for prec_deg in prec_alts:
                 Aimpprec = Aimptot * prec_deg * basin_target_min  #how much of the total upstream basin imperviousness to treat?
                 prec_strats_combo = Component()
-		city.addComponent(prec_strats_combo,self.precStratsCombo)
+                city.addComponent(prec_strats_combo,self.precStratsCombo)
                 prec_name = str(currentID)+"_Prec_"+str(prec_deg)
                 prec_strats_combo.addAttribute("Name", prec_name)
             
@@ -297,7 +297,7 @@ class techopp_precinct(Module):
         Aimptotal = 0   #tally for total upstream impervious area
         for i in range(int(total_upstream_blocks)):
             current_upstreamID = int(upstreamIDs[i])
-	    currentAttList = self.getBlockUUID(current_upstreamID,city)
+            currentAttList = self.getBlockUUID(current_upstreamID,city)
             if case == "A":             #ALL IMPERVIOUS AREA UPSTREAM
                 addImpArea = currentAttList.getAttribute("ResTIArea").getDouble()
                 Aimptotal += addImpArea
