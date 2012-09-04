@@ -84,6 +84,7 @@ class techplacement(Module):
         self.createParameter( "ration_pollute", BOOL,"")
         self.createParameter( "runoff_pri", DOUBLE,"")
         self.createParameter( "pollute_pri", DOUBLE,"")
+	self.setParameterValue("pollute_pri",str(self.pollute_pri))
         self.createParameter( "ration_harvest",BOOL,"")
         self.createParameter( "harvest_pri",DOUBLE,"")
         
@@ -187,6 +188,7 @@ class techplacement(Module):
         self.createParameter( "decom_thresh", DOUBLE,"")
         self.createParameter( "renewal_thresh", DOUBLE,"")
         self.createParameter( "renewal_alternative", STRING,"")
+	self.setParameterValue("renewal_alternative",self.renewal_alternative)
         
         
         #---GENERAL DESIGN CRITERIA---------------------------------------------
@@ -420,6 +422,7 @@ class techplacement(Module):
         self.createParameter( "RT_shape_circ", BOOL,"")
         self.createParameter( "RT_shape_rect", BOOL,"")
         self.createParameter( "RT_sbmodel", STRING,"")
+	self.setParameterValue("RT_sbmodel", self.RT_sbmodel)
         self.createParameter( "RTdesignD4W", BOOL,"")
         self.createParameter( "RTdescur_path", STRING,"")
         self.RTavglife = 20             #average life span of a raintank
@@ -597,6 +600,7 @@ class techplacement(Module):
         self.createParameter( "WEF_loc_apart", BOOL,"")
         self.createParameter( "WEF_loc_nonres", BOOL,"")
         self.createParameter( "WEF_flow_method", STRING,"")
+	self.setParameterValue("WEF_flow_method", self.WEF_flow_method)
         
         #---<Add a new system - Name> [abbrev.]---------------------------------
         #self.<abbrev>status = 1
@@ -673,6 +677,7 @@ class techplacement(Module):
         self.createParameter( "topranklimit", DOUBLE,"")
         self.createParameter( "conf_int", DOUBLE,"")
         self.createParameter( "ingroup_scoring", STRING,"")
+	self.setParameterValue("ingroup_scoring", self.ingroup_scoring)
         
 
 	#Views

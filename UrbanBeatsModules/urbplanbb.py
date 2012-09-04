@@ -79,7 +79,9 @@ class urbplanbb(Module):
         self.maximperv = 80                     #maximum imperviousness allowed
         self.maxsitecover = 60                  #maximum site cover allowed
         self.createParameter("maximperv", DOUBLE, "")
+	self.setParameterValue("maximperv", str(self.maximperv))
         self.createParameter("maxsitecover", DOUBLE, "")
+	self.setParameterValue("maxsitecover",str(self.maxsitecover))
         #--> Spatial Details & Metrics
         self.locality_mun_trans = False
         self.createParameter("locality_mun_trans", BOOL, "")
@@ -142,6 +144,7 @@ class urbplanbb(Module):
         self.roof_connected = "Direct"          #how is the roof connected to drainage? Direct/Disconnected/Varied?
         self.imperv_prop_dced = 10              #proportion of impervious area disconnected
         self.createParameter("roof_connected", STRING,"")
+	self.setParameterValue("roof_connected",self.roof_connected)
         self.createParameter("imperv_prop_dced",DOUBLE,"")
         
         
@@ -156,6 +159,7 @@ class urbplanbb(Module):
         self.employment_adjust = 1.2            #employment adjustment factor for future growth
         self.com_spacevary_check = False        #True/False checkbox to vary required floor space
         self.createParameter("employment_data", STRING,"")
+	self.setParameterValue("employment_data",self.employment_data)
         self.createParameter( "employment_rad", DOUBLE,"")
         self.createParameter("employment_rate", DOUBLE,"")
         self.createParameter("employment_adjust",DOUBLE,"")
@@ -440,6 +444,7 @@ class urbplanbb(Module):
         self.und_allowspace = 20                #allowable space to be used for technologies
         self.und_autodeterminetype = True       #automatically determine type based on distance from city centre
         self.createParameter( "und_whattodo", STRING,"")
+	self.setParameterValue("und_whattodo", self.und_whattodo)
         self.createParameter( "und_allowspace", DOUBLE,"")
         self.createParameter( "und_autodeterminetype", BOOL,"")
         
