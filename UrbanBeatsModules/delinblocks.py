@@ -87,7 +87,9 @@ class delinblocks(Module):
         self.createParameter("BlockSize", DOUBLE, "")
         self.createParameter("input_from_urbansim", BOOL, "")
         self.BlockSize = 500                    #size of the blocks (in m)
-        self.input_from_urbansim = False        #is the input derived from UrbanSim output?
+	self.setParameterValue("BlockSize",str(self.BlockSize))
+        self.input_from_urbansim = False       #is the input derived from UrbanSim output?
+	self.setParameterValue("input_from_urbansim",str(self.input_from_urbansim))	
 
         #urbansim = View("GRID", FACE, READ)
 

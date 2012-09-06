@@ -85,6 +85,7 @@ class urbplanbb(Module):
         #--> Spatial Details & Metrics
         self.locality_mun_trans = False
         self.createParameter("locality_mun_trans", BOOL, "")
+	self.setParameterValue("locality_min_trans",str(self.locality_min_trans))
         #self.district_age_infer = False
         #self.createParameter( "district_age_infer", BOOL,"")
         #--> Building Block Dynamics
@@ -100,18 +101,26 @@ class urbplanbb(Module):
         self.person_space = 84                  #space per person [sqm]
         self.extra_comm_area = 10               #extra space for communal area
         self.createParameter("occup_avg", DOUBLE,"")
+	self.setParameterValue("occup_avg", str(self.occup_avg))
         self.createParameter("occup_max", DOUBLE,"")
+        self.setParameterValue("occup_max", str(self.occup_max))
         self.createParameter("person_space", DOUBLE,"")
+	self.setParameterValue("person_space", str(self.person_space))
         self.createParameter("extra_comm_area", DOUBLE,"")
+	self.setParameterValue("extra_comm_area", str(self.extra_comm_area))
         
         self.setback_f_min = 2                  #minimum front setback
         self.setback_f_max = 9                  #maximum front setback
         self.setback_s_min = 1                  #minimum side setback (applies to rear as well)
         self.setback_s_max = 2                  #maximum side setback (applies to rear as well)
         self.createParameter("setback_f_min", DOUBLE,"")
+	self.setParameterValue("setback_f_min",str(self.setback_f_min))
         self.createParameter("setback_f_max", DOUBLE,"")
+	self.setParameterValue("setback_f_max",str(self.setback_f_max))
         self.createParameter("setback_s_min", DOUBLE,"")
+	self.setParameterValue("setback_s_min",str(self.setback_s_min))
         self.createParameter("setback_s_max", DOUBLE,"")
+	self.setParameterValue("setback_s_max",str(self.setback_s_max))
         
         self.carports_max = 2                   #max number of carports
         self.garage_incl = False                #include garage? YES/NO
@@ -121,12 +130,19 @@ class urbplanbb(Module):
         self.floor_num_max = 2                  #maximum number of floors
         self.floor_autobuild = True             #autobuild floors?
         self.createParameter("carports_max", DOUBLE,"")
+	self.setParameterValue("carports_max",str(self.carports_max))
         self.createParameter("garage_incl", BOOL,"")
+	self.setParameterValue("garage_incl",str(self.garage_incl))
         self.createParameter("w_driveway_min",DOUBLE,"")
+	self.setParameterValue("w_driveway_min",str(self.w_driveway_min))
         self.createParameter("patio_area_max",DOUBLE,"")
+	self.setParameterValue("patio_area_max",str(self.patio_area_max))
         self.createParameter("patio_covered", BOOL,"")
+	self.setParameterValue("patio_covered",str(self.patio_covered))
         self.createParameter("floor_num_max", DOUBLE,"")
+	self.setParameterValue("floor_num_max",str(self.floor_num_max))
         self.createParameter("floor_autobuild",BOOL,"")
+	self.setParameterValue("floor_autobuild",str(self.floor_autobuild))
         
         self.occup_flat_avg = 1.5               #average occupancy of apartment
         self.commspace_indoor = 10              #communal space % indoor
@@ -135,17 +151,24 @@ class urbplanbb(Module):
         self.setback_HDR_avg = 1                #average setback for HDR site
         self.setback_HDR_auto = True            #determine setback for HDR automatically?
         self.createParameter("occup_flat_avg", DOUBLE,"")
+	self.setParameterValue("occup_flat_avg", str(self.occup_flat_avg))
         self.createParameter("commspace_indoor",DOUBLE,"")
+	self.setParameterValue("commspace_indoor",str(self.commspace_indoor))
         self.createParameter("commspace_outdoor",DOUBLE,"")
+	self.setParameterValue("commspace_outdoor",str(self.commspace_outdoor))
         self.createParameter("flat_area_max", DOUBLE,"")
+	self.setParameterValue("flat_area_max",str(self.flat_area_max))
         self.createParameter("setback_HDR_avg",DOUBLE,"")
+	self.setParameterValue("setback_HDR_avg",str(self.setback_HDR_avg))
         self.createParameter("setback_HDR_auto",BOOL,"")
+	self.setParameterValue("setback_HDR_auto",str(self.setback_HDR_auto))
                 
         self.roof_connected = "Direct"          #how is the roof connected to drainage? Direct/Disconnected/Varied?
         self.imperv_prop_dced = 10              #proportion of impervious area disconnected
         self.createParameter("roof_connected", STRING,"")
 	self.setParameterValue("roof_connected",self.roof_connected)
         self.createParameter("imperv_prop_dced",DOUBLE,"")
+	self.setParameterValue("imperv_prop_dced", str(self.imperv_prop_dced))
         
         
         #############################
@@ -161,9 +184,13 @@ class urbplanbb(Module):
         self.createParameter("employment_data", STRING,"")
 	self.setParameterValue("employment_data",self.employment_data)
         self.createParameter( "employment_rad", DOUBLE,"")
+	self.setParameterValue("employment_rad", str(self.employment_rad))
         self.createParameter("employment_rate", DOUBLE,"")
+	self.setParameterValue("employment_rate",str(self.employment_rate))
         self.createParameter("employment_adjust",DOUBLE,"")
+	self.setParameterValue("employment_adjust",str(self.employment_adjust))
         self.createParameter("com_spacevary_check",BOOL,"")
+	self.setParameterValue("com_spacevary_check",str(self.com_spacevary_check))
         #--> variables for areas (appearing in the subdialog box urbplanbbc1_gui)
         self.Atrad_cc = 10              #Trade sqm/employee at city centre
         self.Atrad_uf = 10              #Trade sqm/employee at urban fringe
@@ -175,14 +202,23 @@ class urbplanbb(Module):
         self.Ahind_uf = 10              #Heavy industry sqm/employee at urban fringe
         self.ddecay_type = "L"          #distance decay relationship
         self.createParameter("Atrad_cc", DOUBLE,"")
+	self.setParameterValue("Atrad_cc",str(self.Atrad_cc))
         self.createParameter("Atrad_uf", DOUBLE,"")
+	self.setParameterValue("Atrad_uf",str(self.Atrad_uf))
         self.createParameter("Aoff_cc", DOUBLE,"")
+	self.setParameterValue("Aoff_cc",str(self.Atrad_cc))
         self.createParameter("Aoff_uf", DOUBLE,"")
+	self.setParameterValue("Aoff_uf",str(self.Aoff_uf))
         self.createParameter("Alind_cc", DOUBLE,"")
+	self.setParameterValue("Alind_cc",str(self.Alind_cc))
         self.createParameter("Alind_uf", DOUBLE,"")
+	self.setParameterValue("Alind_uf",str(self.Alind_uf))
         self.createParameter("Ahind_cc", DOUBLE,"")
+	self.setParameterValue("Ahind_cc",str(self.Ahind_cc))
         self.createParameter("Ahind_uf", DOUBLE,"")
+	self.setParameterValue("Ahind_uf",str(self.Ahind_uf))
         self.createParameter("ddecay_type",STRING,"")
+	self.setParameterValue("ddecay_type",self.ddecay_type)
         
         
         #--> Commercial & Industrial Zones :: Site Layout and Building Form
@@ -190,8 +226,11 @@ class urbplanbb(Module):
         self.com_setback_auto = False           #determine setback automatically?
         self.com_floors_max = 3                 #maximum allowable floors
         self.createParameter( "com_fsetback_min", DOUBLE,"")
+	self.setParameterValue("com_fsetback_min",str(self.com_fsetback_min))
         self.createParameter( "com_setback_auto", BOOL,"")
+	self.setParameterValue("com_setback_auto",str(self.com_setback_auto))
         self.createParameter( "com_floors_max", DOUBLE,"")
+	self.setParameterValue("com_floors_max",str(self.com_floors_max))
         
         #--> Commercial & Industrial Zones :: Car Parking and Service Area
         self.com_carpark_dmin = 17              #minimum depth of frontage parking area [m]
@@ -201,11 +240,17 @@ class urbplanbb(Module):
         self.com_carpark_share = False          #share carparks if multiple zones?
         self.com_service_dmin = 17              #minimum depth of service area
         self.createParameter( "com_carpark_dmin", DOUBLE,"")
+	self.setParameterValue("com_carpark_dmin",str(self.com_carpark_dmin))
         self.createParameter( "com_carparkW", DOUBLE,"")
+	self.setParameterValue("com_carparkW",str(self.com_carparkW))
         self.createParameter( "com_carparkD", DOUBLE,"")
+	self.setParameterValue("com_carparkD",str(self.com_carparkD))
         self.createParameter( "com_carpark_avgimp",DOUBLE,"")
+	self.setParameterValue("com_carpark_avgimp",str(self.com_carpark_avgimp))
         self.createParameter( "com_carpark_share", BOOL,"")
+	self.setParameterValue("com_carpark_share",str(self.com_carpark_share))
         self.createParameter( "com_service_dmin", DOUBLE,"")
+	self.setParameterValue("com_service_dmin",str(self.com_service_dmin))
         
         #--> Commercial & Industrial Zones :: Service/Access Road
         self.access_perp = False                #access road aligned perpendicular
@@ -218,14 +263,19 @@ class urbplanbb(Module):
         self.createParameter( "access_parall",BOOL,"")
         self.createParameter( "access_cds", BOOL,"")
         self.createParameter( "access_parall_medwidth", DOUBLE,"")
+	self.setParameterValue("access_parall_medwidth",str(self.access_parall_medwidth))
         self.createParameter( "access_cds_circlerad", DOUBLE,"")
+	self.setParameterValue("access_cds_circlerad",str(self.access_cds_circlerad))
         self.createParameter( "access_ped_include", BOOL,"")
+	self.setParameterValue("access_ped_include",str(self.access_ped_include))
         
         #--> Commercial & Industrial Zones :: Landscaping
         self.lscape_hsbal = 0                   #balance between hard & soft landscapes
         self.lscape_avgimp_dced = 0.1           #avg. imperviousness disconnected
         self.createParameter( "lscape_hsbal", DOUBLE,"")
+	self.setParameterValue("lscape_hsbal",str(self.lscape_hsbal))
         self.createParameter( "lscape_avgimp_dced", DOUBLE,"")
+	self.setParameterValue("lscape_avgimp_dced",str(self.lscape_avgimp_dced))
         
         #--> Municipal Facilities
         self.mun_explicit = False
@@ -233,9 +283,13 @@ class urbplanbb(Module):
         self.edu_uni = False
         self.edu_lib = False
         self.createParameter( "mun_explicit", BOOL,"")
+	self.setParameterValue("mun_explicit",str(self.mun_explicit))
         self.createParameter("edu_school", BOOL,"")
+	self.setParameterValue("edu_school",str(self.edu_school))
         self.createParameter("edu_uni", BOOL,"")
+	self.setParameterValue("edu_uni",str(self.edu_school))
         self.createParameter("edu_lib", BOOL,"")
+	self.setParameterValue("edu_lib",str(self.edu_lib))
         #--> Parameters to customise different facilities
         #coming soon!
         
@@ -252,17 +306,29 @@ class urbplanbb(Module):
         self.civ_racing = False
         self.civ_cemetery = False
         self.createParameter( "civ_hospital", BOOL,"")
+	self.setParameterValue("civ_hospital",str(self.civ_hospital))
         self.createParameter( "civ_clinic", BOOL,"")
+	self.setParameterValue("civ_clinic",str(self.civ_clinic))
         self.createParameter( "civ_police", BOOL,"")
+	self.setParameterValue("civ_police",str(self.civ_clinic))
         self.createParameter( "civ_fire", BOOL,"")
+	self.setParameterValue("civ_fire",str(self.civ_fire))
         self.createParameter( "civ_jail", BOOL,"")
+	self.setParameterValue("civ_jail",str(self.civ_jail))
         self.createParameter( "civ_worship", BOOL,"")
+	self.setParameterValue("civ_worship",str(self.civ_worship))
         self.createParameter( "civ_leisure", BOOL,"")
+	self.setParameterValue("civ_leisure",str(self.civ_leisure))
         self.createParameter( "civ_museum", BOOL,"")
+	self.setParameterValue("civ_museum",str(self.civ_museum))
         self.createParameter( "civ_zoo", BOOL,"")
+	self.setParameterValue("civ_zoo",str(self.civ_zoo))
         self.createParameter( "civ_stadium", BOOL,"")
+	self.setParameterValue("civ_stadium",str(self.civ_zoo))
         self.createParameter( "civ_racing", BOOL,"")
+	self.setParameterValue("civ_racing",str(self.civ_racing))
         self.createParameter( "civ_cemetery", BOOL,"")
+	self.setParameterValue("civ_cemetery",str(self.civ_cemetery))
         #--> Parameters to customise different facilities
         #coming soon!
         
@@ -272,10 +338,15 @@ class urbplanbb(Module):
         self.sut_water = False
         self.sut_lgoffice = False
         self.createParameter( "sut_waste", BOOL,"")
+	self.setParameterValue("sut_waste",str(self.sut_waste))
         self.createParameter( "sut_gas", BOOL,"")
+	self.setParameterValue("sut_gas",str(self.sut_gas))
         self.createParameter( "sut_electricity", BOOL,"")
+	self.setParameterValue("sut_electricity",str(self.sut_electricity))
         self.createParameter( "sut_water", BOOL,"")
+	self.setParameterValue("sut_water",str(self.sut_water))
         self.createParameter( "sut_lgoffice", BOOL,"")
+	self.setParameterValue("sut_lgoffice",str(self.sut_lgoffice))
         #--> Parameters to customise different facilities
         #coming soon!
         
@@ -291,11 +362,17 @@ class urbplanbb(Module):
         self.w_resfootpath_med = True          #to simplify things, just use median footpath width?
         self.w_resnaturestrip_med = True       #to simplify things, just use median naturestrip width?
         self.createParameter( "w_resfootpath_min", DOUBLE,"")
+	self.setParameterValue("w_resfootpath_min",str(self.w_resfootpath_min))
         self.createParameter( "w_resfootpath_max", DOUBLE,"")
+	self.setParameterValue("w_resfootpath_max",str(self.w_resfootpath_max))
         self.createParameter( "w_resnaturestrip_min", DOUBLE,"")
+	self.setParameterValue("w_resnaturestrip_min",str(self.w_renaturestrip_min))
         self.createParameter( "w_resnaturestrip_max", DOUBLE,"")
+	self.setParameterValue("w_resnaturestrip_max",str(self.w_resnaturestrip_max))
         self.createParameter( "w_resfootpath_med", BOOL,"")
+	self.setParameterValue("w_resfootpath_med",str(self.w_resfootpath_med))
         self.createParameter( "w_resnaturestrip_med", BOOL,"")
+	self.setParameterValue("w_resnaturestrip_med",str(self.w_resnaturestrip_med))
         
         #--> Commercial Pedestrian
         self.w_comfootpath_min = 1
@@ -305,11 +382,17 @@ class urbplanbb(Module):
         self.w_comfootpath_med = True          #to simplify things, just use median footpath width?
         self.w_comnaturestrip_med = True       #to simplify things, just use median naturestrip width?
         self.createParameter( "w_comfootpath_min", DOUBLE,"")
+	self.setParameterValue("w_comfootpath_min",str(self.w_comfootpath_min))
         self.createParameter( "w_comfootpath_max", DOUBLE,"")
+	self.setParameterValue("w_comfootpath_max",str(self.w_comfootpath_max))
         self.createParameter( "w_comnaturestrip_min", DOUBLE,"")
+	self.setParameterValue("w_comnaturestrip_min",str(self.w_comfootpath_max))
         self.createParameter( "w_comnaturestrip_max", DOUBLE,"")
+	self.setParameterValue("w_comnaturestrip_max",str(self.w_comnaturestrip_max))
         self.createParameter( "w_comfootpath_med", BOOL,"")
+	self.setParameterValue("w_comfootpath_med",str(self.w_comfootpath_med))
         self.createParameter( "w_comnaturestrip_med", BOOL,"")
+	self.setParameterValue("w_comnaturestrip_med",str(self.w_comnaturestrip_med))
         
         #--> Local Access/Service/Collector Roads
         self.w_collectlane_min = 3            
@@ -317,9 +400,13 @@ class urbplanbb(Module):
         self.w_collectlane_med = True       #to simplify things, just use median collector lane width?
         self.collect_crossfall = 3
         self.createParameter( "w_collectlane_min", DOUBLE,"")
+	self.setParameterValue("w_collectlane_min",str(self.w_collectlane_min))
         self.createParameter( "w_collectlane_max", DOUBLE,"")
+	self.setParameterValue("w_collectlane_max",str(self.w_collectlane_max))
         self.createParameter( "w_collectlane_med", BOOL,"")
+	self.setParameterValue("w_collectlane_med",str(self.w_collectlane_med))
         self.createParameter( "collect_crossfall", DOUBLE,"")
+	self.setParameterValue("collect_crossfall",str(self.collect_crossfall))
         
         #--> Arterials/District Distributors/Dual Carriageways
         self.w_artlane_min = 3
@@ -329,11 +416,17 @@ class urbplanbb(Module):
         self.artmedian_reserved = False
         self.art_crossfall = 3
         self.createParameter( "w_artlane_min", DOUBLE,"")
+	self.setParameterValue("w_artlane_min",str(self.w_artlane_min))
         self.createParameter( "w_artlane_max", DOUBLE,"")
+	self.setParameterValue("w_artlane_max",str(self.w_artlane_max))
         self.createParameter( "w_artlane_med", BOOL,"")
+	self.setParameterValue("w_artlane_med",str(self.w_artlane_med))
         self.createParameter( "w_artmedian", DOUBLE,"")
+	self.setParameterValue("w_artmedian",str(self.w_artmedian))
         self.createParameter( "artmedian_reserved", BOOL,"")
+	self.setParameterValue("artmedian_reserved",str(self.artmedian_reserved))
         self.createParameter( "art_crossfall", DOUBLE,"")
+	self.setParameterValue("art_crossfall",str(self.art_crossfall))
         
         #--> Highways/Freeways/Motorways
         self.w_hwylane_avg = 3
@@ -342,10 +435,15 @@ class urbplanbb(Module):
         self.hwymedian_reserved = False
         self.hwy_crossfall = 3
         self.createParameter( "w_hwylane_avg", DOUBLE,"")
+	self.setParameterValue("w_hwylane_avg",str(self.w_hwylane_avg))
         self.createParameter( "w_hwymedian", DOUBLE,"")
+	self.setParameterValue("w_hwymedian",str(self.w_hwylane_avg))
         self.createParameter( "hwy_buffered", BOOL,"")
+	self.setParameterValue("hwy_buffered",str(self.hwy_buffered))
         self.createParameter( "hwymedian_reserved", BOOL,"")
+	self.setParameterValue("hwymedian_reserved",str(self.hwymedian_reserved))
         self.createParameter( "hwy_crossfall", DOUBLE,"")
+	self.setParameterValue("hwy_crossfall",str(self.hwy_crossfall))
         
         #--> Other Transportation
         self.trans_explicit = False
@@ -355,11 +453,17 @@ class urbplanbb(Module):
         self.trans_busdepot = False
         self.trans_railterminal = False
         self.createParameter( "trans_explicit", BOOL,"")
+	self.setParameterValue("trans_explicit",str(self.trans_explict))
         self.createParameter( "trans_airport", BOOL,"")
+	self.setParameterValue("trans_airport",str(self.trans_airport))
         self.createParameter( "trans_comseaport", BOOL,"")
+	self.setParameterValue("trans_comseaport",str(self.trans_comseaport))
         self.createParameter( "trans_indseaport", BOOL,"")
+	self.setParameterValue("trans_indseaport",str(self.trans_indseaport))
         self.createParameter( "trans_busdepot", BOOL,"")
+	self.setParameterValue("trans_busdepot",str(self.trans_busdepot))
         self.createParameter( "trans_railterminal", BOOL,"")
+	self.setParameterValue("trans_railterminal",str(self.trans_railterminal))
         #--> Detailed parameters for individual facilities
         #coming soon!
         
@@ -373,8 +477,11 @@ class urbplanbb(Module):
         self.pg_greengrey_ratio = 0             #balance between green and grey spaces -10=fully grey, +10=fully green
         self.pg_linear_threshold = 1            #ratio threshold to consider open space as "linear"
         self.createParameter( "pg_clustering_degree", DOUBLE,"")
+	self.setParameterValue("pg_clustering_degree",str(self.pg_clustering_degree))
         self.createParameter( "pg_greengrey_ratio", DOUBLE,"")
+	self.setParameterValue("pg_greengrey_ratio",str(self.pg_greengrey_ratio))
         self.createParameter( "pg_linear_threshold", DOUBLE,"")
+	self.setParameterValue("pg_linear_threshold",str(self.pg_greengrey_ratio))
         
         #--> Parks, Squares & Gardens :: Green Space Configuration
         self.pg_footpath_cross = False
@@ -389,16 +496,27 @@ class urbplanbb(Module):
         self.pg_footpath_varyW = False          #vary the width of the footpath?
         self.pg_footpath_multiply = False       #multiply footpaths if green space is classed as linear?
         self.createParameter( "pg_footpath_cross", BOOL,"")
+	self.setParameterValue("pg_footpath_cross",str(self.pg_footpath_cross))
         self.createParameter( "pg_footpath_circle", BOOL,"")
+	self.setParameterValue("pg_footpath_circle",str(self.pg_footpath_circle))
         self.createParameter( "pg_footpath_perimeter", BOOL,"")
+	self.setParameterValue("pg_footpath_perimeter",str(self.pg_footpath_perimeter))
         self.createParameter( "pg_circle_radius", DOUBLE,"")
+	self.setParameterValue("pg_circle_radius",str(self.pg_circle_radius))
         self.createParameter( "pg_circle_accesses", DOUBLE,"")
+	self.setParameterValue("pg_circle_accesses",str(self.pg_circle_accesses))
         self.createParameter( "pg_perimeter_setback", DOUBLE,"")
+	self.setParameterValue("pg_perimeter_setback",str(self.pg_permeter_setback))
         self.createParameter( "pg_perimeter_accesses", DOUBLE,"")
+	self.setParameterValue("pg_perimeter_accesses",str(self.pg_perimeter_accesses))
         self.createParameter( "pg_footpath_avgW", DOUBLE,"")
+	self.setParameterValue("pg_footpath_avgW",str(self.pg_footpath_avgW))
         self.createParameter( "pg_footpath_impdced", DOUBLE,"")
+	self.setParameterValue("pg_footpath_impdced",str(self.pg_footpath_impdced))
         self.createParameter( "pg_footpath_varyW", BOOL,"")
+	self.setParameterValue("pg_footpath_varyW",str(self.pg_footpath_varyW))
         self.createParameter( "pg_footpath_multiply", BOOL,"")
+	self.setParameterValue("pg_footpath_multiply",str(self.pg_footpath_multiply))
         
         #--> Reserves & Floodways
         self.rfw_partialimp_check = False               #assume the area is partially impervious
@@ -406,9 +524,13 @@ class urbplanbb(Module):
         self.rfw_areausable_check = False               #restrict some of the usable area
         self.rfw_areausable = 10                        #set the amount of area that can be used [%]
         self.createParameter( "rfw_partialimp_check", BOOL,"")
+	self.setParameterValue("rfw_partialimp_check",str(self.rfw_partialimp_check))
         self.createParameter( "rfw_partialimp", DOUBLE,"")
+	self.setParameterValue("rfw_partialimp",str(self.rfw_partialimp))
         self.createParameter( "rfw_areausable_check", BOOL,"")
+	self.setParameterValue("rfw_areausable_check",str(self.rfw_areausable_check))
         self.createParameter( "rfw_areausable", DOUBLE,"")
+	self.setParameterValue("rfw_areausable",str(self.rfw_areausable))
         
         
         ############################
@@ -428,16 +550,27 @@ class urbplanbb(Module):
         self.unc_landmark_avgimp = 40
         self.unc_landmark_otherwater = False
         self.createParameter( "unc_merge", BOOL,"")
+	self.setParameterValue("unc_merge",str(self.unc_merge))
         self.createParameter( "unc_unc2square", BOOL,"")
+	self.setParameterValue("unc_unc2square",str(self.unc_unc2square))
         self.createParameter( "unc_unc2square_weight", DOUBLE,"")
+	self.setParameterValue("unc_unc2square_weight",str(self.unc_unc2square_weight))
         self.createParameter( "unc_unc2park", BOOL,"")
+	self.setParameterValue("unc_unc2park",str(self.unc_unc2park))
         self.createParameter( "unc_unc2park_weight", DOUBLE,"")
+	self.setParameterValue("unc_unc2park_weight",str(self.unc_unc2park_weight))
         self.createParameter( "unc_unc2road", BOOL,"")
+	self.setParameterValue("unc_unc2road",str(self.unc_unc2road))
         self.createParameter( "unc_unc2road_weight", DOUBLE,"")
+	self.setParameterValue("unc_unc2road_weight",str(self.unc_unc2road_weight))
         self.createParameter( "unc_landmark", BOOL,"")
+	self.setParameterValue("unc_landmark",str(self.unc_landmark))
         self.createParameter( "unc_landmark_threshold", DOUBLE,"")
+	self.setParameterValue("unc_landmark_threshold",str(self.unc_landmark_threshold))
         self.createParameter( "unc_landmark_avgimp", DOUBLE,"")
+	self.setParameterValue("unc_landmark_avgimp",str(self.unc_landmark_avgimp))
         self.createParameter( "unc_landmark_otherwater", BOOL,"")
+	self.setParameterValue("unc_landmark_otherwater",str(self.unc_landmark_otherwater))
         
         #--> Undeveloped Land
         self.und_whattodo = "N"                 #what to do with this land? N= do not touch, Y = allow
@@ -446,7 +579,9 @@ class urbplanbb(Module):
         self.createParameter( "und_whattodo", STRING,"")
 	self.setParameterValue("und_whattodo", self.und_whattodo)
         self.createParameter( "und_allowspace", DOUBLE,"")
+	self.setParameterValue("und_allowspace",str(self.und_allowspace))
         self.createParameter( "und_autodeterminetype", BOOL,"")
+	self.setParameterValue("und_autodeterminetype",str(self.und_autodeterminetype))
         
         #------------------------------------------
         #END OF INPUT PARAMETER LIST

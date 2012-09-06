@@ -81,12 +81,18 @@ class techplacement(Module):
         self.ration_harvest = False              #Design for harvesting & reuse? Adds storage-sizing to certain systems
         self.harvest_pri = 1                     #Priority for harvesting & reuse
         self.createParameter( "ration_runoff", BOOL,"")
+	self.setParameterValue("ration_runoff",str(self.ration_runoff))
         self.createParameter( "ration_pollute", BOOL,"")
+	self.setParameterValue("ration_pollute",str(self.ration_runoff))
         self.createParameter( "runoff_pri", DOUBLE,"")
+	self.setParameterValue("runoff_pri",str(self.runoff_pri))
+	
         self.createParameter( "pollute_pri", DOUBLE,"")
 	self.setParameterValue("pollute_pri",str(self.pollute_pri))
         self.createParameter( "ration_harvest",BOOL,"")
-        self.createParameter( "harvest_pri",DOUBLE,"")
+	self.setParameterValue("ration_harvest",str(self.ration_harvest))
+	self.createParameter( "harvest_pri",DOUBLE,"")
+	self.setParameterValue("harvest_pri",str(self.harvest_pri))
         
         #WATER MANAGEMENT TARGETS
         self.targets_runoff = 80                 #Runoff reduction target [%]
@@ -100,15 +106,25 @@ class techplacement(Module):
         self.TP_auto = False
         self.harvest_auto = False
         self.createParameter( "targets_runoff", DOUBLE,"")
+	self.setParameterValue("targets_runoff",str(self.targets_runoff))
         self.createParameter( "targets_TSS", DOUBLE,"")
+	self.setParameterValue("targets_TSS",str(self.targets_TSS))
         self.createParameter( "targets_TN", DOUBLE,"")
+	self.setParameterValue("targets_TN",str(self.targets_TN))
         self.createParameter( "targets_TP", DOUBLE,"")
+	self.setParameterValue("targets_TP",str(self.targets_TN))
         self.createParameter( "targets_harvest", DOUBLE,"")
+	self.setParameterValue("targets_harvest",str(self.targets_harvest))
         self.createParameter( "runoff_auto", BOOL,"")
+	self.setParameterValue("runoff_auto",str(self.runoff_auto))
         self.createParameter( "TSS_auto", BOOL,"")
+	self.setParameterValue("TSS_auto",str(self.TSS_auto))
         self.createParameter( "TN_auto", BOOL,"")
+	self.setParameterValue("TN_auto",str(self.TN_auto))
         self.createParameter( "TP_auto", BOOL,"")
+	self.setParameterValue("TP_auto",str(self.TP_auto))
         self.createParameter( "harvest_auto", BOOL,"")
+	self.setParameterValue("harvest_auto",str(self.harvest_auto))
         
         #STRATEGY CUSTOMIZE
         self.strategy_lot_check = True
@@ -122,15 +138,25 @@ class techplacement(Module):
         self.basin_target_min = 20
         self.basin_target_max = 100
         self.createParameter( "strategy_lot_check", BOOL,"")
+	self.setParameterValue("strategy_lot_check",str(self.strategy_lot_check))
         self.createParameter( "strategy_street_check", BOOL,"")
+	self.setParameterValue("strategy_street_check",str(self.strategy_street_check))
         self.createParameter( "strategy_neigh_check", BOOL,"")
+	self.setParameterValue("strategy_neigh_check",str(self.strategy_neigh_check))
         self.createParameter( "strategy_prec_check", BOOL,"")
+	self.setParameterValue("strategy_prec_check",str(self.strategy_prec))
         self.createParameter( "lot_increment", DOUBLE,"")
+	self.setParameterValue("lot_increment",str(self.lot_increment))
         self.createParameter( "street_increment", DOUBLE,"")
+	self.setParameterValue("street_increment",str(self.street_increment))
         self.createParameter( "neigh_increment", DOUBLE,"")
+	self.setParameterValue("neigh_increment",str(self.neigh_increment))
         self.createParameter( "prec_increment", DOUBLE,"")
+	self.setParameterValue("prec_increment",str(self.prec_increment))
         self.createParameter( "basin_target_min", DOUBLE,"")
+	self.setParameterValue("basin_target_min",str(self.basin_target_min))
         self.createParameter( "basin_target_max", DOUBLE,"")
+	self.setParameterValue("basin_target_max",str(self.basin_target_max))
         
         #ADDITIONAL STRATEGIES
         self.strategy_specific1 = False
@@ -140,11 +166,17 @@ class techplacement(Module):
         self.strategy_specific5 = False
         self.strategy_specific6 = False
         self.createParameter( "strategy_specific1", BOOL,"")
+	self.setParameterValue("strategy_specific1",str(self.strategy_specific1))
         self.createParameter( "strategy_specific2", BOOL,"")
+	self.setParameterValue("strategy_specific2",str(self.strategy_specific2))
         self.createParameter( "strategy_specific3", BOOL,"")
+	self.setParameterValue("strategy_specific3",str(self.strategy_specific3))
         self.createParameter( "strategy_specific4", BOOL,"")
+	self.setParameterValue("strategy_specific4",str(self.strategy_specific4))
         self.createParameter( "strategy_specific5", BOOL,"")
+	self.setParameterValue("strategy_specific5",str(self.strategy_specific5))
         self.createParameter( "strategy_specific6", BOOL,"")
+	self.setParameterValue("strategy_specific6",str(self.strategy_specific6))
         
         #---RETROFIT CONDITIONS INPUTS------------------------------------------
         self.retrofit_scenario = "N"    #N = Do Nothing, R = With Renewal, F = Forced
@@ -157,14 +189,22 @@ class techplacement(Module):
         self.force_neigh = 0           #forced renewal on street?
         self.force_prec = 0            #forced renewal on neighbourhood and precinct?
         self.createParameter( "retrofit_scenario", STRING,"")
+	self.setParameterValue("retrofit_scenario",self.retrofit_scenario)
         self.createParameter( "renewal_cycle_def", BOOL,"")
         self.createParameter( "renewal_lot_years", DOUBLE,"")
+	self.setParameterValue("renewal_lot_years",str(self.renewal_lot_years))
         self.createParameter( "renewal_street_years", DOUBLE,"")
+	self.setParameterValue("renewal_street_years",str(self.renewal_street_years))
         self.createParameter( "renewal_neigh_years", DOUBLE,"")
+	self.setParameterValue("renewal_neigh_years",str(self.renewal_neigh_years))
         self.createParameter( "renewal_lot_perc", DOUBLE,"")
+	self.setParameterValue("renewal_lot_perc",str(self.renewal_lot_perc))
         self.createParameter( "force_street", BOOL,"")
+	self.setParameterValue("force_street",str(self.force_street))
         self.createParameter( "force_neigh", BOOL,"")
+	self.setParameterValue("force_neigh",str(self.force_neigh))
         self.createParameter( "force_prec", BOOL,"")
+	self.setParameterValue("force_prec",str(self.force_prec))
         
         self.lot_renew = 0
         self.lot_decom = 0
@@ -178,15 +218,24 @@ class techplacement(Module):
         self.renewal_thresh = 30
         self.renewal_alternative = "K"          #if renewal cannot be done, what to do then? K=Keep, D=Decommission
         self.createParameter( "lot_renew", BOOL,"")
+	self.setParameterValue("lot_renew",str(self.lot_renew))
         self.createParameter( "lot_decom", BOOL,"")
+	self.setParameterValue("lot_decom",str(self.lot_decom))
         self.createParameter( "street_renew", BOOL,"")
+	self.setParameterValue("street_renew",str(self.street_renew))
         self.createParameter( "street_decom", BOOL,"")
+	self.setParameterValue("street_decom",str(self.street_decom))
         self.createParameter( "neigh_renew", BOOL,"")
+	self.setParameterValue("neigh_renew",str(self.neigh_renew))
         self.createParameter( "neigh_decom", BOOL,"")
+	self.setParameterValue("neigh_decom",str(self.neigh_decom))
         self.createParameter( "prec_renew", BOOL,"")
+	self.setParameterValue("prec_renew",str(self.prec_renew))
         self.createParameter( "prec_decom", BOOL,"")
         self.createParameter( "decom_thresh", DOUBLE,"")
+	self.setParameterValue("decom_thresh",str(self.decom_thres))
         self.createParameter( "renewal_thresh", DOUBLE,"")
+	self.setParameterValue("renewal_thresh",str(self.renewal_thresh))
         self.createParameter( "renewal_alternative", STRING,"")
 	self.setParameterValue("renewal_alternative",self.renewal_alternative)
         
@@ -199,35 +248,47 @@ class techplacement(Module):
         #---ADVANCED STORMWATER HARVESTING PLANT [ASHP]---###TBA###-------------
         self.ASHPstatus = 0
         self.createParameter( "ASHPstatus", BOOL,"")
+	self.setParameterValue("ASHPstatus",str(self.ASHPstatus))
         self.ASHPlevel = 0
         self.createParameter( "ASHPlevel", DOUBLE,"")
+	self.setParameterValue("ASHPlevel",str(self.ASHPlevel))
         self.ASHPgroup = 0
         self.createParameter( "ASHPgroup", DOUBLE,"")
+	self.setParameterValue("ASHPgroup",str(self.ASHPgroup))
         
         #---AQUACULTURE/LIVING SYSTEMS [AQ]---###TBA###-------------------------
         self.AQstatus = 0
         self.createParameter( "AQstatus", BOOL,"")
+	self.setParameterValue("AQstatus",str(self.AQstatus))
         self.AQlevel = 0
         self.createParameter( "AQlevel", DOUBLE,"")
+	self.setParameterValue("AQlevel",str(self.AQlevel))
         self.AQgroup = 0
         self.createParameter( "AQgroup", DOUBLE,"")
+	self.setParameterValue("AQgroup",str(self.AQgroup))
         
         #---AQUIFER STORAGE & RECOVERY SYSTEM [ASR]---###TBA###-----------------
         self.ASRstatus = 0
         self.createParameter( "ASRstatus", BOOL,"")
+	self.setParameterValue("ASRstatus",str(self.ASRstatus))
         self.ASRlevel = 0
         self.createParameter( "ASRlevel", DOUBLE,"")
+	self.setParameterValue("ASRlevel",str(self.ASRlevel))
         self.ASRgroup = 0
         self.createParameter( "ASRgroup", DOUBLE,"")
+	self.setParameterValue("ASRgroup",str(self.ASRgroup))
         
         
         #---BIOFILTRATION SYSTEM/RAINGARDEN [BF]--------------------------------
         self.BFstatus = 1
         self.createParameter( "BFstatus", BOOL,"")
+	self.setParameterValue("BFstatus",str(self.BFstatus))
         self.BFlevel = 0
         self.createParameter( "BFlevel", DOUBLE,"")
+	self.setParameterValue("BFlevel",str(self.BFlevel))
         self.BFgroup = 0
         self.createParameter( "BFgroup", DOUBLE,"")
+	self.setParameterValue("BFgroup",str(self.BFgroup))
         
         #Available Scales
         self.BFlot = True
@@ -235,95 +296,129 @@ class techplacement(Module):
         self.BFneigh = True
         self.BFprec = True
         self.createParameter( "BFlot", BOOL,"")
+	self.setParameterValue("BFlot",str(self.BFlot))
         self.createParameter( "BFstreet", BOOL,"")
+	self.setParameterValue("BFstreet",str(self.BFstreet))
         self.createParameter( "BFneigh", BOOL,"")
+	self.setParameterValue("BFneigh",str(self.BFneigh))
         self.createParameter( "BFprec", BOOL,"")
+	self.setParameterValue("BFprec",str(self.BFprec))
         
         #Available Applications
         self.BFflow = False
 	self.BFpollute = True
-	self.createParameter( "BFflow", BOOL, "")        
+	self.createParameter( "BFflow", BOOL, "")
+	self.setParameterValue("BFflow",str(self.BFflow))        
 	self.createParameter( "BFpollute", BOOL,"")
+	self.setParameterValue("BFpullute",str(self.BFflow))
         
         #Design Curves
         self.BFdesignUB = True          #use DAnCE4Water's default curves to design system?
         self.BFdescur_path = "no file"  #path for design curve
         self.createParameter( "BFdesignUB", BOOL,"")
+	self.setParameterValue("BFdesignUB",str(self.BFdesignUB))
         self.createParameter( "BFdescur_path", STRING,"")
+	self.setParameterValue("BFdescur_path",self.BFdescur_path)
         
         #Design Information
         self.BFspec_EDD = 0.3
         self.BFspec_FD = 0.6
         self.createParameter( "BFspec_EDD", DOUBLE,"")
+	self.setParameterValue("BFspec_EDD",str(self.BFspec_EDD))
         self.createParameter( "BFspec_FD", DOUBLE,"")
+	self.setParameterValue("BFspec_FD",str(self.BFspec_FD))
         self.BFmaxsize = 999999         #maximum surface area of system in sqm
         self.createParameter( "BFmaxsize", DOUBLE,"")
+	self.setParameterValue("BFmaxsize",str(self.BFmaxsize))
 	self.BFavglife = 20             #average life span of a biofilter
         self.createParameter("BFavglife", DOUBLE,"")
+	self.setParameterValue("BFavglife",str(self.BFavglife))
         
 
         self.BFlined = True
         self.createParameter( "BFlined", BOOL,"")
+	self.setParameterValue("BFlined",str(self.BFlined))
         
         
         #---GREEN ROOF [GR]---###TBA###-----------------------------------------
         self.GRstatus = 0
         self.createParameter( "GRstatus", BOOL,"")
+	self.setParameterValue("GRstatus",str(self.GRstatus))
         self.GRlevel = 0
         self.createParameter( "GRlevel", DOUBLE,"")
+	self.setParameterValue("GRlevel",str(self.GRlevel))
         self.GRgroup = 0
         self.createParameter( "GRgroup", DOUBLE,"")
+	self.setParameterValue("GRgroup",str(self.GRgroup))
                 
         #---INFILTRATION SYSTEM [IS]--------------------------------------------
         self.ISstatus = 1
         self.createParameter( "ISstatus", BOOL,"")
+	self.setParameterValue("ISstatus",str(self.ISstatus))
         self.ISlevel = 0
         self.createParameter( "ISlevel", DOUBLE,"")
+	self.setParameterValue("ISlevel",str(self.ISlevel))
         self.ISgroup = 0
         self.createParameter( "ISgroup", DOUBLE,"")
+	self.setParameterValue("ISgroup",str(self.ISgroup))
         
         #Available Scales
         self.ISlot = True
         self.ISstreet = True
         self.ISneigh = True
         self.createParameter( "ISlot", BOOL,"")
+	self.setParameterValue("ISlot",str(self.ISlot))
         self.createParameter( "ISstreet", BOOL,"")
+	self.setParameterValue("ISstreet",str(self.ISstreet))
         self.createParameter( "ISneigh", BOOL,"")
+	self.setParameterValue("ISneigh",str(self.ISneigh))
         
         #Available Applications
         self.ISflow = True
         self.ISpollute = True
         self.createParameter( "ISflow", BOOL,"")
+	self.setParameterValue("ISflow",str(self.ISflow))
         self.createParameter( "ISpollute", BOOL,"")
+	self.setParameterValue("ISpollute",str(self.ISpollute))
         
         #Design Curves
         self.ISdesignUB = True          #use DAnCE4Water's default curves to design system?
         self.ISdescur_path = "no file"  #path for design curve
         self.createParameter( "ISdesignUB", BOOL,"")
+	self.setParameterValue("ISdesignUB",str(self.ISdesignUB))
         self.createParameter( "ISdescur_path", STRING,"")
+	self.setParameterValue("ISdescur_path",self.ISdescur_path)
         
         #Design Information
         self.ISspec_EDD = 0.2
         self.ISspec_FD = 0.8
         self.createParameter( "ISspec_EDD", DOUBLE,"")
+	self.setParameterValue("ISspec_EDD",str(self.ISspec_EDD))
         self.createParameter( "ISspec_FD", DOUBLE,"")
+	self.setParameterValue("ISspec_FD",str(self.ISspec_FD))
         self.ISmaxsize = 5000          #maximum surface area of system in sqm
         self.createParameter( "ISmaxsize", DOUBLE,"")
+	self.setParameterValue("ISmaxsize",str(self.ISmaxsize))
 	self.ISavglife = 20             #average life span of an infiltration system
 	self.createParameter( "ISavglife", DOUBLE,"")
+	self.setParameterValue("ISavglife",str(self.ISavglife))
 
 
 
         self.IS_2Dmodel = True
         self.createParameter( "IS_2Dmodel", BOOL,"")
+	self.setParameterValue("IS_2Dmodel",str(self.IS_2Dmodel))
         
         #---GROSS POLLUTANT TRAP [GPT]------------------------------------------
         self.GPTstatus = 0
         self.createParameter( "GPTstatus", BOOL,"")
+	self.setParameterValue("GPTstatus",str(self.GPTstatus))
         self.GPTlevel = 0
         self.createParameter( "GPTlevel", DOUBLE,"")
+	self.setParameterValue("GPTlevel",str(self.GPTlevel))
         self.GPTgroup = 0
         self.createParameter( "GPTgroup", DOUBLE,"")
+	self.setParameterValue("GPTgroup",str(self.GPTgroup))
         
         #self.input_parameter = default value
         #self.createParameter( "input_parameter", DOUBLE)
@@ -331,10 +426,13 @@ class techplacement(Module):
         #---GREYWATER TREATMENT & DIVERSION SYSTEM [GT]-------------------------
         self.GTstatus = 0
         self.createParameter( "GTstatus", BOOL,"")
+	self.setParameterValue("Gtstatus",str(self.GTstatus))
         self.GTlevel = 0
         self.createParameter( "GTlevel", DOUBLE,"")
+	self.setParameterValue("GTlevel",str(self.GTlevel))
         self.GTgroup = 0
         self.createParameter( "GTgroup", DOUBLE,"")
+	self.setParameterValue("GTgroup",str(self.GTgroup))
         
         #followed by vibe inputs
         #self.input_parameter = default value
@@ -343,70 +441,95 @@ class techplacement(Module):
         #---PACKAGED PLANT [PPL]---###TBA###------------------------------------
         self.PPLstatus = 0
         self.createParameter( "PPLstatus", BOOL,"")
+	self.setParameterValue("PPLstatus",str(self.PPLstatus))
         self.PPLlevel = 0
         self.createParameter( "PPLlevel", DOUBLE,"")
+	self.setParameterValue("PPLlevel",str(self.PPLlevel))
         self.PPLgroup = 0
         self.createParameter( "PPLgroup", DOUBLE,"")
+	self.setParameterValue("PPLgroup",str(self.PPLgroup))
         
         #---PONDS & SEDIMENTATION BASIN [PB]------------------------------------
         self.PBstatus = 1
         self.createParameter( "PBstatus", BOOL,"")
+	self.setParameterValue("PBstatus",str(self.PBstatus))
         self.PBlevel = 0
         self.createParameter( "PBlevel", DOUBLE,"")
+	self.setParameterValue("PVlevel",str(self.PVlevel))
         self.PBgroup = 0
         self.createParameter( "PBgroup", DOUBLE,"")
+	self.setParameterValue("PBgroup",str(self.PBgroup))
         
         #Available Scales
         self.PBneigh = True
         self.PBprec = True
         self.createParameter( "PBneigh", BOOL,"")
+	self.setParameterValue("PBneigh",str(self.PBneigh))
         self.createParameter( "PBprec", BOOL,"")
+	self.setParameterValue("PBprec",str(self.PBprec))
         
         #Available Applications
         self.PBflow = True
         self.PBpollute = True
         self.createParameter( "PBflow", BOOL,"")
+	self.setParameterValue("PBflow",str(self.PBflow))
         self.createParameter( "PBpollute", BOOL,"")
+	self.setParameterValue("PBpollute",str(self.PBpollute))
         
         #Design Curves
         self.PBdesignUB = True          #use DAnCE4Water's default curves to design system?
         self.PBdescur_path = "no file"  #path for design curve
         self.createParameter( "PBdesignUB", BOOL,"")
+	self.setParameterValue("PBdesignUB",str(self.PBdesignUB))
         self.createParameter( "PBdescur_path", STRING,"")
+	self.setParameterValue("PBdescur_path",self.PBdescur_path)
         
         #Design Information
         self.PBspec_MD = "1.25" 	#need a string for the combo box
         self.createParameter( "PBspec_MD", STRING,"")
+	self.setParameterValue("PBspec_MD",self.PBspec_MD)
         self.PBmaxsize = 9999999           #maximum surface area of system in sqm
         self.createParameter( "PBmaxsize", DOUBLE,"")
+	self.setParameterValue("PBmaxsize",str(self.PBmaxsize))
 	self.PBavglife = 20             #average life span of a pond/basin
 	self.createParameter( "PBavglife", DOUBLE,"")
+	self.setParameterValue("PBavglife",str(self.PBavglife))
 
         
         #---POROUS/PERVIOUS PAVEMENT [PP]---###TBA###---------------------------
         self.PPstatus = 0
         self.createParameter( "PPstatus", BOOL,"")
+	self.setParameterValue("PPstatus",str(self.PPstatus))
         self.PPlevel = 0
         self.createParameter( "PPlevel", DOUBLE,"")
+	self.setParameterValue("PPlevel",str(self.PPlevel))
         self.PPgroup = 0
         self.createParameter( "PPgroup", DOUBLE,"")
+	self.setParameterValue("PPgroup",str(self.PPgroup))
         
         #---RAINWATER TANK [RT]-------------------------------------------------
         self.RTstatus = 0
         self.createParameter( "RTstatus", BOOL,"")
+	self.setParameterValue("RTstatus",str(self.RTstatus))
         self.RTlevel = 0
         self.createParameter( "RTlevel", DOUBLE,"")
+	self.setParameterValue("RTlevel",str(self.RTlevel))
         self.RTgroup = 0
         self.createParameter( "RTgroup", DOUBLE,"")
+	self.setParameterValue("RTgroup",str(self.RTgroup))
         
         self.RTscale_lot = True
         self.RTscale_street = True
         self.RTpurp_flood = True
         self.RTpurp_recyc = False
         self.createParameter( "RTscale_lot", BOOL,"")
+	self.setParameterValue("RTscale_lot",str(self.RTscale_lot))
         self.createParameter( "RTscale_street", BOOL,"")
+	self.setParameterValue("RTscale_street",str(self.RTscale))
         self.createParameter( "RTpurp_flood", BOOL,"")
+	self.setParameterValue("RTpurp_flood",str(self.RTpurp_flood))
         self.createParameter( "RTpurp_recyc", BOOL,"")
+	self.setParameterValue("RTpurp_recyc",str(self.RTpurp_recyc))
         
         self.RT_firstflush = 2          #first flush volume [mm]
         self.RT_maxdepth = 2            #max tank depth [m]
@@ -417,157 +540,215 @@ class techplacement(Module):
         self.RTdesignD4W = True         #use DAnCE4Water's default curves to design system?
         self.RTdescur_path = "no file"  #path for design curve
         self.createParameter( "RT_firstflush", DOUBLE,"")
+	self.setParameterValue("RT_firstflush",str(self.RT_firstflush))
         self.createParameter( "RT_maxdepth", DOUBLE,"")
+	self.setParameterValue("RT_maxdepth",str(self.RT_maxdepth))
         self.createParameter( "RT_mindead", DOUBLE,"")
+	self.setParameterValue("RT_mindead",str(self.RT_mindead))
         self.createParameter( "RT_shape_circ", BOOL,"")
+	self.setParameterValue("RT_shape_circ",str(self.RT_shape_circ))
         self.createParameter( "RT_shape_rect", BOOL,"")
+	self.setParameterValue("RT_shape_rect",str(self.RT_shape_rect))
         self.createParameter( "RT_sbmodel", STRING,"")
-	self.setParameterValue("RT_sbmodel", self.RT_sbmodel)
+	self.setParameterValue("RT_sbmodel",self.RT_sbmodel)
         self.createParameter( "RTdesignD4W", BOOL,"")
+	self.setParameterValue("RTdesignD4W",str(self.RT_sbmodel))
         self.createParameter( "RTdescur_path", STRING,"")
+	self.setParameterValue("RT_descur_path",self.RTdescur_path)
         self.RTavglife = 20             #average life span of a raintank
 	self.createParameter( "RTavglife", DOUBLE,"")
+	self.setParameterValue("RTavglife",str(self.RTavglife))
 
         #---SAND/PEAT/GRAVEL FILTER [SF]----------------------------------------
         self.SFstatus = 0
         self.createParameter( "SFstatus", BOOL,"")
+	self.setParameterValue("SFstatus",str(self.SFstatus))
         self.SFlevel = 0
         self.createParameter( "SFlevel", DOUBLE,"")
+	self.setParameterValue("SFlevel",str(self.SFlevel))
         self.SFgroup = 0
         self.createParameter( "SFgroup", DOUBLE,"")
+	self.setParameterValue("SFgroup",str(self.SFgroup))
         
         #---SEPTIC TANK [ST]---###TBA###----------------------------------------
         self.STstatus = 0
         self.createParameter( "STstatus", BOOL,"")
+	self.setParameterValue("STstatus",str(self.STstatus))
         self.STlevel = 0
         self.createParameter( "STlevel", DOUBLE,"")
+	self.setParameterValue("STlevel",str(self.STlevel))
         self.STgroup = 0
         self.createParameter( "STgroup", DOUBLE,"")
+	self.setParameterValue("STgroup",str(self.STgroup))
         
         #---SUBSURFACE IRRIGATION SYSTEM [IRR]---###TBA###----------------------
         self.IRRstatus = 0
         self.createParameter( "IRRstatus", BOOL,"")
+	self.setParameterValue("IRRstatus",str(self.IRRstatus))
         self.IRRlevel = 0
         self.createParameter( "IRRlevel", DOUBLE,"")
+	self.setParameterValue("IRRlevel",str(self.IRRlevel))
         self.IRRgroup = 0
         self.createParameter( "IRRgroup", DOUBLE,"")
+	self.setParameterValue("IRRgroup",str(self.IRRgroup))
         
         #---SUBSURFACE WETLAND/REED BED [WSUB]----------------------------------
         self.WSUBstatus = 0
         self.createParameter( "WSUBstatus", BOOL,"")
+	self.setParameterValue("WSUBstatus",str(self.WSUBstatus))
         self.WSUBlevel = 0
         self.createParameter( "WSUBlevel", DOUBLE,"")
+	self.setParameterValue("WSUBlevel",str(self.WSUBlevel))
         self.WSUBgroup = 0
         self.createParameter( "WSUBgroup", DOUBLE,"")
+	self.setParameterValue("WSUBgroup",str(self.WSUBgroup))
         
         #---SURFACE WETLAND [WSUR]----------------------------------------------
         self.WSURstatus = 1
         self.createParameter( "WSURstatus", BOOL,"")
+	self.setParameterValue("WSURstatus",str(self.WSURstatus))
         self.WSURlevel = 0
         self.createParameter( "WSURlevel", DOUBLE,"")
+	self.setParameterValue("WSURlevel",str(self.WSURlevel))
         self.WSURgroup = 0
         self.createParameter( "WSURgroup", DOUBLE,"")
+	self.setParameterValue("WSURgroup",str(self.WSURgroup))
         
         #Available Scales
         self.WSURneigh = True
         self.WSURprec = True
         self.createParameter( "WSURneigh", BOOL,"")
+	self.setParameterValue("WSURneigh",str(self.WSURneigh))
         self.createParameter( "WSURprec", BOOL,"")
+	self.setParameterValue("WSURprec",str(self.WSURprec))
         
         #Available Applications
         self.WSURflow = True
         self.WSURpollute = True
         self.createParameter( "WSURflow", BOOL,"")
+	self.setParameterValue("WSURflow",str(self.WSURflow))
         self.createParameter( "WSURpollute", BOOL,"")
+	self.setParameterValue("WSURpollute",str(self.WSURpollute))
         
         #Design Curves
         self.WSURdesignUB = True          #use DAnCE4Water's default curves to design system?
         self.WSURdescur_path = "no file"  #path for design curve
         self.createParameter( "WSURdesignUB", BOOL,"")
+	self.setParameterValue("WSURdesignUB",str(self.WSURdesignUB))
         self.createParameter( "WSURdescur_path", STRING,"")
+	self.setParameterValue("WSURdescur_path",self.WSURdescur_path)
         
         #Design Information
         self.WSURspec_EDD = 0.75
         self.createParameter( "WSURspec_EDD", DOUBLE,"")
+	self.setParameterValue("WSURspec_EDD",str(self.WSURspec_EDD))
         self.WSURmaxsize = 9999999           #maximum surface area of system in sqm
         self.createParameter( "WSURmaxsize", DOUBLE,"")
+	self.setParameterValue("WSURmaxsize",str(self.WSURmaxsize))
 	self.WSURavglife = 20             #average life span of a wetland
 	self.createParameter( "WSURavglife", DOUBLE,"")
+	self.setParameterValue("WSURavglife",str(self.WSURavglife))
 
         
         #---SWALES & BUFFER STRIPS [SW]-----------------------------------------
         self.SWstatus = 1
         self.createParameter( "SWstatus", BOOL,"")
+	self.setParameterValue("SWstatus",str(self.SWstatus))
         self.SWlevel = 0
         self.createParameter( "SWlevel", DOUBLE,"")
+	self.setParameterValue("SWlevel",str(self.SWlevel))
         self.SWgroup = 0
         self.createParameter( "SWgroup", DOUBLE,"")
+	self.setParameterValue("SWgroup",str(self.SWgroup))
         
         #Available Scales
         self.SWstreet = True
         self.createParameter( "SWstreet", BOOL,"")
+	self.setParameterValue("SWstreet",str(self.SWstreet))
         
         #Available Applications
         self.SWflow = True
         self.SWpollute = True
         self.createParameter( "SWflow", BOOL,"")
+	self.setParameterValue("SWflow",str(self.SWflow))
         self.createParameter( "SWpollute", BOOL,"")
+	self.setParameterValue("SWpollute",str(self.SWpollute))
         
         #Design Curves
         self.SWdesignUB = True          #use DAnCE4Water's default curves to design system?
         self.SWdescur_path = "no file"  #path for design curve
         self.createParameter( "SWdesignUB", BOOL,"")
+	self.setParameterValue("SWdesignUB",str(self.SWdesignUB))
         self.createParameter( "SWdescur_path", STRING,"")
+	self.setParameterValue("SWdescur_path",self.SWdescur_path)
         
         #Design Information
         self.SWspec = 0
         self.createParameter( "SWspec", DOUBLE,"")
+	self.setParameterValue("SWspec",str(self.SWspec))
         self.SWmaxsize = 9999           #maximum surface area of system in sqm
         self.createParameter( "SWmaxsize", DOUBLE,"")
+	self.setParameterValue("SWmaxsize",str(self.SWmaxsize))
 	self.SWavglife = 20             #average life span of a swale
 	self.createParameter( "SWavglife", DOUBLE,"")
+	self.setParameterValue("SWavglie",str(self.SWavglife))
 
 
         #---TREE PITS [TPS]---###TBA###-----------------------------------------
         self.TPSstatus = 0
         self.createParameter( "TPSstatus", BOOL,"")
+	self.setParameterValue("TPSstatus",str(self.TPSstatus))
         self.TPSlevel = 0
         self.createParameter( "TPSlevel", DOUBLE,"")
+	self.setParameterValue("TPSlevel",str(self.TPSlevel))
         self.TPSgroup = 0
         self.createParameter( "TPSgroup", DOUBLE,"")
+	self.setParameterValue("TPSgroup",str(self.TPSgroup))
         
         
         #---URINE-SEPARATING TOILET [UT]---###TBA###----------------------------
         self.UTstatus = 0
         self.createParameter( "UTstatus", BOOL,"")
+	self.setParameterValue("UTstatus",str(self.UTstatus))
         self.UTlevel = 0
         self.createParameter( "UTlevel", DOUBLE,"")
+	self.setParameterValue("UTlevel",str(self.UTlevel))
         self.UTgroup = 0
         self.createParameter( "UTgroup", DOUBLE,"")
+	self.setParameterValue("UTgroup",str(self.UTgroup))
         
         #---WASTEWATER RECOVERY & RECYCLING PLANT [WWRR]---###TBA###------------
         self.WWRRstatus = 0
         self.createParameter( "WWRRstatus", BOOL,"")
+	self.setParameterValue("WWRRstatus",str(self.WWRRstatus))
         self.WWRRlevel = 0
         self.createParameter( "WWRRlevel", DOUBLE,"")
+	self.setParameterValue("WWRRlevel",str(self.WWRRlevel))
         self.WWRRgroup = 0
         self.createParameter( "WWRRgroup", DOUBLE,"")
+	self.setParameterValue("WWRRgroup",str(self.WWRRlevel))
         
         #---WATERLESS/COMPOSTING TOILETS [WT]---###TBA###-----------------------
         self.WTstatus = 0
         self.createParameter( "WTstatus", BOOL,"")
+	self.setParameterValue("WTstatus",str(self.WTstatus))
         self.WTlevel = 0
         self.createParameter( "WTlevel", DOUBLE,"")
+	self.setParameterValue("WTlevel",str(self.WTlevel))
         self.WTgroup = 0
         self.createParameter( "WTgroup", DOUBLE,"")
+	self.setParameterValue("WTgroup",str(self.WTgroup))
         
         #---WATER EFFICIENT APPLIANCES [WEF]------------------------------------
         self.WEFstatus = 0
         self.createParameter( "WEFstatus", BOOL,"")
+	self.setParameterValue("WEFstatus",str(self.WEFstatus))
         self.WEFlevel = 0
         self.createParameter( "WEFlevel", DOUBLE,"")
+	self.setParameterValue("WEFlevel",str(self.WEFlevel))
         self.WEFgroup = 0
         self.createParameter( "WEFgroup", DOUBLE,"")
+	self.setParameterValue("WEFgroup",str(self.WEFgroup))
         
         self.WEF_implement_method = "LEG"
         self.LEG_force = False
@@ -580,15 +761,25 @@ class techplacement(Module):
         self.D4W_STMactive = False
         self.D4W_EVMactive = False
         self.createParameter( "WEF_implement_method", STRING,"")
+	self.setParameterValue("WEF_implement_method",self.WEF_implement_method)
         self.createParameter( "LEG_force", BOOL,"")
+	self.setParameterValue("LEG_force",str(self.LEG_force))
         self.createParameter( "LEG_minrate", DOUBLE,"")
+	self.setParameterValue("LEG_minrate",str(self.LEG_minrate))
         self.createParameter( "PPP_force", BOOL,"")
+	self.setParameterValue("PPP_force",str(self.PPP_force))
         self.createParameter( "PPP_likelihood", DOUBLE,"")
+	self.setParameterValue("PPP_likelihood",str(self.PPP_likelihood))
         self.createParameter( "SEC_force", BOOL,"")
+	self.setParameterValue("SEC_force",str(self.SEC_force))
         self.createParameter( "SEC_urbansim", BOOL,"")
+	self.setParameterValue("SEC_urbansim",str(self.SEC_urbansim))
         self.createParameter( "D4W_UDMactive", BOOL,"")
+	self.setParameterValue("D4W_UDMactive",str(self.D4W_UDMacitve))
         self.createParameter( "D4W_STMactive", BOOL,"")
+	self.setParameterValue("D4W_STMactive",str(self.D4W_STMactive))
         self.createParameter( "D4W_EVMactive", BOOL,"")
+	self.setParameterValue("D4W_EVMactive",str(self.D4W_EVMactive))
         
         self.WEF_rating_system = "AS"
         self.WEF_loc_famhouse = True
@@ -596,9 +787,13 @@ class techplacement(Module):
         self.WEF_loc_nonres = True
         self.WEF_flow_method = "M"
         self.createParameter( "WEF_rating_system", STRING,"")
+	self.setParameterValue("WEF_rating_system",self.WEF_rating_system)
         self.createParameter( "WEF_loc_famhouse", BOOL,"")
+	self.setParameterValue("WEF_loc_famhouse",str(self.WEF_loc_famhouse))
         self.createParameter( "WEF_loc_apart", BOOL,"")
+	self.setParameterValue("WEF_loc_apart",str(self.WEF_loc_famhouse))
         self.createParameter( "WEF_loc_nonres", BOOL,"")
+	self.setParameterValue("WEF_loc_nonres",str(self.WEF_loc_nonres))
         self.createParameter( "WEF_flow_method", STRING,"")
 	self.setParameterValue("WEF_flow_method", self.WEF_flow_method)
         
@@ -612,6 +807,7 @@ class techplacement(Module):
         #---REGIONAL INFORMATION -----------------------------------------------
         self.regioncity = "Melbourne"
         self.createParameter( "regioncity", STRING,"")
+	self.setParameterValue("Melbourne",self.regioncity)
         
         
         #---MULTI-CRITERIA INPUTS-----------------------------------------------
@@ -620,8 +816,11 @@ class techplacement(Module):
         self.scoringmatrix_default = False
         self.scoring_include_all = True
         self.createParameter( "scoringmatrix_path", STRING,"")
+	self.setParameterValue("scoringmatrix_path",self.scoringmatrix_path)
         self.createParameter( "scoringmatrix_default", BOOL,"")
+	self.setParameterValue("scoringmatrix_default",str(self.scoringmatrix_default))
         self.createParameter( "scoring_include_all", BOOL,"")
+	self.setParameterValue("scoring_include_all",str(self.scoring_unclude_all))
         
         #CUSTOMIZE EVALUATION CRITERIA
         self.bottomlines_tech = True   #Include criteria? Yes/No
@@ -643,30 +842,50 @@ class techplacement(Module):
         self.bottomlines_ecn_w = 1
         self.bottomlines_soc_w = 1
         self.createParameter( "bottomlines_tech", BOOL,"")
+	self.setParameterValue("bottomlines_tech",str(self.bottomlines_tech))
         self.createParameter( "bottomlines_env", BOOL,"")
+	self.setParameterValue("bottomlines_env",str(self.bottomlines_env))
         self.createParameter( "bottomlines_ecn",BOOL,"")
+	self.setParameterValue("bottomlines_ecn",str(self.bottomlines_ecn))
         self.createParameter( "bottomlines_soc", BOOL,"")
+	self.setParameterValue("bottomlines_soc",str(self.bottomlines_soc))
         self.createParameter( "bottomlines_tech_n", DOUBLE,"")
+	self.setParameterValue("bottomlines_tech_n", str(self.bottomlines_tech_n))
         self.createParameter( "bottomlines_env_n", DOUBLE,"")
+	self.setParameterValue("bottomlines_env_n",str(self.bottomlines_env_n))
         self.createParameter( "bottomlines_ecn_n", DOUBLE,"")
+	self.setParameterValue("bottomlines_ecn_n",str(self.bottomlines_ecn_n))
         self.createParameter( "bottomlines_soc_n", DOUBLE,"")
+	self.setParameterValue("bottomlines_soc_n",str(self.bottomlines_soc_n))
         self.createParameter( "eval_mode", STRING,"")
+	self.setParameterValue("eval_mode",self.eval_mode)
         self.createParameter( "bottomlines_tech_p", DOUBLE,"")
+	self.setParameterValue("bottomlines_tech_p",str(self.bottomlines_tech_p))
         self.createParameter( "bottomlines_env_p", DOUBLE,"")
+	self.setParameterValue("bottomlines_env_p",str(self.bottomlines_env_p))
         self.createParameter( "bottomlines_ecn_p", DOUBLE,"")
+	self.setParameterValue("bottomlines_ecn_p",str(self.bottomlines_ecn_p))
         self.createParameter( "bottomlines_soc_p", DOUBLE,"")
+	self.setParameterValue("bottomlines_soc_p",str(self.bottomlines_soc_p))
         self.createParameter( "bottomlines_tech_w", DOUBLE,"")
+	self.setParameterValue("bottomlines_tech_w",str(self.bottomlines_tech_w))
         self.createParameter( "bottomlines_env_w", DOUBLE,"")
+	self.setParameterValue("bottomlines_env_w",str(self.bottomlines_env_w))
         self.createParameter( "bottomlines_ecn_w", DOUBLE,"")
+	self.setParameterValue("bottomlines_ecn_w",str(self.bottomlines_ecn_w))
         self.createParameter( "bottomlines_soc_w", DOUBLE,"")
+	self.setParameterValue("bottomlines_soc_w",str(self.bottomlines_ecn_w))
         
         #SCORING OF STRATEGIES
         self.scope_stoch = False
         self.score_method = "AHP"       #MCA scoring method
         self.tech2strat_method = "EqW"  #How to merge technology scores into strategy score
         self.createParameter( "scope_stoch", BOOL,"")
+	self.setParameterValue("scope_stoch",str(self.scope_stoch))
         self.createParameter( "score_method", STRING,"")
+	self.setParameterValue("score_method",self.score_method)
         self.createParameter( "tech2strat_method", STRING,"")
+	self.setParameterValue("tech2strat_method",self.tech2strat_method)
         
         #RANKING OF STRATEGIES
         self.ranktype = "RK"            #CI = Confidence Interval, RK = ranking
@@ -674,8 +893,11 @@ class techplacement(Module):
         self.conf_int = 95
         self.ingroup_scoring = "Avg"
         self.createParameter( "ranktype", STRING,"")
+	self.setParameterValue("ranktype",self.ranktype)
         self.createParameter( "topranklimit", DOUBLE,"")
+	self.setParameterValue("topranklimit",str(self.topranklimit))
         self.createParameter( "conf_int", DOUBLE,"")
+	self.setParameterValue("conf_int",str(self.conf_int))
         self.createParameter( "ingroup_scoring", STRING,"")
 	self.setParameterValue("ingroup_scoring", self.ingroup_scoring)
         
@@ -683,7 +905,7 @@ class techplacement(Module):
 	#Views
 	self.blocks = View("Block", FACE,WRITE)
 	self.blocks.getAttribute("Status")
-	self.blocks.getAttribute("ResTIArea")
+	self.blocks.getAttribute("ResTIArea")	
 	self.blocks.addAttribute("HasLotS")
 	self.blocks.addAttribute("HasNeighS")
 	self.blocks.addAttribute("HasStreetS")
@@ -909,7 +1131,7 @@ class techplacement(Module):
 #	dcvdirectory = homeDir + '/Documents/UrbanBEATS/UrbanBeatsModules/wsuddcurves/'
 #	print dcvdirectory
 	#dcvdirectory = "C:\\Users\\Peter M Bach\\Documents\\UrbanBEATS Development\\__urbanBEATS\\wsuddcurves\\"
-	dcvdirectory = "UrbanBEATS\UrbanBeatsModules\wsuddcurves\\"
+	dcvdirectory = "./UrbanBEATS/UrbanBeatsModules/wsuddcurves/"
 	#dcvdirectory = "C:\\Heiko\\WSC\\data\\wsuddcurves\\"
 	city = self.getData("City")
 	self.initBLOCKIDtoUUID(city)
