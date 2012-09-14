@@ -270,6 +270,7 @@ class ubp_facilities(Module):
                 + landclassvec[7] + landclassvec[9]
             if block_status == 0 or tot_facilities_area == 0:           #2 conditions to skip: (1) status = 0, (2) no facilities
                 print "BlockID"+str(currentID)+" is not active or has no relevant facilities area"
+		facilities_attr.addAttribute("HasFacilities", 0)
                 continue
             #IF NOT SKIPPED, PLAN URBAN FORM
             facilities_attr.addAttribute("HasFacilities", 1)

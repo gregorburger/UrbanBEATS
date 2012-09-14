@@ -213,7 +213,7 @@ class urbplansummary(Module):
         #--------------------------------------------------------------------------------#
         #         LOOP OVER EACH BLOCK IN THE GRID AND UPDATE THE ATTRIBUTES LIST        #
         #--------------------------------------------------------------------------------#
-        
+
         for i in range(int(blocks_num)):
             currentID = i + 1
             currentAttList = self.getBlockUUID(currentID,city)
@@ -238,8 +238,33 @@ class urbplansummary(Module):
             res_uuid = currentAttList.getAttribute("ResidentialID").getString()
 	    res_list = city.getComponent( res_uuid)
 	    
-	    #if str(ress_uuid).empty() 
+	    #if str(ress_uuid).empty()
             if res_list.getAttribute("HasResidential").getDouble() == 0:
+		currentAttList.addAttribute("ResAllots", 0)
+                currentAttList.addAttribute("ResType", 0)
+                currentAttList.addAttribute("ResLotOccup", 0)
+                currentAttList.addAttribute("AvgAllot_A", 0)
+                currentAttList.addAttribute("AvgAllot_W", 0)
+                currentAttList.addAttribute("AvgAllot_D", 0)
+                currentAttList.addAttribute("ResLotPubDW_A", 0)
+                currentAttList.addAttribute("ResLotPrivDW_A", 0)
+                currentAttList.addAttribute("Collect_WLane", 0)
+                currentAttList.addAttribute("Foot_W", 0)
+                currentAttList.addAttribute("NStrip_W", 0)
+                currentAttList.addAttribute("ResLotRoofA", 0)
+                currentAttList.addAttribute("ResLotImpA", 0)
+                currentAttList.addAttribute("ResLotConImpA", 0)
+                currentAttList.addAttribute("ResLotDscImpA", 0)
+                currentAttList.addAttribute("ResLotRoofConnect", 0)
+                currentAttList.addAttribute("ResTIArea", 0)
+                currentAttList.addAttribute("ResEIArea", 0)
+                currentAttList.addAttribute("ResTIF", 0)
+                currentAttList.addAttribute("ResEIF", 0)
+                currentAttList.addAttribute("ResPVArea", 0)
+                currentAttList.addAttribute("ResDCIArea", 0)
+                currentAttList.addAttribute("AvlResLot", 0)                   	#available space on lot
+                currentAttList.addAttribute("TotStreetA", 0)     		#total street Area
+                currentAttList.addAttribute("AvlStreet", 0)    			#available street space
                 pass
             else:
                 currentAttList.addAttribute("ResAllots", res_list.getAttribute("ResAllots").getDouble())
@@ -255,7 +280,7 @@ class urbplansummary(Module):
                 currentAttList.addAttribute("NStrip_W", res_list.getAttribute("NStrip_W").getDouble())
                 currentAttList.addAttribute("ResLotRoofA", res_list.getAttribute("ResLotRoofA").getDouble())
                 currentAttList.addAttribute("ResLotImpA", res_list.getAttribute("ResLotImpA").getDouble())
-                currentAttList.addAttribute("ResLotConImpA", res_list.getAttribute("ResLotConImpA").getDouble())
+                currentAttList.addAttribute("ResLotConImpA", float(res_list.getAttribute("ResLotConImpA").getDouble()))
                 currentAttList.addAttribute("ResLotDscImpA", res_list.getAttribute("ResLotDscImpA").getDouble())
                 currentAttList.addAttribute("ResLotRoofConnect", res_list.getAttribute("ResLotRoofConnect").getDouble())
                 currentAttList.addAttribute("ResTIArea", res_list.getAttribute("ResTIArea").getDouble())
@@ -276,6 +301,12 @@ class urbplansummary(Module):
             nonres_uuid = currentAttList.getAttribute("NonResidentialID").getString()
 	    nonres_list = city.getComponent( nonres_uuid)
             if nonres_list.getAttribute("HasNonRes").getDouble() == 0:
+		currentAttList.addAttribute("HasIndustry", 0)
+                currentAttList.addAttribute("HasCommercial", 0)
+                currentAttList.addAttribute("AIndustry", 0)
+                currentAttList.addAttribute("ACommercial", 0)
+                currentAttList.addAttribute("AImp_Ind", 0)
+                currentAttList.addAttribute("AImp_Com", 0)
                 pass
             else:
                 currentAttList.addAttribute("HasIndustry", nonres_list.getAttribute("HasIndustry").getDouble())
@@ -293,6 +324,21 @@ class urbplansummary(Module):
             fac_uuid = currentAttList.getAttribute("FacilitiesID").getString()
 	    facilities_list = city.getComponent( fac_uuid)
             if facilities_list.getAttribute("HasFacilities").getDouble() == 0:
+		currentAttList.addAttribute("MunATot", 0)
+                currentAttList.addAttribute("MunAimp", 0)
+                currentAttList.addAttribute("MunAeimp", 0)
+                currentAttList.addAttribute("MunAperv", 0)
+                currentAttList.addAttribute("MunAroof", 0)
+                currentAttList.addAttribute("MunTIF", 0)
+                currentAttList.addAttribute("MunEIF", 0)
+                
+                currentAttList.addAttribute("TrATot", 0)
+                currentAttList.addAttribute("TrAimp", 0)
+                currentAttList.addAttribute("TrAeimp", 0)
+                currentAttList.addAttribute("TrAperv", 0)
+                currentAttList.addAttribute("TrAroof", 0)
+                currentAttList.addAttribute("TrTIF", 0)
+                currentAttList.addAttribute("TrEIF", 0)
                 pass
             else:
                 currentAttList.addAttribute("MunATot", facilities_list.getAttribute("MunATot").getDouble())

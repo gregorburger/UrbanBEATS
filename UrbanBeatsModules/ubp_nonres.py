@@ -267,6 +267,7 @@ class ubp_nonres(Module):
 		+ landclassvec[3] + landclassvec[4]
             if block_status == 0 or tot_nonres_area == 0:
                 print "BlockID"+str(currentID)+" not active or no relevant non-res area"
+		nonres_attr.addAttribute("HasNonRes", 0)
                 continue
             #IF NOT SKIPPED, PLAN URBAN FORM
             nonres_attr.addAttribute("HasNonRes", 1)

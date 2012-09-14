@@ -213,17 +213,18 @@ class WriteResults2MUSIC(Module):
             street_count = 0
             neigh_count = 0
             prec_count = 0
+
 	    if self.getWsud(i+1,"L") != "":
             	if self.getWsud(i+1,"L").getAttribute("Location").getDouble() != 0: #if systems HAS a location, then
                     lot_count = 1 #system exists!
-            if self.getWsud(i+1,"S") != "":    
-		if self.getWsud(i+1,"S").getAttribute("Location") != 0:
+            if self.getWsud(i+1,"S") != "":
+		if self.getWsud(i+1,"S").getAttribute("Location").getDouble() != 0:
 	            street_count = 1
 	    if self.getWsud(i+1,"N") != "":
-                if self.getWsud(i+1,"N").getAttribute("Location") != 0:
+                if self.getWsud(i+1,"N").getAttribute("Location").getDouble() != 0:
                     neigh_count = 1
 	    if self.getWsud(i+1,"P") != "":
-	        if self.getWsud(i+1,"P").getAttribute("Location") != 0:
+	        if self.getWsud(i+1,"P").getAttribute("Location").getDouble() != 0:
                     prec_count = 1
             total_systems = lot_count + street_count + neigh_count + prec_count
             system_list.append([lot_count, street_count, neigh_count, prec_count])
@@ -244,6 +245,7 @@ class WriteResults2MUSIC(Module):
             currentID = i+1
             currentAttList = self.getBlockUUID(currentID,city)        #attribute list of current block structure
             current_soilK = currentAttList.getAttribute("Soil_k").getDouble()
+
             if currentAttList.getAttribute("Status").getDouble() == 0:
                 #skips the for loop iteration to the next block, not more needs to be done
                 continue
@@ -252,6 +254,7 @@ class WriteResults2MUSIC(Module):
             
             blockX = currentAttList.getAttribute("Centre_x").getDouble()
             blockY = currentAttList.getAttribute("Centre_y").getDouble()
+
             #lot scale node = x - size/2, y + size/2
             #lot scale untreated = x - size/2, y
             #street scale = x - size/2, y - size/2
@@ -265,7 +268,6 @@ class WriteResults2MUSIC(Module):
             total_catch_imparea = currentAttList.getAttribute("ResTIArea").getDouble()/10000
             total_lot_impA = (currentAttList.getAttribute("ResAllots").getDouble()*currentAttList.getAttribute("ResLotImpA").getDouble())/10000
             street_imp_area = total_catch_imparea - total_lot_impA
-            
             ncount_list = []
                 
             if system_list[i][0] == 0:
@@ -292,7 +294,7 @@ class WriteResults2MUSIC(Module):
             if system_list[i][0] != 0:
 		wsud_attr = self.getWsud(i+1,"L")
                 lottype = wsud_attr.getAttribute("Type").getString()
-                print lottype
+
                 parameter_list = [1,1]
                 ncount_list.append(ncount)
                 if lottype == "BF":
@@ -303,11 +305,15 @@ class WriteResults2MUSIC(Module):
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
                     
+
+
                     #sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
                     sysfd = wsud_attr.getAttribute("FDepth").getDouble()
-                    
+                   
+
                     parameter_list = [sysedd, sysarea, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), 180, sysfd, current_soilK] #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
-                    umusic.writeMUSICnodeBF(ufile, currentID, "L", ncount, blockX*scalar, (blockY+blocks_size/4)*scalar, parameter_list)
+
+		    umusic.writeMUSICnodeBF(ufile, currentID, "L", ncount, blockX*scalar, (blockY+blocks_size/4)*scalar, parameter_list)
                 elif lottype == "IS":
                     #setup parameter list
                     #parameter_list = [surface area, EDD, filter area, unlined perimeter, filterdepth, exfiltration]
@@ -315,9 +321,11 @@ class WriteResults2MUSIC(Module):
                     #sysedd = float(des_attr.getStringAttribute("ISspec_EDD"))
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
+
                     #sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
                     sysfd = wsud_attr.getAttribute("FDepth").getDouble()
                     
+
                     parameter_list = [sysarea, sysedd, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), sysfd, current_soilK] #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
                     
                     umusic.writeMUSICnodeIS(ufile, currentID, "L", ncount, blockX*scalar, (blockY+blocks_size/4)*scalar, parameter_list)
@@ -331,6 +339,7 @@ class WriteResults2MUSIC(Module):
 		wsud_attr = self.getWsud(i+1,"S")
                 streettype = wsud_attr.getAttribute("Type").getString()
                 parameter_list = [1,1]
+
                 ncount_list.append(ncount)
                 if streettype == "BF":
                     #setup parameter list:
@@ -339,10 +348,12 @@ class WriteResults2MUSIC(Module):
                     #sysedd = float(des_attr.getStringAttribute("BFspec_EDD"))
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
+
                     
                     #sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
                     sysfd = wsud_attr.getAttribute("FDepth").getDouble()
                     
+
                     parameter_list = [sysedd, sysarea, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), 180, sysfd, current_soilK]
                     umusic.writeMUSICnodeBF(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
                     pass
@@ -353,10 +364,12 @@ class WriteResults2MUSIC(Module):
                     #sysedd = float(des_attr.getStringAttribute("ISspec_EDD"))
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
+
                     
                     #sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
                     sysfd = wsud_attr.getAttribute("FDepth").getDouble()
                     
+
                     parameter_list = [sysarea, sysedd, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), sysfd, current_soilK]
                     umusic.writeMUSICnodeIS(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
                     pass
@@ -364,8 +377,12 @@ class WriteResults2MUSIC(Module):
                     #setup parameter list
                     #parameter_list = [length, bedslope, Wbase, Wtop, depth, veg.height, exfilrate]
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
+
                     parameter_list = [sysarea/4, 5, 2, 6, float(1.0/3.0),0.05, current_soilK] #[length, bedslope, Wbase, Wtop, depth, veg.height, exfilrate]
                     umusic.writeMUSICnodeSW(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
+
+
+
                     pass
                 #writedetail = eval('umusic.writeMUSICnode'+str(streettype)+'('+str(ufile)+','+str(currentID)+',S,'+str(ncount)+','+str(blockX*scalar)+","+str(blockY*scalar)+','+str(parameter_list)+')')
                 ncount += 1
@@ -375,7 +392,8 @@ class WriteResults2MUSIC(Module):
             #Find the neigh-scale system, write the node
             if system_list[i][2] != 0:
 		wsud_attr = self.getWsud(i+1,"N")
-                neightype = wsud_attr.getAttribute("Type").getDouble()
+                neightype = wsud_attr.getAttribute("Type").getString()
+
                 parameter_list = [1,1]
                 ncount_list.append(ncount)
                 if neightype == "BF":
@@ -385,10 +403,10 @@ class WriteResults2MUSIC(Module):
                     #sysedd = float(des_attr.getStringAttribute("BFspec_EDD"))
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
-                    
+
                     #sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
                     sysfd = wsud_attr.getAttribute("FDepth").getDouble()
-                    
+
                     parameter_list = [sysedd, sysarea, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), 180, sysfd, current_soilK]
                     umusic.writeMUSICnodeBF(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
                     pass
@@ -399,10 +417,12 @@ class WriteResults2MUSIC(Module):
                     #sysedd = float(des_attr.getStringAttribute("ISspec_EDD"))
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
+
                     
                     #sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
                     sysfd = wsud_attr.getAttribute("FDepth").getDouble()
                     
+
                     parameter_list = [sysarea, sysedd, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), sysfd, current_soilK]
                     
                     parameter_list = [10, 0.2, 10, 14, 1, 100] #[pond_area, EDD, filter area, unlined filter perimeter, depth, exfil rate]
@@ -412,6 +432,7 @@ class WriteResults2MUSIC(Module):
                     #setup parameter list:
                     #parameter_list = [surface area, EDD, permanent pool, exfil, eq pipe diam, det time]
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
+
                     
                     #sysedd = float(des_attr.getStringAttribute("WSURspec_EDD"))
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
@@ -423,10 +444,14 @@ class WriteResults2MUSIC(Module):
                     #setup parameter list:
                     #parameter_list = [surface area, mean depth, permanent pool, exfil, eq pipe diam, det time]
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
+
                     
                     #sysedd = float(des_attr.getStringAttribute("PBspec_MD"))
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
-                    
+
+
+
+
                     parameter_list = [sysarea, sysedd, sysarea*0.2, current_soilK, 1000*numpy.sqrt(((0.895*sysarea*sysedd)/(72*3600*0.6*0.25*numpy.pi*numpy.sqrt(2*9.81*sysedd)))), 72.0]
                     
                     umusic.writeMUSICnodePB(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
@@ -480,7 +505,7 @@ class WriteResults2MUSIC(Module):
                 ncount_list.append(0)
             else:
 		wsud_attr = self.getWsud(i+1,"P")
-                prectype = wsud_attr.getAttribute("Type").getDouble()
+                prectype = wsud_attr.getAttribute("Type").getString()
                 parameter_list = [1,1]
                 ncount_list.append(ncount)
                 if prectype == "BF":
@@ -491,6 +516,7 @@ class WriteResults2MUSIC(Module):
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
                     
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
+
                     
                     #sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
                     sysfd = wsud_attr.getAttribute("FDepth").getDouble()
@@ -506,6 +532,7 @@ class WriteResults2MUSIC(Module):
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
                     
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
+
                     
                     #sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
                     sysfd = wsud_attr.getAttribute("FDepth").getDouble()
@@ -517,6 +544,7 @@ class WriteResults2MUSIC(Module):
                     #setup parameter list
                     #parameter_list = [surface area, EDD, permanent pool, exfil, eq pipe diam, det time]
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
+
                     
                     #sysedd = float(des_attr.getStringAttribute("WSURspec_EDD"))
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
@@ -528,12 +556,13 @@ class WriteResults2MUSIC(Module):
                     #setup parameter list:
                     #parameter_list = [surface area, mean depth, permanent pool, exfil, eq pipe diam, det time]
                     sysarea = wsud_attr.getAttribute("SysArea").getDouble()/wsud_attr.getAttribute("EAFact").getDouble()
+
                     
                     #sysedd = float(des_attr.getStringAttribute("PBspec_MD"))
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
                     
                     parameter_list = [sysarea, sysedd, sysarea*0.2, current_soilK, 1000*numpy.sqrt(((0.895*sysarea*sysedd)/(72*3600*0.6*0.25*numpy.pi*numpy.sqrt(2*9.81*sysedd)))), 72.0]
-                    
+
                     umusic.writeMUSICnodePB(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
                     pass
                 #writedetail = eval('umusic.writeMUSICnode'+str(neightype)+'('+str(ufile)+','+str(currentID)+',N,'+str(ncount)+','+str(blockX*scalar)+","+str((blockY-blocks_size/4)*scalar)+','+str(parameter_list)+')')
@@ -573,11 +602,11 @@ class WriteResults2MUSIC(Module):
                 #skips the for loop iteration to the next block, not more needs to be done
                 continue
             
-            print currentID
+            print "Block " + str(currentID)
             upindex = musicnodedb[0].index(currentID)
             ncount_list_up = musicnodedb[1][upindex]
 
-            downID = currentAttList.getAttribute("downstrID").getDouble()
+            downID = int(round(currentAttList.getAttribute("downstrID").getDouble()))
             print downID
             if downID == -1:
                 downID = int(round(currentAttList.getAttribute("drainto_ID").getDouble()))
@@ -590,5 +619,5 @@ class WriteResults2MUSIC(Module):
                 downindex = musicnodedb[0].index(downID)
                 ncount_list_down = musicnodedb[1][downindex]
                 umusic.writeMUSIClink(ufile, max(ncount_list_up[5:]), ncount_list_down[5])
-                
+           	print "up " + str(max(ncount_list_up[5:])) + "/" + "down " + str(ncount_list_down[5])
         umusic.writeMUSICfooter(ufile)

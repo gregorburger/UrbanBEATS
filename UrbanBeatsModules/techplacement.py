@@ -1510,6 +1510,14 @@ class techplacement(Module):
             
             block_status = currentAttList.getAttribute("Status").getDouble()
             if block_status == 0 or currentAttList.getAttribute("ResTIArea").getDouble() == 0:
+	        currentAttList.addAttribute("HasLotS", 0)
+	        currentAttList.addAttribute("HasStreetS", 0)
+		currentAttList.addAttribute("HasNeighS", 0)
+	        currentAttList.addAttribute("HasPrecS", 0)
+	        currentAttList.addAttribute("MaxLotDeg", 0)
+	        currentAttList.addAttribute("IAServiced", 0)
+	        currentAttList.addAttribute("IADeficit", 0)
+	        currentAttList.addAttribute("UpstrImpTreat", 0)
                 continue
             
             currentAttList.addAttribute("HasLotS", 0)

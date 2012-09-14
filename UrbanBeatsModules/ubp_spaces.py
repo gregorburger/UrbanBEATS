@@ -277,6 +277,7 @@ class ubp_spaces(Module):
                 + landclassvec[10] + landclassvec[11] + landclassvec[12]
             if block_status == 0 or total_space_area == 0:              #2 conditions to skip: (1) status = 0, (2) no spaces areas
                 print "BlockID"+str(currentID)+" is not active in simulation"
+		spaces_attr.addAttribute("HasSpaces", 0)
                 continue
             #IF NOT SKIPPED, PLAN URBAN FORM
             spaces_attr.addAttribute("HasSpaces", 1)

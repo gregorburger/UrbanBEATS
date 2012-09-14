@@ -300,6 +300,7 @@ class techstrategy_eval(Module):
         basin_target_min = des_attr.getAttribute("basin_target_min").getDouble() /100
         basin_target_max = des_attr.getAttribute("basin_target_max").getDouble() /100
         
+
         lot_alts_complete = [0]
         for i in range(int(lot_increment)):
             lot_alts_complete.append(float(1/lot_increment*(i+1)))
@@ -873,10 +874,8 @@ class techstrategy_eval(Module):
 	    
             for j in range(len(basinblockIDs)):
                 currentblockID = basinblockIDs[j]
-		print "BATIA: " + str(batia)
-		print "BTIA : " + str(btia)
                 batia += self.getBlockUUID(currentblockID,city).getAttribute("IAServiced").getDouble()#blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("IAServiced")
-                batia += self.getBlockUUID(currentblockID,city).getAttribute("UpstrImTreat").getDouble()#blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("UpstrImpTreat")
+                batia += self.getBlockUUID(currentblockID,city).getAttribute("UpstrImpTreat").getDouble()#blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("UpstrImpTreat")
                 btia += self.getBlockUUID(currentblockID,city).getAttribute("ResTIArea").getDouble()#blockcityout.getAttributes("BlockID"+str(currentblockID)).getAttribute("ResTIArea")
             ### THIS HAS TO BE ADDED TO THE TOTAL BASIN STRATEGIES LIST LATER ON! ###
 		
@@ -1488,6 +1487,7 @@ class techstrategy_eval(Module):
                     wsud_attr.addAttribute("Upgrades", 0)
                     
                     #Transfer the key system specs:
+		    wsud_attr.addAttribute("WDepth",0)
                     if current_wsud.getType() in ["BF", "IS", "WSUR"]:
                         wsud_attr.addAttribute("WDepth", float(des_attr.getAttribute(current_wsud.getType()+"spec_EDD").getDouble()))
                     if current_wsud.getType() in ["PB"]:
@@ -1525,6 +1525,7 @@ class techstrategy_eval(Module):
                     wsud_attr.addAttribute("Upgrades", 0)
                     
                     #Transfer the key system specs:
+		    wsud_attr.addAttribute("WDepth",0)
                     if outblock_strat.getType() in ["BF", "IS", "WSUR"]:
                         wsud_attr.addAttribute("WDepth", float(des_attr.getAttribute(outblock_strat.getType()+"spec_EDD").getDouble()))
                     if outblock_strat.getType() in ["PB"]:
