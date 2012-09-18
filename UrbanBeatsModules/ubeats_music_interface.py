@@ -90,6 +90,57 @@ def writeMUSICcatchmentnode(f, ID, nodepart, ncount, x, y, area, imp, parameter_
     f.write("------------------------------------------------------------------------------------\n")
     return True
 
+def writeMUSICcatchmentnode2(f, ID, nodepart, ncount, x, y, area, imp, parameter_list):
+    #f = filename variables, ID = block ID, nodepart = lot/street/treat/untreat x = x-coordinate of block, y = y-coordinate of block
+    f.write("Node Type,UrbanSourceNode,{Node Type}\n")
+    f.write("Node Name,"+str(ID)+str(nodepart)+",{Node Name}\n")
+    f.write("Node ID,"+str(ncount)+",{Node ID}\n")
+    f.write("Coordinates,"+str(x)+":"+str(y)+",{Coordinates}{X:Y}\n")
+    f.write("General - Location,"+str(ID)+str(nodepart)+",\n")
+    f.write("General - Notes,,\n")
+    f.write("General - Fluxes - Daily,,\n")
+    f.write("General - Fluxes - Sub-Daily,,\n")
+    f.write("Areas - Total Area (ha),"+str(area)+",{ha}\n")
+    f.write("Areas - Impervious (%),0,{%}\n")
+    f.write("Areas - Pervious (%),"+str((imp)*100)+",{%}\n")
+    f.write("Rainfall-Runoff - Impervious Area - Rainfall Threshold (mm/day),"+str(parameter_list[0])+",{mm/day}\n")
+    f.write("Rainfall-Runoff - Pervious Area - Soil Storage Capacity (mm),"+str(parameter_list[1])+",{mm}\n")
+    f.write("Rainfall-Runoff - Pervious Area - Initial Storage (% of Capacity),"+str(parameter_list[2])+",{% of Capacity}\n")
+    f.write("Rainfall-Runoff - Pervious Area - Field Capacity (mm),"+str(parameter_list[3])+",{mm}\n")
+    f.write("Rainfall-Runoff - Pervious Area - Infiltration Capacity Coefficient - a,"+str(parameter_list[4])+",\n")
+    f.write("Rainfall-Runoff - Pervious Area - Infiltration Capacity Exponent - b,"+str(parameter_list[5])+",\n")
+    f.write("Rainfall-Runoff - Groundwater Properties - Initial Depth (mm),"+str(parameter_list[6])+",{mm}\n")
+    f.write("Rainfall-Runoff - Groundwater Properties - Daily Recharge Rate (%),"+str(parameter_list[7])+",{%}\n")
+    f.write("Rainfall-Runoff - Groundwater Properties - Daily Baseflow Rate (%),"+str(parameter_list[8])+",{%}\n")
+    f.write("Rainfall-Runoff - Groundwater Properties - Daily Deep Seepage Rate (%),"+str(parameter_list[9])+",{%}\n")
+    f.write("Total Suspended Solids - Base Flow Concentration - Mean (log mg/L),1.1,{log mg/L}\n")
+    f.write("Total Suspended Solids - Base Flow Concentration - Std Dev (log mg/L),0.17,{log mg/L}\n")
+    f.write("Total Suspended Solids - Base Flow Concentration - Estimation Method,1,{Index from 0 to 1 for \"Mean\" | \"Stochastically generated\"}\n")
+    f.write("Total Suspended Solids - Base Flow Concentration - Serial Correlation (R squared),0,{R squared}\n")
+    f.write("Total Suspended Solids - Storm Flow Concentration - Mean (log mg/L),2.2,{log mg/L}\n")
+    f.write("Total Suspended Solids - Storm Flow Concentration - Std Dev (log mg/L),0.32,{log mg/L}\n")
+    f.write("Total Suspended Solids - Storm Flow Concentration - Estimation Method,1,{Index from 0 to 1 for \"Mean\" | \"Stochastically generated\"}\n")
+    f.write("Total Suspended Solids - Storm Flow Concentration - Serial Correlation (R squared),0,{R squared}\n")
+    f.write("Total Phosphorus - Base Flow Concentration - Mean (log mg/L),-0.82,{log mg/L}\n")
+    f.write("Total Phosphorus - Base Flow Concentration - Std Dev (log mg/L),0.19,{log mg/L}\n")
+    f.write("Total Phosphorus - Base Flow Concentration - Estimation Method,1,{Index from 0 to 1 for \"Mean\" | \"Stochastically generated\"}\n")
+    f.write("Total Phosphorus - Base Flow Concentration - Serial Correlation (R squared),0,{R squared}\n")
+    f.write("Total Phosphorus - Storm Flow Concentration - Mean (log mg/L),-0.45,{log mg/L}\n")
+    f.write("Total Phosphorus - Storm Flow Concentration - Std Dev (log mg/L),0.25,{log mg/L}\n")
+    f.write("Total Phosphorus - Storm Flow Concentration - Estimation Method,1,{Index from 0 to 1 for \"Mean\" | \"Stochastically generated\"}\n")
+    f.write("Total Phosphorus - Storm Flow Concentration - Serial Correlation (R squared),0,{R squared}\n")
+    f.write("Total Nitrogen - Base Flow Concentration - Mean (log mg/L),0.32,{log mg/L}\n")
+    f.write("Total Nitrogen - Base Flow Concentration - Std Dev (log mg/L),0.12,{log mg/L}\n")
+    f.write("Total Nitrogen - Base Flow Concentration - Estimation Method,1,{Index from 0 to 1 for \"Mean\" | \"Stochastically generated\"}\n")
+    f.write("Total Nitrogen - Base Flow Concentration - Serial Correlation (R squared),0,{R squared}\n")
+    f.write("Total Nitrogen - Storm Flow Concentration - Mean (log mg/L),0.42,{log mg/L}\n")
+    f.write("Total Nitrogen - Storm Flow Concentration - Std Dev (log mg/L),0.19,{log mg/L}\n")
+
+    f.write("Total Nitrogen - Storm Flow Concentration - Estimation Method,1,{Index from 0 to 1 for \"Mean\" | \"Stochastically generated\"}\n")
+    f.write("Total Nitrogen - Storm Flow Concentration - Serial Correlation (R squared),0,{R squared}\n")
+    f.write("------------------------------------------------------------------------------------\n")
+    return True
+
 def writeMUSICnodeWSUR(f, ID, nodepart, ncount, x, y, parameter_list):
     #parameter_list = [50, 1, 50, 0, 200]                #[Asurface, EDD, Perm. Pool Vol, Exfil Rate, Pipe Diameter]
     f.write("Node Type,WetlandNode,{Node Type}\n")
@@ -294,6 +345,61 @@ def writeMUSIClink(f, upN, downN):
     f.write("------------------------------------------------------------------------------------\n")
     return True
 
+def writeMUSIClinkToFlux(f, upN, downN):
+    f.write("Link Name,Drainage Link,\n")
+    f.write("Source Node ID,"+str(upN)+",{The is the ID of the upstream node}\n")
+    f.write("Target Node ID,"+str(downN)+",{This is the ID of the downstream node}\n")
+    f.write("Routing,Not Routed,{either \"Not Routed\" or \"Routed\"}\n")
+    f.write("Muskingum K,30,{no value required for no routing or \"numerical value\" for routed}\n")
+    f.write("Muskingum Theta,0.25,{no value required for no routing or \"numerical value\" for routed. Must be between 0.1 and 0.49}\n")
+    f.write("Secondary Outflow Components,Evapotranspiration,{for secondary drainage link only}\n")
+    f.write("------------------------------------------------------------------------------------\n")
+    return True
+
+def writeMUSIClinkToInfilFlux1(f, upN, downN):
+    f.write("Link Name,Drainage Link,\n")
+    f.write("Source Node ID,"+str(upN)+",{The is the ID of the upstream node}\n")
+    f.write("Target Node ID,"+str(downN)+",{This is the ID of the downstream node}\n")
+    f.write("Routing,Not Routed,{either \"Not Routed\" or \"Routed\"}\n")
+    f.write("Muskingum K,30,{no value required for no routing or \"numerical value\" for routed}\n")
+    f.write("Muskingum Theta,0.25,{no value required for no routing or \"numerical value\" for routed. Must be between 0.1 and 0.49}\n")
+    f.write("Secondary Outflow Components,Pipe Flow; Infiltration,{for secondary drainage link only}\n")
+    f.write("------------------------------------------------------------------------------------\n")
+    return True
+
+def writeMUSIClinkToInfilFlux2(f, upN, downN):
+    f.write("Link Name,Drainage Link,\n")
+    f.write("Source Node ID,"+str(upN)+",{The is the ID of the upstream node}\n")
+    f.write("Target Node ID,"+str(downN)+",{This is the ID of the downstream node}\n")
+    f.write("Routing,Not Routed,{either \"Not Routed\" or \"Routed\"}\n")
+    f.write("Muskingum K,30,{no value required for no routing or \"numerical value\" for routed}\n")
+    f.write("Muskingum Theta,0.25,{no value required for no routing or \"numerical value\" for routed. Must be between 0.1 and 0.49}\n")
+    f.write("Secondary Outflow Components,Infiltration,{for secondary drainage link only}\n")
+    f.write("------------------------------------------------------------------------------------\n")
+    return True
+
+def writeMUSIClinkToIgnore(f,upN,downN):
+    f.write("Link Name,Drainage Link,\n")
+    f.write("Source Node ID,"+str(upN)+",{The is the ID of the upstream node}\n")
+    f.write("Target Node ID,"+str(downN)+",{This is the ID of the downstream node}\n")
+    f.write("Routing,Not Routed,{either \"Not Routed\" or \"Routed\"}\n")
+    f.write("Muskingum K,30,{no value required for no routing or \"numerical value\" for routed}\n")
+    f.write("Muskingum Theta,0.25,{no value required for no routing or \"numerical value\" for routed. Must be between 0.1 and 0.49}\n")
+    f.write("Secondary Outflow Components, Impervious Storm Flow,{for secondary drainage link only}")
+    f.write("------------------------------------------------------------------------------------\n")
+    return True
+
+def writeMUSIClinkToFrequenzy(f,upN,downN):
+    f.write("Link Name,Drainage Link,\n")
+    f.write("Source Node ID,"+str(upN)+",{The is the ID of the upstream node}\n")
+    f.write("Target Node ID,"+str(downN)+",{This is the ID of the downstream node}\n")
+    f.write("Routing,Not Routed,{either \"Not Routed\" or \"Routed\"}\n")
+    f.write("Muskingum K,30,{no value required for no routing or \"numerical value\" for routed}\n")
+    f.write("Muskingum Theta,0.25,{no value required for no routing or \"numerical value\" for routed. Must be between 0.1 and 0.49}\n")
+    f.write("Secondary Outflow Components,Pervious Storm Flow,{for secondary drainage link only}")
+    f.write("------------------------------------------------------------------------------------\n")
+    return True
+
 def writeMUSICjunction(f, ID, ncount, x, y):
     f.write("Node Type,JunctionNode,{Node Type}\n")
     f.write("Node Name,Block"+str(ID)+"J,{Node Name}\n")
@@ -303,6 +409,17 @@ def writeMUSICjunction(f, ID, ncount, x, y):
     f.write("General - Notes,,\n")
     f.write("------------------------------------------------------------------------------------\n")
     return True
+
+def writeMUSICjunction2(f, ID, ncount, x, y):
+    f.write("Node Type,JunctionNode,{Node Type}\n")
+    f.write("Node Name,"+str(ID)+",{Node Name}\n")
+    f.write("Node ID,"+str(ncount)+",{Node ID}\n")
+    f.write("Coordinates,"+str(x)+":"+str(y)+",{Coordinates}{X:Y}\n")
+    f.write("General - Location,"+str(ID)+",\n")
+    f.write("General - Notes,,\n")
+    f.write("------------------------------------------------------------------------------------\n")
+    return True
+
 
 def writeMUSICreceiving(f, ID, ncount, x, y):
     f.write("Node Type,ReceivingNode,{Node Type}\n")
