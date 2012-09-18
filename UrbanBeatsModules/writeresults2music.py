@@ -239,8 +239,12 @@ class WriteResults2MUSIC(Module):
         umusic.writeMUSICheader(ufile, "melbourne")      #write the header line
         scalar = 10
         ncount = 1
+	AreaSum = 0
         musicnodedb = [[],[]]       #contains the database of nodes [[ID], [details]]
-            
+        EtFlux_list = []
+    	fluxinfl_list = []
+    	fluxinfl_list2 = []
+	receivingNode = 0 
         for i in range(int(blocks_num)):
             currentID = i+1
             currentAttList = self.getBlockUUID(currentID,city)        #attribute list of current block structure
@@ -266,25 +270,30 @@ class WriteResults2MUSIC(Module):
             #write catchment nodes - maximum possibility of two nodes
             catchment_paramter_list = [1,120,30,80,200,1,10,25,5,0]
             total_catch_imparea = currentAttList.getAttribute("ResTIArea").getDouble()/10000
+	    AreaSum = AreaSum + total_catch_imparea
             total_lot_impA = (currentAttList.getAttribute("ResAllots").getDouble()*currentAttList.getAttribute("ResLotImpA").getDouble())/10000
             street_imp_area = total_catch_imparea - total_lot_impA
             ncount_list = []
-                
+
+
             if system_list[i][0] == 0:
                 #No strategies - GET AREAS AND PARAMETERS FOR A SINGLE CATCHMENT NODE
                 ncount_list.append(0)
                 umusic.writeMUSICcatchmentnode(ufile, currentID, "", ncount, (blockX-blocks_size/4)*scalar, (blockY)*scalar, total_catch_imparea,1, catchment_paramter_list)
                 ncount_list.append(ncount)
+		EtFlux_list.append(ncount)
                 ncount += 1
                 
             elif system_list[i][0] != 0:
                 #There are lot systems so get the lot sub-catchment node and merge the other untreated lots into the other node
                 #get lot areas
                 ncount_list.append(ncount)
+		EtFlux_list.append(ncount)
                 umusic.writeMUSICcatchmentnode(ufile, currentID, "LT", ncount, (blockX-blocks_size/4)*scalar, (blockY+blocks_size/4)*scalar, total_lot_impA ,1, catchment_paramter_list)
                 ncount += 1
                 #get other areas
                 ncount_list.append(ncount)
+		EtFlux_list.append(ncount)
                 umusic.writeMUSICcatchmentnode(ufile, currentID, "R", ncount, (blockX-blocks_size/4)*scalar, (blockY)*scalar, street_imp_area,1, catchment_paramter_list)
                 ncount += 1
                 
@@ -312,7 +321,8 @@ class WriteResults2MUSIC(Module):
                    
 
                     parameter_list = [sysedd, sysarea, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), 180, sysfd, current_soilK] #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
-
+		    EtFlux_list.append(ncount)
+		    fluxinfl_list.append(ncount)
 		    umusic.writeMUSICnodeBF(ufile, currentID, "L", ncount, blockX*scalar, (blockY+blocks_size/4)*scalar, parameter_list)
                 elif lottype == "IS":
                     #setup parameter list
@@ -327,7 +337,8 @@ class WriteResults2MUSIC(Module):
                     
 
                     parameter_list = [sysarea, sysedd, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), sysfd, current_soilK] #EDD, Asystem, FilterArea, UnlinedPerimeter, ksat, depth, exfil rate]
-                    
+                    fluxinfl_list2.append(ncount)
+		    EtFlux_list.append(ncount)
                     umusic.writeMUSICnodeIS(ufile, currentID, "L", ncount, blockX*scalar, (blockY+blocks_size/4)*scalar, parameter_list)
                 #writedetail = eval('umusic.writeMUSICnode'+str(lottype)+'('+str(ufile)+','+str(currentID)+',L,'+str(ncount)+','+str(blockX*scalar)+","+str((blockY+blocks_size/4)*scalar)+','+str(parameter_list)+')')
                 ncount += 1
@@ -352,7 +363,8 @@ class WriteResults2MUSIC(Module):
                     
                     #sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
                     sysfd = wsud_attr.getAttribute("FDepth").getDouble()
-                    
+		    EtFlux_list.append(ncount)
+		    fluxinfl_list.append(ncount)
 
                     parameter_list = [sysedd, sysarea, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), 180, sysfd, current_soilK]
                     umusic.writeMUSICnodeBF(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
@@ -368,10 +380,12 @@ class WriteResults2MUSIC(Module):
                     
                     #sysfd = float(des_attr.getStringAttribute("ISspec_FD"))
                     sysfd = wsud_attr.getAttribute("FDepth").getDouble()
-                    
+                    fluxinfl_list2.append(ncount)
+		    EtFlux_list.append(ncount)
 
                     parameter_list = [sysarea, sysedd, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), sysfd, current_soilK]
                     umusic.writeMUSICnodeIS(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
+
                     pass
                 elif streettype == "SW":
                     #setup parameter list
@@ -380,7 +394,8 @@ class WriteResults2MUSIC(Module):
 
                     parameter_list = [sysarea/4, 5, 2, 6, float(1.0/3.0),0.05, current_soilK] #[length, bedslope, Wbase, Wtop, depth, veg.height, exfilrate]
                     umusic.writeMUSICnodeSW(ufile, currentID, "S", ncount, blockX*scalar, blockY*scalar, parameter_list)
-
+		    EtFlux_list.append(ncount)
+		    fluxinfl_list.append(ncount)
 
 
                     pass
@@ -406,7 +421,8 @@ class WriteResults2MUSIC(Module):
 
                     #sysfd = float(des_attr.getStringAttribute("BFspec_FD"))
                     sysfd = wsud_attr.getAttribute("FDepth").getDouble()
-
+                    fluxinfl_list.append(ncount)
+		    EtFlux_list.append(ncount)
                     parameter_list = [sysedd, sysarea, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), 180, sysfd, current_soilK]
                     umusic.writeMUSICnodeBF(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
                     pass
@@ -424,7 +440,8 @@ class WriteResults2MUSIC(Module):
                     
 
                     parameter_list = [sysarea, sysedd, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), sysfd, current_soilK]
-                    
+                    fluxinfl_list2.append(ncount)
+		    EtFlux_list.append(ncount)
                     parameter_list = [10, 0.2, 10, 14, 1, 100] #[pond_area, EDD, filter area, unlined filter perimeter, depth, exfil rate]
                     umusic.writeMUSICnodeIS(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
                     pass
@@ -439,6 +456,8 @@ class WriteResults2MUSIC(Module):
                     
                     parameter_list = [sysarea, sysedd, sysarea*0.2, current_soilK, 1000*numpy.sqrt(((0.895*sysarea*sysedd)/(72*3600*0.6*0.25*numpy.pi*numpy.sqrt(2*9.81*sysedd)))), 72.0]
                     umusic.writeMUSICnodeWSUR(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+		    EtFlux_list.append(ncount)
+		    fluxinfl_list.append(ncount)
                     pass
                 elif neightype == "PB":
                     #setup parameter list:
@@ -455,6 +474,8 @@ class WriteResults2MUSIC(Module):
                     parameter_list = [sysarea, sysedd, sysarea*0.2, current_soilK, 1000*numpy.sqrt(((0.895*sysarea*sysedd)/(72*3600*0.6*0.25*numpy.pi*numpy.sqrt(2*9.81*sysedd)))), 72.0]
                     
                     umusic.writeMUSICnodePB(ufile, currentID, "N", ncount, blockX*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+		    EtFlux_list.append(ncount)
+		    fluxinfl_list.append(ncount)
                     pass
                 #writedetail = eval('umusic.writeMUSICnode'+str(neightype)+'('+str(ufile)+','+str(currentID)+',N,'+str(ncount)+','+str(blockX*scalar)+","+str((blockY-blocks_size/4)*scalar)+','+str(parameter_list)+')')
                 ncount += 1
@@ -523,6 +544,8 @@ class WriteResults2MUSIC(Module):
                     
                     parameter_list = [sysedd, sysarea, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), 180, sysfd, current_soilK]
                     umusic.writeMUSICnodeBF(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+		    EtFlux_list.append(ncount)
+		    fluxinfl_list.append(ncount)
                     pass
                 elif prectype == "IS":
                     #setup parameter list:
@@ -539,6 +562,8 @@ class WriteResults2MUSIC(Module):
                     
                     parameter_list = [sysarea, sysedd, sysarea, (2*numpy.sqrt(sysarea/0.4)+2*sysarea/(numpy.sqrt(sysarea/0.4))), sysfd, current_soilK]
                     umusic.writeMUSICnodeIS(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
+                    fluxinfl_list2.append(ncount)
+		    EtFlux_list.append(ncount)
                     pass
                 elif prectype == "WSUR":
                     #setup parameter list
@@ -548,7 +573,8 @@ class WriteResults2MUSIC(Module):
                     
                     #sysedd = float(des_attr.getStringAttribute("WSURspec_EDD"))
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
-                    
+                    fluxinfl_list.append(ncount)
+		    EtFlux_list.append(ncount)
                     parameter_list = [sysarea, sysedd, sysarea*0.2, current_soilK, 1000*numpy.sqrt(((0.895*sysarea*sysedd)/(72*3600*0.6*0.25*numpy.pi*numpy.sqrt(2*9.81*sysedd)))), 72.0]
                     umusic.writeMUSICnodeWSUR(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
                     pass
@@ -560,14 +586,14 @@ class WriteResults2MUSIC(Module):
                     
                     #sysedd = float(des_attr.getStringAttribute("PBspec_MD"))
                     sysedd = wsud_attr.getAttribute("WDepth").getDouble()
-                    
+                    fluxinfl_list.append(ncount)
+		    EtFlux_list.append(ncount)
                     parameter_list = [sysarea, sysedd, sysarea*0.2, current_soilK, 1000*numpy.sqrt(((0.895*sysarea*sysedd)/(72*3600*0.6*0.25*numpy.pi*numpy.sqrt(2*9.81*sysedd)))), 72.0]
 
                     umusic.writeMUSICnodePB(ufile, currentID, "P", ncount, (blockX+blocks_size/4)*scalar, (blockY-blocks_size/4)*scalar, parameter_list)
                     pass
                 #writedetail = eval('umusic.writeMUSICnode'+str(neightype)+'('+str(ufile)+','+str(currentID)+',N,'+str(ncount)+','+str(blockX*scalar)+","+str((blockY-blocks_size/4)*scalar)+','+str(parameter_list)+')')
                 ncount += 1
-            
             #Link 6: Junction to prec tech
             if system_list[i][3] != 0:
                 umusic.writeMUSIClink(ufile, ncount_list[5], ncount_list[6])
@@ -578,7 +604,8 @@ class WriteResults2MUSIC(Module):
                 print currentID
                 ncount_list.append(ncount)
                 umusic.writeMUSICreceiving(ufile, currentID, ncount, (blockX)*scalar, (blockY-blocks_size/2)*scalar)
-                ncount += 1
+		receivingNode = ncount                
+		ncount += 1
                 #Link 7: Junction/Prec-Tech to receiving Node
                 if system_list[i][3] != 0: #if there is a precinct technology...
                     umusic.writeMUSIClink(ufile, ncount_list[6], ncount_list[7])
@@ -602,7 +629,7 @@ class WriteResults2MUSIC(Module):
                 #skips the for loop iteration to the next block, not more needs to be done
                 continue
             
-            print "Block " + str(currentID)
+
             upindex = musicnodedb[0].index(currentID)
             ncount_list_up = musicnodedb[1][upindex]
 
@@ -619,5 +646,28 @@ class WriteResults2MUSIC(Module):
                 downindex = musicnodedb[0].index(downID)
                 ncount_list_down = musicnodedb[1][downindex]
                 umusic.writeMUSIClink(ufile, max(ncount_list_up[5:]), ncount_list_down[5])
-           	print "up " + str(max(ncount_list_up[5:])) + "/" + "down " + str(ncount_list_down[5])
-        umusic.writeMUSICfooter(ufile)
+
+	areaSumID = max(ncount_list)+1
+	catchment_paramter_list = [1,120,30,20,200,1,10,25,5,0]
+	umusic.writeMUSICcatchmentnode2(ufile, "pre-developed Area Sum Houses", "", areaSumID, 0, 0, AreaSum,1, catchment_paramter_list)
+	umusic.writeMUSICjunction2(ufile, "ignore", areaSumID+1, 0, 0)
+	umusic.writeMUSIClinkToIgnore(ufile,areaSumID,areaSumID+1)
+	umusic.writeMUSICjunction2(ufile, "Pre-developed runoff frequenzy", areaSumID+2, 0, 0)
+	umusic.writeMUSIClinkToFrequenzy(ufile,areaSumID,areaSumID+2)
+	umusic.writeMUSICjunction2(ufile, "ET Fluxes",areaSumID+3,0,0)
+	umusic.writeMUSICjunction2(ufile, "Infiltration fluxes",areaSumID+4,0,0)
+
+	for i in EtFlux_list:
+	    umusic.writeMUSIClinkToFlux(ufile, i, areaSumID+3)
+	for j in fluxinfl_list:
+	    umusic.writeMUSIClinkToInfilFlux1(ufile, j, areaSumID+4)
+	for k in fluxinfl_list2:
+	    umusic.writeMUSIClinkToInfilFlux2(ufile, k, areaSumID+4)
+        umusic.writeMUSIClink(ufile, areaSumID+4,int(receivingNode))
+	umusic.writeMUSICfooter(ufile)
+
+
+
+
+
+
